@@ -80,7 +80,7 @@ reactive-css build --features events,conditions,focus --out public/reactive-css.
 
 Full reference: [docs/bundle-builder-0.8.md](bundle-builder-0.8.md).
 
-The package is prepared as `@reactivecss/core` (not published yet).
+The package is [`@reactivecss/core`](https://www.npmjs.com/package/@reactivecss/core) on npm (0.9.0).
 
 ## Browser support
 
