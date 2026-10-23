@@ -38,6 +38,8 @@ site/playwright-report/
 /site/docs/admin-release-workflow-validation.md
 # Release operator notes: npm account details, kept local.
 /docs/release-0.9.0-npm.md
+# Launch marketing research and unpublished drafts: private, never committed.
+/marketing/
 
 # Secrets and local configuration
 .env
