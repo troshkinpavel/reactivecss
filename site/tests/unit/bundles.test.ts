@@ -5,8 +5,9 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { analyzeCss } from '~/lib/bundles/analyzer';
 import { CATALOG, COMPACT, PACKAGE, PROFILES, SIZES, STANDARD, featureOfKey, measuredFor, profileOf, resolve } from '~/lib/bundles/catalog';
-import { buildArgs, configScript, htmlSnippet, installCommand, outError } from '~/lib/bundles/command';
+import { buildArgs, buildCommand, configScript, htmlSnippet, installCommand, outError } from '~/lib/bundles/command';
 import registry from '~/generated/registry.json';
+import { DISTRIBUTION } from '~/lib/config';
 
 const tools = await import(new URL('../../../tools/bundle.mjs', import.meta.url).href);
 const compiler = () => import(new URL('../../../dist/index.js', import.meta.url).href);
@@ -108,20 +109,24 @@ describe('generated commands', () => {
     expect(htmlSnippet(c).code).toBe('<script src="/reactive-css.min.js" defer></script>');
     expect(htmlSnippet({ ...c, out: 'static/rcss.js', format: 'esm' }).code).toContain("from './static/rcss.js'");
   });
-  it('install from a local pack while unpublished, and never claim a registry version', () => {
-    expect(PACKAGE.published).toBe(false);
-    expect(installCommand()).toContain('npm pack');
-    expect(installCommand()).not.toMatch(new RegExp(`npm install --save-dev ${PACKAGE.name}@`));
+  it('install from npm only once the version is verified there, otherwise from a pack of the public repository', () => {
+    if (PACKAGE.published) expect(installCommand()).toBe(`npm install --save-dev ${PACKAGE.name}@${PACKAGE.version} esbuild`);
+    else {
+      expect(installCommand()).toContain('git clone https://github.com/troshkinpavel/reactivecss.git && cd reactivecss\nnpm install && npm run build && npm pack');
+      expect(installCommand()).not.toMatch(new RegExp(`npm install --save-dev ${PACKAGE.name}@`));
+    }
     expect(configScript({ ...c, selected: ['events'] })).toContain(`from '${PACKAGE.name}/bundle'`);
+  });
+  it('name the scoped package in the npx command: the unscoped npm name reactive-css is another project', () => {
+    expect(buildCommand(c)).toBe('npx -p @reactivecss/core -p esbuild reactive-css build --features core --out public/reactive-css.min.js');
   });
 });
 
 describe('package metadata', () => {
   const pkg = JSON.parse(readFileSync(new URL('../../../package.json', import.meta.url), 'utf8'));
-  const changelog = readFileSync(new URL('../../../CHANGELOG.md', import.meta.url), 'utf8');
-  it('is the library package.json, and the publication status is the latest release heading', () => {
+  it('is the library package.json, and the publication status is config/distribution.json', () => {
     expect([PACKAGE.name, PACKAGE.version, PACKAGE.bin]).toEqual([pkg.name, pkg.version, pkg.bin]);
-    expect(PACKAGE.published).toBe(!/^## [^\n]*unpublished/m.test(changelog.match(/^## .*/m)![0]));
+    expect(PACKAGE.published).toBe(DISTRIBUTION.core.npmVersions.includes(pkg.version));
   });
   it('ships the files the docs point to', () => {
     for (const f of ['reactive-css.min.js', 'reactive-css.compact.min.js', 'reactive-css.js', 'index.js', 'catalog.json']) expect(readdirSync(new URL('../../../dist/', import.meta.url))).toContain(f);

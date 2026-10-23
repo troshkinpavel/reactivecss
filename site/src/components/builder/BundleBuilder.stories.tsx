@@ -18,7 +18,7 @@ export const Builder: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     await expect(c.getByRole('checkbox', { name: /Core & state/ })).toBeDisabled();
-    await expect(buildCode(canvasElement)).toBe(`npx reactive-css build --features core --out ${DEFAULT_OUT}`);
+    await expect(buildCode(canvasElement)).toBe(`npx -p @reactivecss/core -p esbuild reactive-css build --features core --out ${DEFAULT_OUT}`);
     await userEvent.click(c.getByRole('checkbox', { name: /Declarative focus/ }));
     const events = c.getByRole('checkbox', { name: /Events & actions/ });
     await expect(events).toBeChecked();
@@ -100,7 +100,7 @@ export const Output: Story = {
     await expect(buildCode(canvasElement)).toContain(`--out ${DEFAULT_OUT}`);
     await userEvent.clear(input);
     await userEvent.type(input, 'static/rcss.js');
-    await expect(buildCode(canvasElement)).toBe('npx reactive-css build --features text --out static/rcss.js');
+    await expect(buildCode(canvasElement)).toBe('npx -p @reactivecss/core -p esbuild reactive-css build --features text --out static/rcss.js');
     await userEvent.click(c.getByRole('radio', { name: 'ES module' }));
     await expect(buildCode(canvasElement)).toContain('--format esm');
     await userEvent.click(c.getByRole('button', { name: 'Copy build command' }));

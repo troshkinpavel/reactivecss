@@ -1,0 +1,6 @@
+{
+  "repository": { "url": "https://github.com/troshkinpavel/reactivecss", "public": true },
+  "website": { "url": "https://reactivecss.com", "production": true },
+  "core": { "package": "@reactivecss/core", "npmVersions": ["0.9.0"] },
+  "mcp": { "package": "@reactivecss/mcp", "npmVersions": ["0.1.0"] }
+}

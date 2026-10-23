@@ -61,7 +61,8 @@ test('Source ↗ opens the experiment folder on GitHub in a new tab, and that fo
       await expect(l).toHaveAttribute('rel', /noopener/);
     }
   }
-  await expect(page.locator('[data-source-note]')).toContainText('once the repository is public');
+  // The repository is public (config/distribution.json): no "once it is public" note.
+  await expect(page.locator('[data-source-note]')).toHaveCount(0);
   for (const f of ['index.html', 'style.css', 'README.md']) expect(existsSync(new URL(`../../experiments/perihelion/${f}`, import.meta.url)), f).toBe(true);
 });
 

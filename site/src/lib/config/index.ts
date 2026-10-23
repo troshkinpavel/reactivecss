@@ -8,14 +8,26 @@ import announcements from '../../../config/announcements.json';
 import features from '../../../config/features.json';
 import seo from '../../../config/seo.json';
 import releases from '../../../config/releases.json';
+import distribution from '../../../config/distribution.json';
+import mcpPackage from '../../../../packages/mcp/package.json';
 import changelogText from '../../../../CHANGELOG.md?raw';
-import { APPROVED_FEATURES, FOOTER_GROUPS, activeAnnouncement, announcementsSchema, featuresSchema, linksSchema, releasesSchema, seoSchema, type Announcement, type FeatureId, type ReleaseMeta } from './schema';
+import { APPROVED_FEATURES, FOOTER_GROUPS, activeAnnouncement, announcementsSchema, distributionSchema, featuresSchema, linksSchema, releasesSchema, seoSchema, type Announcement, type Distribution, type FeatureId, type ReleaseMeta } from './schema';
 
 export const SEO = seoSchema.parse(seo);
 export const FEATURES = featuresSchema.parse(features);
 export const LINKS = linksSchema.parse(links).links;
 export const ANNOUNCEMENTS = announcementsSchema.parse(announcements).announcements;
 export const RELEASES = releasesSchema.parse(releases).releases;
+/** What is live: the repository, the production website and each npm package (config/distribution.json). */
+export const DISTRIBUTION = distributionSchema.parse(distribution);
+export const MCP_VERSION: string = mcpPackage.version;
+
+/** Whether the current version of a package is verified on npm. */
+export function onNpm(pkg: 'core' | 'mcp', d: Distribution = DISTRIBUTION) {
+  return d[pkg].npmVersions.includes(pkg === 'core' ? LIBRARY_VERSION : MCP_VERSION);
+}
+/** A path in the public repository, e.g. `repositoryUrl('tree/main/packages/mcp')`. */
+export const repositoryUrl = (path = '') => DISTRIBUTION.repository.url + (path && `/${path}`);
 
 /** Routes of hidden website features: links to them are dropped instead of left pointing at a redirect. */
 const hiddenRoutes: string[] = (Object.keys(APPROVED_FEATURES) as FeatureId[]).filter((f) => !FEATURES[f]).flatMap((f) => APPROVED_FEATURES[f].routes);
@@ -45,27 +57,25 @@ export interface PublicRelease {
   published: boolean;
 }
 
-/** `## x.y.z — Title (note)` headings of CHANGELOG.md → whether the note still says "unpublished". */
-export function changelogStatus(md = changelogText): Map<string, { published: boolean }> {
-  const out = new Map<string, { published: boolean }>();
-  for (const m of md.matchAll(/^## (\d+\.\d+\.\d+)\b([^\n]*)$/gm)) out.set(m[1]!, { published: !/unpublished/i.test(m[2]!) });
-  return out;
+/** Versions that have a `## x.y.z` section in CHANGELOG.md. */
+export function changelogVersions(md = changelogText): Set<string> {
+  return new Set([...md.matchAll(/^## (\d+\.\d+\.\d+)\b/gm)].map((m) => m[1]!));
 }
 
 /**
  * Release records the public site may render, newest first. Policy:
- * - published = the CHANGELOG.md heading no longer says "unpublished" (the manual step after
- *   npm publication; the Control Center never sets it);
+ * - published = the version is listed in config/distribution.json `core.npmVersions` (set by hand
+ *   after checking npm; the Control Center never sets it);
  * - a local preview build (`RCSS_PREVIEW_RELEASES=1`) also shows `prepared` records, marked as not
  *   published. `local` records and versions without a CHANGELOG section never appear.
  */
-export function publicReleases(o: { records?: Record<string, ReleaseMeta>; status?: Map<string, { published: boolean }>; preview?: boolean } = {}): PublicRelease[] {
-  const records = o.records ?? RELEASES, status = o.status ?? changelogStatus();
+export function publicReleases(o: { records?: Record<string, ReleaseMeta>; sections?: Set<string>; npmVersions?: string[]; preview?: boolean } = {}): PublicRelease[] {
+  const records = o.records ?? RELEASES, sections = o.sections ?? changelogVersions(), npm = o.npmVersions ?? DISTRIBUTION.core.npmVersions;
   const preview = o.preview ?? process.env.RCSS_PREVIEW_RELEASES === '1';
   return Object.entries(records)
     .flatMap(([version, r]) => {
-      const published = status.get(version)?.published;
-      if (published === undefined || (!published && !(preview && r.workflow.status === 'prepared'))) return [];
+      const published = npm.includes(version);
+      if (!sections.has(version) || (!published && !(preview && r.workflow.status === 'prepared'))) return [];
       return [{ version, title: r.title, summary: r.summary, highlights: r.highlights, limitations: r.limitations, breaking: r.breaking, date: r.date, published }];
     })
     .sort((a, b) => b.version.localeCompare(a.version, undefined, { numeric: true }));

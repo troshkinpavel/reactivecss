@@ -5,15 +5,17 @@ group: Integrations
 type: Guide
 order: 39
 ---
-<Callout kind="provisional" title="Not yet published">
+<NpmState pkg="mcp" published={false}>
+<Callout kind="provisional" title="Not on npm yet">
 
-`@reactivecss/mcp` lives in `packages/mcp/` and is not on npm yet. Until it is, run the server from a local build. The `npx` commands below are for after publication.
+`@reactivecss/mcp` is not on npm yet. Until it is, build the server from [`packages/mcp/`](https://github.com/troshkinpavel/reactivecss/tree/main/packages/mcp) in the public repository and point your client at that build.
 
 </Callout>
+</NpmState>
 
 <Facts>
   <Fact label="Package">`@reactivecss/mcp`</Fact>
-  <Fact label="Source">`packages/mcp/`</Fact>
+  <Fact label="Source">[`packages/mcp/`](https://github.com/troshkinpavel/reactivecss/tree/main/packages/mcp)</Fact>
   <Fact label="Targets">Reactive CSS 0.9.0</Fact>
   <Fact label="Provides">7 tools · 8 resources · 4 prompts</Fact>
 </Facts>
@@ -29,18 +31,39 @@ The MCP server gives the agent the current documentation and a validator, so it 
 - **Smaller bundles.** The agent can recommend Full, Compact or a Custom bundle from the features your CSS uses.
 
 ## [1] Install
-Until publication, build the server from the repository. It needs Node.js 22 or later.
+<NpmState pkg="mcp" published={false}>
+
+Build the server from the repository. It needs Node.js 22 or later. The server bundles the library's compiler, so build the library first:
 
 ```bash terminal
+git clone https://github.com/troshkinpavel/reactivecss.git
+cd reactivecss
+npm install && npm run build
 cd packages/mcp
-npm install
-npm run build
+npm install && npm run build
 ```
 
-The server is `packages/mcp/dist/index.js`. After publication, clients start it with `npx -y @reactivecss/mcp` instead, with no build step.
+The server is `packages/mcp/dist/index.js`.
+
+</NpmState>
+<NpmState pkg="mcp" published>
+
+Nothing to install: clients start the server with `npx -y @reactivecss/mcp`. It needs Node.js 22 or later.
+
+To run a copy installed in your project instead, add it as a dev dependency and use `npx -p @reactivecss/mcp reactivecss-mcp` as the command. Keep the `-p`: npx then runs your installed copy, and never looks up the unscoped name `reactivecss-mcp` on npm, which this project does not own.
+
+```bash terminal
+npm install --save-dev @reactivecss/mcp
+```
+
+</NpmState>
 
 ## [2] Connect your client
-Most MCP clients read a JSON configuration that names the server and the command that starts it. Replace the path with the absolute path to `dist/index.js` on your machine.
+Most MCP clients read a JSON configuration that names the server and the command that starts it.
+
+<NpmState pkg="mcp" published={false}>
+
+Replace the path with the absolute path to `dist/index.js` on your machine.
 
 ```json mcp.json
 {
@@ -59,6 +82,28 @@ In Claude Code, add it from the terminal:
 claude mcp add reactivecss -- node /absolute/path/to/packages/mcp/dist/index.js
 ```
 
+</NpmState>
+<NpmState pkg="mcp" published>
+
+```json mcp.json
+{
+  "mcpServers": {
+    "reactivecss": {
+      "command": "npx",
+      "args": ["-y", "@reactivecss/mcp"]
+    }
+  }
+}
+```
+
+In Claude Code, add it from the terminal:
+
+```bash terminal
+claude mcp add reactivecss -- npx -y @reactivecss/mcp
+```
+
+</NpmState>
+
 <Callout kind="tip" title="Where the file goes">
 
 Each client keeps its MCP configuration in a different place, and VS Code uses a `servers` object instead of `mcpServers`. Follow your client's own MCP documentation for the file location. The package README has the VS Code form.
@@ -73,11 +118,12 @@ The server speaks MCP over stdio, the transport every client listed here support
 
 | Client | Status | Notes |
 | --- | --- | --- |
-| MCP Inspector (CLI) | **Verified** | Listing and calling tools, reading resources and listing prompts, during development. |
+| MCP Inspector (CLI) | **Verified** | Inspector 2.12.0 against the published package (`npx -y @reactivecss/mcp`) on 2026-10-23: listing tools and prompts, calling tools, reading resources. |
+| MCP TypeScript SDK client | **Verified** | `@modelcontextprotocol/client` 2.3.1 over stdio, against the published package on 2026-10-23. |
 | Claude Code | Not verified | Configuration above; not yet run against the server. |
 | Cursor | Not verified | Uses the `mcpServers` configuration above. |
 | VS Code (agent mode) | Not verified | Uses a `servers` object; see the package README. |
-| Other MCP clients | Not verified | Should work with any client that supports MCP over stdio. Report results in the repository issues. |
+| Other MCP clients | Not verified | Should work with any client that supports MCP over stdio. Report results in the [repository issues](https://github.com/troshkinpavel/reactivecss/issues). |
 
 ## What it provides
 Everything is read-only and offline: the server reads no files of yours, opens no network connections and runs no code from its input.
@@ -139,10 +185,27 @@ No errors or warnings. `suggest_bundle` recommends a custom bundle with `core`, 
 - Validation checks syntax and API usage, not visual results. Test in a browser.
 - Answers target 0.9.0. Use the server version that matches your runtime.
 
+<NpmState pkg="mcp" published>
+
+## Run from source
+To work on the server itself, build it from the repository. It bundles the library's compiler, so build the library first:
+
+```bash terminal
+git clone https://github.com/troshkinpavel/reactivecss.git
+cd reactivecss
+npm install && npm run build
+cd packages/mcp
+npm install && npm run build
+```
+
+Then use `node /absolute/path/to/packages/mcp/dist/index.js` as the client command. `npm test` runs the unit and protocol tests.
+
+</NpmState>
+
 ## Links
 <Cards>
-  <Card href="https://github.com/troshkinpavel/reactivecss/tree/main/packages/mcp" title="Source on GitHub">`packages/mcp/` in the Reactive CSS repository. Opens once the repository is public.</Card>
-  <Card href="#1-install" title="npm package">`@reactivecss/mcp`. Not yet published.</Card>
+  <Card href="https://github.com/troshkinpavel/reactivecss/tree/main/packages/mcp" title="Source on GitHub">`packages/mcp/` in the Reactive CSS repository.</Card>
+  <NpmState pkg="mcp" published><Card href="https://www.npmjs.com/package/@reactivecss/mcp" title="npm package">`@reactivecss/mcp` on npm.</Card></NpmState>
   <Card href="/docs/migration/" title="Migration guide">What changed in 0.9.0 and how to update older stylesheets.</Card>
 </Cards>
 

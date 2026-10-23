@@ -26,7 +26,7 @@ test('one runtime, no diagnostics, no console errors; the headline reads "CSS th
   expect(await page.locator('script[src="/runtime/reactive-css.min.js"]').count()).toBe(1);
   await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('CSS that reacts.');
   await expect(page.locator('footer')).toContainText(`v${registry.version} · experimental`);
-  await expect(page.getByRole('complementary', { name: 'Demo version' })).toContainText(`Reactive CSS ${registry.version} is not published yet`);
+  await expect(page.getByRole('complementary', { name: 'Demo version' })).toContainText(`Reactive CSS ${registry.version} is experimental`);
   await page.waitForTimeout(500);
   expect(errors).toEqual([]);
 });
@@ -229,6 +229,9 @@ test('08 Tooling: the MCP block shows what the server returns and links to the M
   await expect(s.locator('figure')).toContainText('legacy 0.8');
   await expect(s.locator('figure')).toContainText('custom bundle: core, events, attributes');
   await expect(s.locator('figure')).toContainText('7 tools');
+  // Only the client actually run against the server is named as verified.
+  await expect(s.getByRole('list', { name: 'Clients' })).toHaveText(/MCP Inspector · verified/);
+  await expect(s).not.toContainText('Claude Code');
   await s.getByRole('link', { name: 'Explore MCP integration →' }).click();
   await expect(page).toHaveURL('/docs/mcp/');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(/MCP Server/);

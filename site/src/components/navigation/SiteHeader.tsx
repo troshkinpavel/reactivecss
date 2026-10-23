@@ -1,7 +1,7 @@
 import { Logo } from '~/components/ui/Logo';
 import { Kbd, Tag } from '~/components/ui/Tag';
 
-export interface NavLink { label: string; href: string; current?: boolean }
+export interface NavLink { label: string; href: string; current?: boolean; /** Only where the header has room for it (1080px and wider). */ wide?: boolean }
 
 export interface SiteHeaderProps {
   /** home: centered marketing header · app: full-width header for docs and tools. */
@@ -18,7 +18,7 @@ const searchButton = (wide: boolean) => (
   <button
     type="button"
     data-search-open=""
-    className={`flex h-[34px] items-center gap-6 rounded-block border border-line bg-paper pr-1.5 pl-3 text-sm text-mute max-[899px]:h-10 max-[359px]:pl-2 ${wide ? 'w-60 max-[899px]:w-auto' : ''}`}
+    className={`flex h-[34px] items-center gap-6 whitespace-nowrap rounded-block border border-line bg-paper pr-1.5 pl-3 text-sm text-mute max-[899px]:h-10 max-[359px]:pl-2 ${wide ? 'w-60 max-[899px]:w-auto min-[900px]:max-[1023px]:w-40' : ''}`}
   >
     <span className="flex-1 text-left">Search<span className="visually-hidden"> documentation</span>{!wide && ' docs'}</span>
     <span className="max-[899px]:hidden" aria-hidden="true"><Kbd>⌘K</Kbd></span>
@@ -50,7 +50,7 @@ export function SiteHeader({ variant = 'app', context, contextHref, links, menuT
           ? <a href={contextHref} className="font-mono text-meta text-mute no-underline max-[419px]:hidden">{context}</a>
           : <span className="font-mono text-meta text-mute max-[419px]:hidden">{context}</span>)}
         {home && (
-          <nav aria-label="Main" className="flex gap-6 text-ui text-ink-2 max-[959px]:hidden">
+          <nav aria-label="Main" className="flex gap-6 text-ui text-ink-2 max-[959px]:hidden max-[1023px]:gap-3">
             {links.map((l) => <a key={l.href} href={l.href} aria-current={l.current ? 'page' : undefined} className="no-underline hover:text-ink aria-[current=page]:text-ink">{l.label}</a>)}
           </nav>
         )}
@@ -58,7 +58,7 @@ export function SiteHeader({ variant = 'app', context, contextHref, links, menuT
         <div className={home ? 'max-[959px]:hidden' : ''}>{searchButton(!home)}</div>
         {!home && (
           <nav aria-label="Site" className="flex gap-[22px] text-ui text-ink-2 max-[899px]:hidden">
-            {links.map((l) => <a key={l.href} href={l.href} aria-current={l.current ? 'page' : undefined} className="no-underline hover:text-ink aria-[current=page]:font-medium aria-[current=page]:text-ink">{l.label}</a>)}
+            {links.map((l) => <a key={l.href} href={l.href} aria-current={l.current ? 'page' : undefined} className={`no-underline hover:text-ink aria-[current=page]:font-medium aria-[current=page]:text-ink ${l.wide ? 'max-[1079px]:hidden' : ''}`}>{l.label}</a>)}
           </nav>
         )}
         {home && menuTarget && (

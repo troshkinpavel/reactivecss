@@ -25,7 +25,7 @@ Measured from the 0.9.0 build (minified, gzip level 9, brotli quality 11, in byt
 <script src="reactive-css.min.js" defer></script>
 ```
 
-That is all: the script processes the document by itself once it runs.
+That is all: the script processes the document by itself once it runs. The file is in the package's `dist/` folder: [npm](#npm) and [CDN](#cdn) below say how to get it.
 
 ### Development build and diagnostics
 - **`reactive-css.js`** is the same runtime, not minified. It logs a console warning with the full text of each problem.
@@ -33,7 +33,22 @@ That is all: the script processes the document by itself once it runs.
 - **Decode a code offline** with `npx -p @reactivecss/core reactive-css explain "<message>"`, which needs no esbuild, or switch to `reactive-css.js` while you debug. The codes and their texts are in `dist/diagnostics.json`.
 
 ## npm
-npm is the package's distribution channel once it is published. Until then, install it from a local pack of the library. The package as it is prepared:
+<NpmState pkg="core" published={false}>
+
+npm is the package's distribution channel, but `@reactivecss/core` is not on npm yet. Until it is, build it from the [public repository](https://github.com/troshkinpavel/reactivecss) and install a local pack, as below. The package as it is prepared:
+
+</NpmState>
+<NpmState pkg="core" published>
+
+npm is the package's distribution channel:
+
+```bash terminal
+npm install @reactivecss/core
+```
+
+To build custom bundles with the CLI as well, install it as a dev dependency together with esbuild, as below.
+
+</NpmState>
 
 <Bundles part="package" />
 
@@ -49,7 +64,7 @@ npm is the package's distribution channel once it is published. Until then, inst
   - `@reactivecss/core/catalog.json`: the feature catalog.
 
 ## CDN
-After publication, npm CDNs such as jsDelivr and unpkg serve the package's files directly. No CDN of the project's own is planned for the first release.
+npm CDNs such as jsDelivr and unpkg serve the package's published files directly. No CDN of the project's own is planned for the first release.
 
 <Bundles part="cdn" />
 
@@ -58,7 +73,7 @@ For production:
 - **Rely on version-pinned caching.** CDNs cache files of a pinned version for a long time, because they never change. Unpinned URLs are cached briefly and can change.
 - **Upgrade deliberately.** Read the changelog, change the version in the URL, and test your pages, then check `ReactiveCSS.diagnostics`.
 - **Self-host** for full control: the file is static and has no dependencies. Custom bundles are always self-hosted.
-- **Subresource Integrity.** With a pinned URL you can add an `integrity` hash computed from that exact published file, plus `crossorigin="anonymous"`. No hashes are given here: there is no published file to compute them from yet.
+- **Subresource Integrity.** With a pinned URL you can add an `integrity` hash computed from that exact published file, plus `crossorigin="anonymous"`.<NpmState pkg="core" published={false}> No hashes are given here: there is no published file to compute them from yet.</NpmState><NpmState pkg="core" published> Compute it from the file you downloaded from that URL: `openssl dgst -sha384 -binary reactive-css.min.js | openssl base64 -A`, prefixed with `sha384-`.</NpmState>
 
 ## ES module
 For programmatic use, import the ESM build and start it yourself. With the package installed, a bundler resolves `@reactivecss/core` to `dist/index.js`; without one, import the file directly.

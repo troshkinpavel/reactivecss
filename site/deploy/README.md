@@ -5,8 +5,8 @@ Cloudflare Worker with Static Assets, configured in [`../wrangler.jsonc`](../wra
 
 | Worker | Hostname | Status |
 |---|---|---|
-| `reactivecss-site-staging` (`--env staging`) | its `workers.dev` URL, behind Cloudflare Access | not created yet |
-| `reactivecss-site` (production) | `reactivecss.com` | not created yet, no route |
+| `reactivecss-site-staging` (`--env staging`) | `reactivecss-site-staging.troshkinp.workers.dev`, behind Cloudflare Access | live and Access-protected; version `2273ad67` deployed 2026-10-23 |
+| `reactivecss-site` (production) | `reactivecss.com` (custom domain) | live since 2026-10-23 |
 
 No credentials are stored in this repository. Wrangler reads `CLOUDFLARE_API_TOKEN` and
 `CLOUDFLARE_ACCOUNT_ID` from the environment. Do not write them to `.env`, `.dev.vars` or any

@@ -22,13 +22,13 @@ test('selection: core is fixed, requirements are added and locked, reset clears'
   await page.goto('/bundle-builder/');
   await hydrated(page);
   await expect(page.getByRole('checkbox', { name: /^Core & state/ })).toBeDisabled();
-  await expect(build(page)).toHaveText('npx reactive-css build --features core --out public/reactive-css.min.js');
+  await expect(build(page)).toHaveText('npx -p @reactivecss/core -p esbuild reactive-css build --features core --out public/reactive-css.min.js');
   await expect(page.locator('[data-size]')).toContainText(measured('core')); // core alone is measured
   await page.getByRole('checkbox', { name: /^Declarative focus/ }).check();
   expect(await state(page, 'events')).toBe('required');
   await expect(page.getByRole('checkbox', { name: /^Events & actions/ })).toBeDisabled();
   await expect(page.locator('[data-added]')).toHaveText('Events & actions (required by Declarative focus)');
-  await expect(build(page)).toHaveText('npx reactive-css build --features focus --out public/reactive-css.min.js');
+  await expect(build(page)).toHaveText('npx -p @reactivecss/core -p esbuild reactive-css build --features focus --out public/reactive-css.min.js');
   await expect(page.locator('[data-size]')).toContainText('Exact size available after building.');
   await expect(page).toHaveURL(/\?features=focus$/);
   await page.getByRole('checkbox', { name: /^Declarative focus/ }).uncheck();
@@ -44,7 +44,7 @@ test('presets: real profiles, measured sizes against the standard bundle, matchi
   await hydrated(page);
   await page.getByRole('button', { name: /^Forms/ }).click();
   await expect(page.getByRole('button', { name: /^Forms/ })).toHaveAttribute('aria-pressed', 'true');
-  await expect(build(page)).toHaveText('npx reactive-css build --profile forms --out public/reactive-css.min.js');
+  await expect(build(page)).toHaveText('npx -p @reactivecss/core -p esbuild reactive-css build --profile forms --out public/reactive-css.min.js');
   const size = page.locator('[data-size]');
   await expect(size.getByRole('row', { name: /minified/ })).toContainText(measured('forms'));
   await expect(size.getByRole('row', { name: /minified/ })).toContainText(measured('dist full'));
@@ -77,11 +77,11 @@ test('output path, format and copy', async ({ page, browserName, context }) => {
   await expect(page.getByRole('alert')).toContainText('relative path ending in .js');
   await out.fill('static/rcss.js');
   await page.getByRole('radio', { name: 'ES module' }).click();
-  await expect(build(page)).toHaveText('npx reactive-css build --features core --out static/rcss.js --format esm');
+  await expect(build(page)).toHaveText('npx -p @reactivecss/core -p esbuild reactive-css build --features core --out static/rcss.js --format esm');
   await expect(page.locator('[data-output="3 · Import it"] code')).toContainText("import { start } from './static/rcss.js';");
   await page.getByRole('button', { name: 'Copy build command' }).click();
   await expect(page.getByRole('button', { name: 'Copy build command' })).toHaveText('Copied');
-  if (browserName === 'chromium') expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('npx reactive-css build --features core --out static/rcss.js --format esm');
+  if (browserName === 'chromium') expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('npx -p @reactivecss/core -p esbuild reactive-css build --features core --out static/rcss.js --format esm');
 });
 
 test('analyzer: the compiler loads only when used, and its result can be applied', async ({ page }) => {
@@ -141,16 +141,17 @@ test('the builder island and the compiler load on the builder page only', async 
   expect(scripts.filter((s) => /BundleBuilder|reactive-css\.esm/.test(s))).toEqual([]);
 });
 
-test('unpublished: CDN URLs are shown as text, never as links, and say so', async ({ page }) => {
-  await page.goto('/docs/installation/');
-  await expect(page.getByText('Illustrative until published')).toBeVisible();
+test('npm state follows config/distribution.json: pinned CDN tags as text, never links; install from npm only once published', async ({ page }) => {
   const { version } = JSON.parse(readFileSync(new URL('../../../package.json', import.meta.url), 'utf8'));
+  const published = (JSON.parse(readFileSync(new URL('../../config/distribution.json', import.meta.url), 'utf8')).core.npmVersions as string[]).includes(version);
+  await page.goto('/docs/installation/');
+  await expect(page.getByText('Illustrative until published')).toHaveCount(published ? 0 : 1);
   await expect(page.getByText(`cdn.jsdelivr.net/npm/@reactivecss/core@${version}/dist/reactive-css.min.js`).first()).toBeVisible();
-  expect(await page.locator('a[href*="cdn.jsdelivr.net"], a[href*="unpkg.com"]').count()).toBe(0);
-  await expect(page.locator('main')).toContainText('npm pack');
+  expect(await page.locator('main a[href*="cdn.jsdelivr.net"], main a[href*="unpkg.com"]').count()).toBe(0);
+  await expect(page.locator('main')).toContainText(published ? `npm install --save-dev @reactivecss/core@${version} esbuild` : 'npm pack');
   await page.goto('/bundle-builder/');
-  await expect(page.getByText('not published yet', { exact: true })).toBeVisible();
-  await expect(page.locator('[data-output="1 · Install"] code')).toContainText('is not published yet');
+  await expect(page.getByText('not published yet', { exact: true })).toHaveCount(published ? 0 : 1);
+  await expect(page.locator('[data-output="1 · Install"] code')).toContainText(published ? `@reactivecss/core@${version}` : 'is not published yet');
 });
 
 for (const width of [320, 375, 390, 768, 1024, 1440]) {

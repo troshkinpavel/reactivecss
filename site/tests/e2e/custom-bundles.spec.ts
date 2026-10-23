@@ -15,7 +15,9 @@ test('docs shell: breadcrumb, header, release status and table of contents', asy
   await expect(page.getByRole('list', { name: 'About this feature' })).toContainText("Introduced in v0.8.0");
   const h2 = await page.locator('article h2').allTextContents();
   expect(h2.map((t) => t.trim())).toEqual(['How it works', 'Quick start', 'Features and dependencies', 'Analyzer', 'Bundle sizes', 'Advanced configuration', 'Hosting', 'FAQ']);
-  await expect(page.locator('main')).toContainText('Not published yet');
+  // Release status follows config/distribution.json: core 0.9.0 is on npm.
+  await expect(page.locator('main')).toContainText('The full and compact bundles and the CLI, from the package.');
+  await expect(page.locator('main')).not.toContainText('Not on npm yet');
   await expect(page.locator('article a[href*="cdn.jsdelivr"], article a[href*="unpkg.com"]')).toHaveCount(0);
 });
 
@@ -41,9 +43,9 @@ test('copy: a command block copies its command', async ({ page, browserName }) =
   test.skip(browserName !== 'chromium', 'clipboard permissions are Chromium-only in Playwright');
   await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('/docs/custom-bundles/');
-  const block = page.locator('[data-quick-start] li').filter({ hasText: 'Build the bundle' }).locator('figure, div').filter({ hasText: 'npx reactive-css build' }).first();
+  const block = page.locator('[data-quick-start] li').filter({ hasText: 'Build the bundle' }).locator('figure, div').filter({ hasText: 'reactive-css build' }).first();
   await block.getByRole('button', { name: /Copy/ }).first().click();
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('npx reactive-css build --features events,conditions,focus --out public/reactive-css.min.js');
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('npx -p @reactivecss/core -p esbuild reactive-css build --features events,conditions,focus --out public/reactive-css.min.js');
 });
 
 test('the selection illustration resolves with the catalog and writes the real command', async ({ page }) => {
@@ -53,7 +55,7 @@ test('the selection illustration resolves with the catalog and writes the real c
   await page.waitForFunction(() => !document.querySelector('astro-island[ssr] [data-resolver]'));
   await expect(r.getByRole('button', { name: 'events · auto' })).toBeVisible();
   await expect(r).toContainText('events required by focus');
-  await expect(r.locator('pre')).toHaveText('npx reactive-css build --features conditions,focus --out public/reactive-css.min.js');
+  await expect(r.locator('pre')).toHaveText('npx -p @reactivecss/core -p esbuild reactive-css build --features conditions,focus --out public/reactive-css.min.js');
   await r.getByRole('button', { name: 'forms' }).click();
   await expect(r).not.toContainText('forms is useful with focus');
   await r.getByRole('button', { name: 'focus' }).click();

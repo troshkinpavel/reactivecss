@@ -1,0 +1,10 @@
+---
+// Text for one npm state of a package, from config/distribution.json: `published` shows it only once
+// the package's current version is verified on npm, `published={false}` only until then. Docs use it
+// so a "not on npm yet" sentence cannot outlive the publication, nor an npm one precede it.
+import { onNpm } from '~/lib/config';
+
+interface Props { pkg: 'core' | 'mcp'; published: boolean }
+const { pkg, published } = Astro.props;
+---
+{onNpm(pkg) === published && <slot />}

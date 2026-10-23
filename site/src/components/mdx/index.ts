@@ -17,6 +17,7 @@ import Li from './Li.astro';
 import NotShipped from './NotShipped.astro';
 import EngineeringReport from './EngineeringReport.astro';
 import Bundles from './Bundles.astro';
+import NpmState from './NpmState.astro';
 import Ol from './Ol.astro';
 import P from './P.astro';
 import Related from './Related.astro';
@@ -25,7 +26,7 @@ import Table from './Table.astro';
 import Ul from './Ul.astro';
 
 export const mdxComponents = {
-  CodeBlock, CodePair, Example, Compare, Callout, Facts, Fact, Flow, FlowStep, Cards, Card, Related, ApiIndex, ExampleIndex, AdvancedIndex, NotShipped, EngineeringReport, Bundles,
+  CodeBlock, CodePair, Example, Compare, Callout, Facts, Fact, Flow, FlowStep, Cards, Card, Related, ApiIndex, ExampleIndex, AdvancedIndex, NotShipped, EngineeringReport, Bundles, NpmState,
   BundleIntro, Disclosure, Faq, FaqItem, FeatureList, Lead, QuickStart, QuickStep, SizeBars,
   h2: H2, h3: H3, p: P, ul: Ul, ol: Ol, li: Li, strong: Strong, table: Table, code: Code,
 };

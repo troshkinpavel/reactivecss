@@ -35,7 +35,7 @@ For this stylesheet:
 
 the analyzer reports:
 
-```txt npx reactive-css analyze styles.css
+```txt npx -p @reactivecss/core -p esbuild reactive-css analyze styles.css
 Stylesheets analyzed: 1
 Features used: events, conditions
 Recommended: --features events,conditions
@@ -48,13 +48,15 @@ Recommended: --features events,conditions
 <QuickStep title="Install">
 Install the package and esbuild. The CLI needs esbuild; the runtime never does. See [Installation](/docs/installation/#npm).
 
+The commands on this page name both packages with `-p`, so npx uses your installed copies, or fetches them when they are missing. Do not shorten them to `npx reactive-css`: without a local install, that runs an unrelated npm package of that name.
+
 <Bundles part="install" />
 </QuickStep>
 <QuickStep title="Analyze your CSS" path="analyze">
 Point the analyzer at your stylesheets, HTML files or the folder you deploy. It lists the features they use and recommends a build.
 
 ```sh terminal
-npx reactive-css analyze public/
+npx -p @reactivecss/core -p esbuild reactive-css analyze public/
 ```
 
 If it reports the analysis as incomplete, include the missing stylesheets or use the full runtime.
@@ -63,7 +65,7 @@ If it reports the analysis as incomplete, include the missing stylesheets or use
 Name the features you use. `resolve` prints the full selection, with requirements added.
 
 ```sh terminal
-npx reactive-css resolve --features focus
+npx -p @reactivecss/core -p esbuild reactive-css resolve --features focus
 ```
 
 ```txt output
@@ -77,7 +79,7 @@ Or start from a profile: `--profile basic`.
 Build the bundle. The CLI prints what it included and why, the size, and the path of the manifest.
 
 ```sh terminal
-npx reactive-css build --features events,conditions,focus --out public/reactive-css.min.js
+npx -p @reactivecss/core -p esbuild reactive-css build --features events,conditions,focus --out public/reactive-css.min.js
 ```
 
 ```txt output
@@ -139,14 +141,14 @@ inline <style> #1: RCSS-P001⟦content: var(…) as DOM text⟧⟦text⟧⟦text
 
 Decode it offline with the CLI, or load the development bundle `reactive-css.js`, which logs the full text:
 
-```txt npx reactive-css explain 'inline <style> #1: RCSS-P001⟦content: var(…) as DOM text⟧⟦text⟧⟦text⟧'
+```txt npx -p @reactivecss/core reactive-css explain 'inline <style> #1: RCSS-P001⟦content: var(…) as DOM text⟧⟦text⟧⟦text⟧'
 inline <style> #1: content: var(…) as DOM text is not included in this bundle (feature "text"); build a bundle with it (reactive-css build --features text) or use the full bundle
 ```
 
 Fix it by adding the feature and building again:
 
 ```sh terminal
-npx reactive-css build --features events,conditions,focus,text --out public/reactive-css.min.js
+npx -p @reactivecss/core -p esbuild reactive-css build --features events,conditions,focus,text --out public/reactive-css.min.js
 ```
 
 - `random()` and `element()` also exist in native CSS, so for them the entry is a note rather than a warning.
@@ -159,7 +161,7 @@ npx reactive-css build --features events,conditions,focus,text --out public/reac
 The analyzer compiles stylesheets with the library's real compiler and lists the features they use. It handles nested functions, `@media`, `@layer`, comments, strings, and native look-alikes such as `element(#id)`, which it does not count. With `--build` it builds the recommended bundle in the same step.
 
 ```sh terminal
-npx reactive-css analyze public/ --build public/reactive-css.min.js
+npx -p @reactivecss/core -p esbuild reactive-css analyze public/ --build public/reactive-css.min.js
 ```
 
 When something is missing from its input, it says so and recommends the full runtime (the warning names the file by its absolute path):
@@ -170,7 +172,7 @@ When something is missing from its input, it says so and recommends the full run
 .a:on(click) { --n: increment(1); }
 ```
 
-```txt npx reactive-css analyze imp/styles.css
+```txt npx -p @reactivecss/core -p esbuild reactive-css analyze imp/styles.css
 Stylesheets analyzed: 1
 Features used: events
 Recommended: the full runtime (analysis incomplete (see notes)).
@@ -229,7 +231,7 @@ What each feature added when it was built alone over its requirements:
 
 Errors name a code and suggest a fix:
 
-```txt npx reactive-css build --features evnts
+```txt npx -p @reactivecss/core -p esbuild reactive-css build --features evnts
 error [unknown-feature]: Unknown feature "evnts". Did you mean "events"? Features: core, events, gestures, persist, conditions, nth-var, history, forms, text, attributes, focus, blur, values, dynamic, geometry.
 ```
 
@@ -254,7 +256,7 @@ if (!result.ok) throw new Error(result.errors.map((e) => e.message).join('\n'));
 - A feature listed as optional, such as `forms` for `focus`, is reported as "Optional, not included" and never added.
 - `--exclude` names features that must never be included. If a selected feature requires an excluded one, or a feature is both requested and excluded, the CLI rejects the input as a `conflict`:
 
-```txt npx reactive-css build --features focus --exclude events
+```txt npx -p @reactivecss/core -p esbuild reactive-css build --features focus --exclude events
 error [conflict]: "events" is excluded, but "focus" requires it. Remove "events" from the exclusions or "focus" from the features.
 ```
 
@@ -294,8 +296,8 @@ A build writes a manifest next to the bundle, for example `public/reactive-css.m
 <Lead>Host it yourself.</Lead>
 
 <Facts>
-  <Fact label="npm package">The full and compact bundles and the CLI, from the package. Not published yet: install it from a local `npm pack`.</Fact>
-  <Fact label="CDN">The full and compact bundles, version-pinned, once the package is published. There is no working CDN URL yet.</Fact>
+  <Fact label="npm package">The full and compact bundles and the CLI, from the package.<NpmState pkg="core" published={false}> Not on npm yet: install it from a local `npm pack` ([Installation](/docs/installation/#npm)).</NpmState></Fact>
+  <Fact label="CDN">The full and compact bundles, version-pinned, from jsDelivr or unpkg.<NpmState pkg="core" published={false}> These URLs work once the package is on npm.</NpmState></Fact>
   <Fact label="Custom bundle">Built on your machine and served from your site. It has no CDN URL.</Fact>
 </Facts>
 

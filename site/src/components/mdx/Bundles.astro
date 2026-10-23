@@ -41,7 +41,7 @@ const unpkg = `https://unpkg.com/${name}@${version}/${PACKAGE.unpkg.replace(/^\.
   <DataTable><thead><tr><th>Field</th><th>Value</th></tr></thead>
     <tbody>
       <tr><td>Package</td><td><code class="font-mono text-[0.9em]">{name}</code> {version} · {PACKAGE.license}</td></tr>
-      <tr><td>Status</td><td>{PACKAGE.published ? 'published' : <>not published (<span class="text-sm">{PACKAGE.releaseHeading}</span>)</>}</td></tr>
+      <tr><td>Status</td><td>{PACKAGE.published ? <a href={`https://www.npmjs.com/package/${name}/v/${version}`}>on npm</a> : 'not on npm yet'}</td></tr>
       <tr><td>Exports</td><td class="font-mono text-label">{Object.entries(PACKAGE.exports).map(([k, v]) => `${name}${k === '.' ? '' : k.slice(1)} → ${typeof v === 'string' ? v : v.import}`).join(' · ')}</td></tr>
       <tr><td>CLI</td><td class="font-mono text-label">{Object.entries(PACKAGE.bin ?? {}).map(([k, v]) => `${k} → ${v}`).join(', ')}</td></tr>
       <tr><td>Optional peer</td><td class="font-mono text-label">{Object.entries(PACKAGE.peerDependencies ?? {}).map(([k, v]) => `${k} ${v}`).join(', ')} <span class="font-sans text-sm text-ink-2">(only for building custom bundles)</span></td></tr>
@@ -51,7 +51,7 @@ const unpkg = `https://unpkg.com/${name}@${version}/${PACKAGE.unpkg.replace(/^\.
   <>
     {!PACKAGE.published && (
       <Callout kind="provisional" title="Illustrative until published">
-        {name} {version} is not on npm, so these URLs do not serve it. The npm name <code>{name}</code> currently belongs to an unrelated package: the final name is chosen before publication, and these URLs change with it.
+        {name} {version} is not on npm yet, so these URLs do not serve it yet. They are the exact, version-pinned addresses it will have once it is published.
       </Callout>
     )}
     <CodeBlock lang="html" label={`jsDelivr · ${PACKAGE.published ? 'pinned' : 'after publication'}`} code={`<script defer src="${jsdelivr}"></script>`} />

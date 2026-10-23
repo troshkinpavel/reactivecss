@@ -10,8 +10,8 @@
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page"
   },
-  // Production has no public URL until launch. To launch, add:
-  //   "routes": [{ "pattern": "reactivecss.com", "custom_domain": true }]
+  // Production: the reactivecss.com custom domain (launched 2026-10-23). www redirects in the zone (deploy/README.md).
+  "routes": [{ "pattern": "reactivecss.com", "custom_domain": true }],
   "workers_dev": false,
   "preview_urls": false,
   "env": {

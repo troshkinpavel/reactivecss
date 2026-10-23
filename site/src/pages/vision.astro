@@ -11,6 +11,7 @@ import { EvolutionSteps, ExperimentDemo } from '~/components/vision/VisionV2';
 import { FOOTER_GROUPS, HOME_LINKS, SUGGESTED } from '~/lib/content/site';
 import { INSTALL_TAG } from '~/lib/content/home';
 import { LIBRARY_VERSION } from '~/lib/content/reference';
+import { DISTRIBUTION, repositoryUrl } from '~/lib/config';
 
 const links = HOME_LINKS.map((l) => ({ ...l, current: l.href === '/vision/' }));
 const container = 'mx-auto max-w-(--container-marketing) px-(--gutter)';
@@ -120,7 +121,9 @@ const QUESTIONS = [
           <div class="flex flex-wrap gap-2.5">
             <a href="/examples/" class={buttonClass('primary', 'lg')}>Explore Examples</a>
             <a href="/docs/getting-started/" class={buttonClass('secondary', 'lg')}>Read the Documentation</a>
-            <span aria-disabled="true" title="The repository link is not published yet" class="inline-flex h-[46px] items-center gap-2.5 rounded-block border border-dashed border-line-dashed px-5 text-base font-medium text-mute">View source on GitHub<span class="font-mono text-[11px]">when available</span></span>
+            {DISTRIBUTION.repository.public
+              ? <a href={repositoryUrl()} class={buttonClass('secondary', 'lg')}>View source on GitHub</a>
+              : <span aria-disabled="true" title="The repository is not public yet" class="inline-flex h-[46px] items-center gap-2.5 rounded-block border border-dashed border-line-dashed px-5 text-base font-medium text-mute">View source on GitHub<span class="font-mono text-[11px]">when available</span></span>}
           </div>
           <p class="m-0 text-sm leading-[1.6] text-pretty text-ink-2">A comparison with plain JavaScript is on the <a href="/examples/score-history/#vanilla">score history example</a>, and every live demo is in <a href="/examples/">Examples</a>. Test results and the limits of those measurements are in the <a href="/docs/performance/">performance report</a>.</p>
         </div>

@@ -19,9 +19,9 @@ export const QuickStartSteps: Story = {
   render: () => article(
     <QuickStart>
       <QuickStep title="Install"><p>Install the package and esbuild.</p></QuickStep>
-      <QuickStep title="Analyze your CSS" path="analyze"><p>npx reactive-css analyze public/</p></QuickStep>
-      <QuickStep title="Choose features" path="select"><p>npx reactive-css resolve --features focus</p></QuickStep>
-      <QuickStep title="Build"><p>npx reactive-css build …</p></QuickStep>
+      <QuickStep title="Analyze your CSS" path="analyze"><p>npx -p @reactivecss/core -p esbuild reactive-css analyze public/</p></QuickStep>
+      <QuickStep title="Choose features" path="select"><p>npx -p @reactivecss/core -p esbuild reactive-css resolve --features focus</p></QuickStep>
+      <QuickStep title="Build"><p>npx -p @reactivecss/core -p esbuild reactive-css build …</p></QuickStep>
     </QuickStart>,
   ),
   play: async ({ canvasElement }) => {
@@ -42,7 +42,7 @@ export const Resolver: Story = {
     await expect(c.getByText(/forms is useful with focus but not required/)).toBeVisible();
     await userEvent.click(c.getByRole('button', { name: 'focus' }));
     await expect(c.queryByRole('button', { name: 'events · auto' })).toBeNull();
-    await expect(canvasElement.querySelector('pre')).toHaveTextContent('npx reactive-css build --features conditions --out public/reactive-css.min.js');
+    await expect(canvasElement.querySelector('pre')).toHaveTextContent('npx -p @reactivecss/core -p esbuild reactive-css build --features conditions --out public/reactive-css.min.js');
   },
 };
 

@@ -16,6 +16,7 @@ import { highlightCss } from '~/lib/code/css';
 import ExperimentFrame from '~/components/experiments/ExperimentFrame.astro';
 import Orbits from '~/components/experiments/Orbits.astro';
 import { FEATURED, experimentHref } from '~/lib/content/experiments';
+import { onNpm } from '~/lib/config';
 
 const v = LIBRARY_VERSION;
 const container = 'mx-auto max-w-(--container-marketing) px-(--gutter)';
@@ -427,8 +428,8 @@ const tok = (code: string) => highlightCss(code)[0] ?? [];
         <div class="flex max-w-[520px] flex-[1_1_360px] flex-col items-start gap-[18px]">
           <div class="flex gap-3 font-mono text-meta text-mute"><span>/*</span><span class="text-ink">08</span><span>Tooling</span><span>*/</span></div>
           <h2 id="mcp-title" class="m-0 text-[clamp(32px,4.2vw,56px)] leading-[0.98] font-semibold tracking-[-0.045em] text-balance">Your AI agent speaks Reactive CSS.</h2>
-          <p class="m-0 text-body leading-[1.6] text-pretty text-ink-2">Claude Code, Cursor and other MCP-compatible coding agents can use the official <span class="font-mono text-[15px] text-ink">@reactivecss/mcp</span> server: current 0.9.0 docs, API lookup, validation and migration help, so generated CSS uses the syntax that actually runs.</p>
-          <ul class="m-0 flex list-none flex-wrap gap-1.5 p-0" aria-label="Clients">{['Claude Code', 'Cursor', 'any MCP client'].map((c) => <li class="rounded-tag border border-line px-2 py-1 font-mono text-label text-ink-body">{c}</li>)}</ul>
+          <p class="m-0 text-body leading-[1.6] text-pretty text-ink-2">Coding agents that speak the Model Context Protocol can use the official <span class="font-mono text-[15px] text-ink">@reactivecss/mcp</span> server: current 0.9.0 docs, API lookup, validation and migration help, so generated CSS uses the syntax that actually runs.</p>
+          <ul class="m-0 flex list-none flex-wrap gap-1.5 p-0" aria-label="Clients">{['MCP Inspector · verified', 'other MCP clients · not yet tested'].map((c) => <li class="rounded-tag border border-line px-2 py-1 font-mono text-label text-ink-body">{c}</li>)}</ul>
           <a href="/docs/mcp/" class="mt-1.5 text-base font-medium">Explore MCP integration →</a>
         </div>
         <figure class="m-0 max-w-[600px] min-w-0 flex-[1_1_420px] rounded-block border border-line bg-paper-band">
@@ -442,7 +443,7 @@ const tok = (code: string) => highlightCss(code)[0] ?? [];
             <div class="whitespace-pre text-ink">  .nav button {'{'} --attr-aria-expanded: var(--open); {'}'}</div>
             <div class="mt-2 whitespace-pre text-ink-2">  <span class="font-semibold text-ink">✓</span> valid · custom bundle: core, events, attributes</div>
           </div>
-          <div class="flex flex-wrap gap-x-[18px] gap-y-1 border-t border-line px-3.5 py-2.5 font-mono text-tag text-mute"><span>7 tools</span><span>8 resources</span><span>4 prompts</span><span class="ml-auto">npm release pending</span></div>
+          <div class="flex flex-wrap gap-x-[18px] gap-y-1 border-t border-line px-3.5 py-2.5 font-mono text-tag text-mute"><span>7 tools</span><span>8 resources</span><span>4 prompts</span><span class="ml-auto">{onNpm('mcp') ? 'on npm' : 'not on npm yet'}</span></div>
         </figure>
       </div>
     </section>

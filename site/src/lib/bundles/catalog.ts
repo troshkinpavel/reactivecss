@@ -5,6 +5,8 @@
 // own resolver for every possible selection.
 import { DEMO_ORDER } from '~/lib/content/demo-order';
 import data from '~/generated/bundles.json';
+// The JSON itself, not ~/lib/config (which validates it at build time): this module also runs in the page.
+import distribution from '../../../config/distribution.json';
 
 export interface CatalogFeature {
   id: string;
@@ -30,7 +32,8 @@ export interface Resolved {
   errors: SelectionError[];
 }
 
-export const PACKAGE = data.package;
+/** `published`: this version is verified on npm (config/distribution.json `core.npmVersions`). */
+export const PACKAGE = { ...data.package, published: (distribution.core.npmVersions as string[]).includes(data.package.version) };
 export const CATALOG = data.catalog.features as CatalogFeature[];
 export const PROFILES = data.catalog.profiles as Record<string, string[]>;
 export const SIZES = { ...data.sizes, measured: data.sizes.measured as MeasuredBundle[] };

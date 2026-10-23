@@ -261,12 +261,12 @@ test('every command the Custom Bundles guide shows prints the output it shows', 
     writeFileSync(join(dir, b.label), b.code + '\n');
   }
   const pairs = BLOCKS.flatMap((b, i) =>
-    b.lang === 'txt' && b.label.startsWith('npx reactive-css ') ? [{ cmd: b.label, shown: b.code }]
+    b.lang === 'txt' && b.label.startsWith('npx -p @reactivecss/core ') ? [{ cmd: b.label, shown: b.code }]
     : b.lang === 'sh' && BLOCKS[i + 1]?.label === 'output' ? [{ cmd: b.code, shown: BLOCKS[i + 1]!.code }] : []);
   expect(pairs.length).toBeGreaterThanOrEqual(6);
   for (const { cmd, shown } of pairs) expectSameOutput(exec(cmd, dir).out, shown.trim(), cmd);
   // Every other command it shows runs too.
-  for (const b of BLOCKS.filter((x) => x.lang === 'sh' && x.code.startsWith('npx reactive-css'))) expect(exec(b.code, dir).status, b.code).toBe(0);
+  for (const b of BLOCKS.filter((x) => x.lang === 'sh' && x.code.startsWith('npx -p @reactivecss/core '))) expect(exec(b.code, dir).status, b.code).toBe(0);
   // The manifest it shows is what that build wrote (it leaves out two long lists).
   const shownManifest = JSON.parse(BLOCKS.find((b) => b.label === 'reactive-css.min.manifest.json')!.code);
   exec('npx reactive-css build --features events,conditions,focus --out public/reactive-css.min.js', dir);

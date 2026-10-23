@@ -48,7 +48,7 @@
     "0.9.0": {
       "title": "Declarative events and state",
       "summary": "A new authoring model: :on() event rules mutate a state on its own property, with event() data, bind() and persist() in state(), --attr-*, DOM text through content, focus requests, :blur and drag.",
-      "date": "",
+      "date": "2026-10-23",
       "highlights": [
         ":on() event rules with the prevent() and stop() modifiers, plus keydown(Key), keyup(Key) and outside()",
         "Mutations on the state's own property: set(), toggle(), increment(), decrement(), cycle()",
@@ -64,10 +64,13 @@
       "limitations": "Minifiers that remove empty rules (esbuild minify, csso, Lightning CSS) delete modifier-only :on() rules such as a:on(click, prevent()) {}; minify Reactive stylesheets for whitespace only. Firefox, real Safari, touch and pen hardware and screen readers are not verified. persist(), content, focus: when(), drag and the --attr-* namespace are experimental. Bundle sizes are measured from the build on the Installation and Custom Bundles pages.",
       "urls": {
         "github": "",
-        "npm": "",
-        "cdn": []
+        "npm": "https://www.npmjs.com/package/@reactivecss/core/v/0.9.0",
+        "cdn": [
+          "https://cdn.jsdelivr.net/npm/@reactivecss/core@0.9.0/dist/reactive-css.min.js",
+          "https://unpkg.com/@reactivecss/core@0.9.0/dist/reactive-css.min.js"
+        ]
       },
-      "notes": "Sources: docs/release-0.9.0-preparation.md, docs/release-0.9.0-hardening.md (sizes, tests, stability labels), docs/manual-validation-0.9.md. Open before publication: the npm name (reactive-css is taken), the repository, homepage and bugs fields, the default bundle registry decision, and the stability labels. Website migrated locally for preview only.",
+      "notes": "Sources: docs/release-0.9.0-preparation.md, docs/release-0.9.0-hardening.md (sizes, tests, stability labels), docs/manual-validation-0.9.md. npm and website state: config/distribution.json. Published to npm on 2026-10-23 (registry and both pinned CDN files checked; the CDN files match dist/ byte for byte). No GitHub Release yet: urls.github stays empty.",
       "workflow": {
         "status": "prepared",
         "preparedAt": "2026-10-22T00:09:38.358Z",

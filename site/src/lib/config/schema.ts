@@ -89,7 +89,7 @@ export function activeAnnouncement(list: Announcement[], placement: Announcement
 export const APPROVED_FEATURES = {
   bundleBuilder: { name: 'Custom Bundle Builder', description: 'The interactive bundle configurator. Hidden: the page redirects to the Custom Bundles guide and the footer link is removed.', routes: ['/bundle-builder/'], fallback: '/docs/custom-bundles/' },
   designSystem: { name: 'Design System page', description: 'The public colour, type and component reference. Hidden: the page redirects to the homepage and the footer link is removed.', routes: ['/design-system/'], fallback: '/' },
-  docsStatusBanner: { name: 'Documentation status banner', description: 'The mono strip under the docs header with the version and “local, unpublished”.', routes: ['/docs/*', '/examples/*', '/playground/'], fallback: null },
+  docsStatusBanner: { name: 'Documentation status banner', description: 'The mono strip under the docs header with the version and, until it is on npm, “not on npm yet”.', routes: ['/docs/*', '/examples/*', '/playground/'], fallback: null },
 } as const;
 export type FeatureId = keyof typeof APPROVED_FEATURES;
 export const featuresSchema = z.strictObject({ bundleBuilder: z.boolean(), designSystem: z.boolean(), docsStatusBanner: z.boolean() });
@@ -136,6 +136,21 @@ export const releaseSchema = z.strictObject({
 });
 export type ReleaseMeta = z.infer<typeof releaseSchema>;
 export const releasesSchema = z.strictObject({ releases: z.record(version, releaseSchema) });
+
+// ---------- distribution: what is live ----------
+/**
+ * config/distribution.json, edited by hand after checking each fact (the registry page, the
+ * repository settings, the production domain). Not a Control Center file: nothing infers it from
+ * the CHANGELOG, the README or a URL. `npmVersions` lists the versions verified on npm.
+ */
+const npmPackage = (name: string) => z.strictObject({ package: z.literal(name), npmVersions: z.array(version) });
+export const distributionSchema = z.strictObject({
+  repository: z.strictObject({ url: z.string().regex(/^https:\/\/github\.com\/[^/\s]+\/[^/\s]+$/, 'Expected https://github.com/<owner>/<repo>'), public: z.boolean() }),
+  website: z.strictObject({ url: z.string().regex(/^https:\/\/[^/\s]+\.[a-z]{2,}$/i, 'Use https and no trailing slash'), production: z.boolean() }),
+  core: npmPackage('@reactivecss/core'),
+  mcp: npmPackage('@reactivecss/mcp'),
+});
+export type Distribution = z.infer<typeof distributionSchema>;
 
 // ---------- Control Center preferences ----------
 export const projectSchema = z.strictObject({

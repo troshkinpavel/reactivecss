@@ -147,12 +147,10 @@ for (const d of await readdir(demosOut, { withFileTypes: true })) {
   const a = await tools.analyze([new URL(`../../examples/${d.name}`, import.meta.url).pathname], { assumeComplete: true });
   demoFeatures.push({ name: d.name, complete: a.complete, used: a.used, features: a.features });
 }
-const latest = (await readFile(new URL('../../CHANGELOG.md', import.meta.url), 'utf8')).match(/^## (\d+\.\d+\.\d+)[^\n]*/m)?.[0] ?? '';
 const pick = (o, keys) => Object.fromEntries(keys.filter((k) => o[k] !== undefined).map((k) => [k, o[k]]));
 await writeFile(new URL('bundles.json', genDir), JSON.stringify({
-  package: { ...pick(pkg, ['name', 'version', 'license', 'bin', 'exports', 'files', 'peerDependencies', 'peerDependenciesMeta', 'unpkg', 'jsdelivr']),
-    // The only publication record the project keeps: release headings say "(local, unpublished)".
-    published: !/unpublished/i.test(latest), releaseHeading: latest.replace(/^## /, '') },
+  // Publication is not derived here: src/lib/bundles/catalog.ts reads config/distribution.json.
+  package: pick(pkg, ['name', 'version', 'license', 'bin', 'exports', 'files', 'peerDependencies', 'peerDependenciesMeta', 'unpkg', 'jsdelivr']),
   catalog: { features: catalog.features, profiles: catalog.profiles },
   apiFeature,
   sizes: { version: report.version, date: report.date, browser: report.browser, measured: report.sizes, overhead: report.overhead },

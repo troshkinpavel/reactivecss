@@ -2,6 +2,7 @@
 // library's CLI and API accept (../tools/reactive-css.mjs, ../tools/bundle.mjs);
 // tests/e2e/bundle-cli.spec.ts runs them with the real CLI and runs the result in a browser.
 import { CATALOG, PACKAGE, profileOf } from './catalog';
+import distribution from '../../../config/distribution.json';
 
 export interface BuildChoice {
   /** Explicitly selected features (requirements are added by the CLI itself). */
@@ -33,14 +34,17 @@ export function buildArgs({ selected, out, format, minify }: BuildChoice): strin
     ...(format === 'esm' ? ['--format', 'esm'] : []), ...(minify ? [] : ['--no-minify'])];
 }
 
-export const buildCommand = (c: BuildChoice) => `npx ${BIN} ${buildArgs(c).join(' ')}`;
+// Names the scoped package and esbuild: a bare `npx reactive-css` without a local install would run
+// the unrelated npm package of that name. With both installed, npx uses the local copies.
+export const buildCommand = (c: BuildChoice) => `npx -p ${PACKAGE.name} -p esbuild ${BIN} ${buildArgs(c).join(' ')}`;
 
 /** Installing the builder. Until the package is published, from a local `npm pack` of the library. */
 export function installCommand(): string {
   const { name, version } = PACKAGE;
   if (PACKAGE.published) return `npm install --save-dev ${name}@${version} esbuild`;
   return [
-    `# ${name} ${version} is not published yet. In a library checkout:`,
+    `# ${name} ${version} is not published yet. Build it from the repository:`,
+    `git clone ${distribution.repository.url}.git && cd ${distribution.repository.url.split('/').pop()}`,
     'npm install && npm run build && npm pack',
     '# In your project (esbuild is an optional peer: add it too):',
     `npm install --save-dev path/to/${name.replace(/^@/, '').replace('/', '-')}-${version}.tgz esbuild`, // npm pack names a scoped tarball scope-name-version.tgz
