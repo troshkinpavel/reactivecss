@@ -1,0 +1,13 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "include": [".astro/types.d.ts", "**/*", ".storybook/**/*"],
+  "exclude": ["dist", "storybook-static", "design-source", "public/runtime"],
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "jsxImportSource": "react",
+    "baseUrl": ".",
+    "paths": { "~/*": ["src/*"] }
+  }
+}

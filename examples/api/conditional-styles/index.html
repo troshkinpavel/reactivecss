@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conditional styles — Reactive CSS API example</title>
+  <link rel="stylesheet" href="../api.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="kicker">API example 09 · <code>when()</code> <code>:when()</code></p>
+    <h1>Conditional styles</h1>
+    <p class="lede">Three wind levels. One state decides colors, a rotation, an animation and the label.</p>
+    <section class="demo weather" aria-label="Wind level">
+      <div class="levels row" role="group" aria-label="Wind">
+        <button type="button" class="calm">Calm</button>
+        <button type="button" class="breezy">Breezy</button>
+        <button type="button" class="stormy">Stormy</button>
+      </div>
+      <div class="card">
+        <span class="flag" aria-hidden="true">⚑</span>
+        <p class="label">Calm</p>
+      </div>
+    </section>
+    <p class="files"><a href="style.css">style.css</a> · <a href="README.md">README</a> · <a href="../">All API examples</a></p>
+  </main>
+</body>
+</html>

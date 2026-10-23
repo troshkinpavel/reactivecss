@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Form interactions — Reactive CSS example</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Form interactions</h1>
+    <p class="note">Native controls bound to state, live text, a conditionally required field, native validity and reset. <code>method="dialog"</code> outside a dialog: a valid submission goes nowhere. Nothing is sent or stored.</p>
+
+    <form class="order" method="dialog" aria-labelledby="order-title">
+      <h2 id="order-title">Order</h2>
+      <p><label>Name <input name="name" id="name" required autocomplete="off"></label></p>
+      <p class="greeting">Hello, <span class="who">guest</span>!</p>
+      <fieldset class="delivery"><legend>Delivery</legend>
+        <label><input type="radio" name="delivery" value="pickup" checked> Pick up</label>
+        <label><input type="radio" name="delivery" value="ship"> Ship to an address</label>
+      </fieldset>
+      <p class="address-field"><label>Address <input name="address" id="address" autocomplete="off"></label></p>
+      <p><label>Quantity (1–5) <input type="number" name="qty" id="qty" min="1" max="5" value="1"></label> <span class="qty-text">1</span> item(s)</p>
+      <p><label><input type="checkbox" name="terms" id="terms"> I accept the terms</label></p>
+      <p class="summary">Summary: <span class="mode">Pick up</span>, <span class="validity"></span></p>
+      <p><button type="submit" id="submit">Place order</button> <button type="reset" id="reset">Reset</button></p>
+    </form>
+  </main>
+</body>
+</html>

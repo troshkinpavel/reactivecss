@@ -1,0 +1,2 @@
+.k { --x: state(0px); --y: state(0px); translate: var(--x) var(--y); }
+.k:on(drag) { --x: set(event(x)); --y: set(event(y)); }

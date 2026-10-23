@@ -1,0 +1,4 @@
+.search { display: grid; gap: 10px; justify-items: start; width: 100%; max-width: 300px; }
+.search .toggle { min-height: 40px; padding: 0 14px; border: 1px solid oklch(0.21 0.01 80); border-radius: 3px; background: transparent; }
+.search .field { width: 100%; min-height: 38px; padding: 0 10px; border: 1px solid oklch(0.75 0.01 80); border-radius: 3px; background: white; }
+.search p { margin: 0; font-size: 13px; color: oklch(0.43 0.01 80); }

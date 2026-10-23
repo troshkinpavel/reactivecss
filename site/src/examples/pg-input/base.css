@@ -1,0 +1,13 @@
+form { width: 100%; max-width: 300px; display: flex; flex-direction: column; gap: 18px; }
+label { display: flex; flex-direction: column; gap: 8px; font-size: 13.5px; color: oklch(0.43 0.01 80); }
+input {
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid oklch(0.21 0.01 80);
+  border-radius: 3px;
+  background: oklch(0.985 0.004 85);
+  font-size: 16px;
+  color: oklch(0.21 0.01 80);
+}
+.greeting { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.025em; }
+button[type="reset"] { align-self: start; height: 36px; padding: 0 14px; border: 1px solid oklch(0.21 0.01 80); border-radius: 3px; background: transparent; font-size: 14px; }

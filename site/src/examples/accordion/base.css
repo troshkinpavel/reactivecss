@@ -1,0 +1,18 @@
+.accordion { width: 100%; max-width: 360px; border-top: 1px solid oklch(0.885 0.006 85); }
+.item { border-bottom: 1px solid oklch(0.885 0.006 85); }
+.item > button {
+  width: 100%;
+  min-height: 46px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 0 4px;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: left;
+}
+.item .chevron { display: inline-block; font-size: 16px; color: oklch(0.43 0.01 80); transition: rotate 200ms; }
+.item .body { margin: 0; padding: 0 4px 14px; font-size: 14px; line-height: 1.55; color: oklch(0.43 0.01 80); }

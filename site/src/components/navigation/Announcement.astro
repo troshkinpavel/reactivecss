@@ -1,0 +1,19 @@
+---
+// A build-time announcement from config/announcements.json (managed in the local Control Center).
+// Renders nothing when no announcement is active for the placement on the build date.
+import { announcementFor } from '~/lib/config';
+import type { Announcement } from '~/lib/config/schema';
+
+interface Props { placement: Announcement['placement']; variant: 'bar' | 'notice'; class?: string }
+const { placement, variant, class: inner = '' } = Astro.props;
+const a = announcementFor(placement);
+---
+{a && (
+  <aside aria-label={a.title} data-announcement={a.id} class={variant === 'bar' ? 'border-b border-line bg-paper-2' : 'mb-7 rounded-block border border-line bg-paper-2'}>
+    <p class:list={['m-0 flex flex-wrap items-baseline gap-x-2.5 gap-y-1 text-sm text-ink-2', variant === 'bar' ? `${inner} py-2` : 'px-4 py-3']}>
+      <span class="flex items-center gap-2 font-mono text-label font-medium text-ink"><span aria-hidden="true" class="size-1.5 rounded-full bg-rx"></span>{a.title}</span>
+      {a.message && <span class="text-pretty">{a.message}</span>}
+      {a.ctaLabel && a.ctaUrl && <a href={a.ctaUrl} class="whitespace-nowrap text-ink">{a.ctaLabel} →</a>}
+    </p>
+  </aside>
+)}

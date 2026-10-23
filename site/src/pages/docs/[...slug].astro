@@ -1,0 +1,37 @@
+---
+import { getCollection, getEntry, render } from 'astro:content';
+import DocsLayout from '~/layouts/DocsLayout.astro';
+import { mdxComponents } from '~/components/mdx';
+import { docHref } from '~/lib/content/docs';
+import Announcement from '~/components/navigation/Announcement.astro';
+
+export async function getStaticPaths() {
+  const docs = await getCollection('docs');
+  return docs.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+const { entry } = Astro.props;
+const { Content, headings: own } = await render(entry);
+// The changelog page shows the library's CHANGELOG.md, so it can never drift from the code.
+const log = entry.id === 'changelog' ? await getEntry('changelog', 'changelog') : undefined;
+const changelog = log ? await render(log) : undefined;
+const headings = changelog ? changelog.headings.filter((h) => h.depth === 2) : own;
+const d = entry.data;
+const docs = await getCollection('docs');
+const first = (g: string) => docs.filter((x) => x.data.group === g).sort((a, b) => a.data.order - b.data.order)[0];
+const groupHref = (g: string) => (first(g) ? docHref(first(g)!.id) : '/docs/introduction/');
+// Ancestors only: a crumb never links to the page it is on.
+const crumbs = [{ label: 'Docs', href: '/docs/introduction/' }, { label: d.group, href: groupHref(d.group) }].filter((c) => c.href !== docHref(entry.id));
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3).map((h) => ({ id: h.slug, label: h.text.replace(/^(\d+) /, '$1. '), depth: h.depth as 2 | 3 }));
+const tags = [
+  { label: d.type.toLowerCase() },
+  ...(d.status === 'experimental' ? [{ label: 'experimental', experimental: true }] : d.status === 'new' ? [{ label: 'new' }] : []),
+];
+import ReleaseCards from '~/components/mdx/ReleaseCards.astro';
+---
+<DocsLayout id={entry.id} title={d.title} description={d.description} crumbs={crumbs} tags={tags} toc={toc} section={d.group}>
+  {entry.id === 'getting-started' && <Announcement placement="getting-started" variant="notice" />}
+  {entry.id === 'changelog' && <Announcement placement="changelog" variant="notice" />}
+  <Content components={mdxComponents} />
+  {changelog && <ReleaseCards anchors={Object.fromEntries(headings.map((h) => [h.text.split(' ')[0], h.slug]))} />}
+  {changelog && <div class="prose-md"><changelog.Content /></div>}
+</DocsLayout>

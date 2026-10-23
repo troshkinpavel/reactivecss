@@ -1,0 +1,18 @@
+/* Conditional state */
+.status { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.status .badge { display: inline-flex; align-items: center; gap: 10px; margin: 0; padding: 8px 14px; border: 1px solid var(--line); border-radius: 999px; font: 15px ui-monospace, "SF Mono", Menlo, monospace; }
+.status .dot { width: 12px; height: 12px; border-radius: 50%; }
+@keyframes pulse { 50% { opacity: 0.3; } }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+/* The stored state: one of three keywords. */
+.status { --phase: state(idle); }
+
+.status .next:on(click) { --phase: cycle(idle, loading, done); }
+
+/* Conditional styling: values from when(), whole rules from :when(). */
+.status .dot { background: when(--phase == done, #1a7f37, #b8b2a8); }
+.status:when(--phase == loading) .dot { background: var(--accent); animation: pulse 900ms infinite; }
+.status .label { content: var(--phase); }
+.status .action { content: when(--phase == done, "Reset", "Next"); }
+.status:when(--phase == idle) .action { content: when(--phase == idle, "Start", ""); }

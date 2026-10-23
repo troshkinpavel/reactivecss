@@ -1,0 +1,10 @@
+--- a/examples/lab/index.html
++++ b/examples/lab/index.html
+@@ -58,6 +58,7 @@
+         <li data-name="api/change-animation" data-since="0.8.0"><a href="../api/change-animation/">14 · Change animation</a><span><code>:changed()</code></span></li>
+         <li data-name="api/viewport" data-since="0.8.0"><a href="../api/viewport/">15 · Viewport tracking</a><span><code>viewport()</code></span></li>
+         <li data-name="api/visibility" data-since="0.8.0"><a href="../api/visibility/">16 · Visibility detection</a><span><code>visible()</code></span></li>
++        <li data-name="api/context-menu" data-since="unreleased"><a href="../api/context-menu/">17 · Context menu</a><span><code>set()</code> <code>mouse()</code></span></li>
+       </ol>
+     </nav>
+     <main class="viewer" hidden>

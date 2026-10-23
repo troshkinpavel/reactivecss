@@ -1,0 +1,100 @@
+---
+title: "Simplify CSS"
+description: "Reactive CSS has two purposes. It extends CSS with behavior the platform doesn’t provide, and it simplifies a few native patterns that take more syntax than they need. Less syntax, same CSS philosophy."
+group: Concepts
+type: Concept
+order: 18
+---
+## Extend and simplify
+<Facts>
+  <Fact label="Extend">Add what CSS cannot do: state, event rules, bindings, history, `element()`</Fact>
+  <Fact label="Simplify">Shorter syntax for an existing capability: `typed()`, `when()`, `viewport()`</Fact>
+  <Fact label="Keep native">Everything the platform already does well: `calc()`, `:has()`, `if()`, `@container`</Fact>
+</Facts>
+
+Modern CSS can do a lot: conditional values, typed custom properties, container queries, powerful math, relational selectors and native animation. Some everyday patterns still take a surprising amount of boilerplate. For a few of them, Reactive CSS offers a shorter form.
+
+A shorter form is not automatically better. Each comparison below says how the two versions relate, what actually gets simpler, and where they differ.
+
+## How to read a comparison
+| Label | Meaning |
+| --- | --- |
+| Identical behavior | Same result in every context. Reactive CSS compiles to the native form. |
+| Approximately equivalent | Same result in the common case, with documented semantic differences. |
+| Overlapping, not interchangeable | Both solve some of the same problems through different mechanisms. |
+| Reactive CSS only | Native CSS has no direct equivalent. The comparison is against a script. |
+
+`viewport(width)` is the one identical case: it compiles to native `100dvw`. Because it saves almost nothing on its own, it's only worth using nested inside another function, as in `random(0px, viewport(width))`.
+
+## Typed custom properties
+`@property` registers a custom property with a type, so the browser can interpolate and compute it. That takes a five-line at-rule, usually far from the rule that uses it. `typed()` infers the type from the initial value.
+
+<Compare id="typed" />
+
+<Callout kind="experimental" title="typed()">
+
+`typed()` is experimental. Prefer `@property` when you need `inherits: false`, a non-inferable syntax such as `<length-percentage>`, or a page that must work without the runtime.
+
+</Callout>
+
+## Conditional values
+Native `if()` picks a value from `style()`, `media()` or `supports()` queries. `when()` picks a value from Reactive CSS state. They overlap when the condition is a custom property, but they answer different questions.
+
+<Compare id="when" />
+
+### When to keep if() native
+- The condition is a media query or a feature query. Write `if(media(…))`, `if(supports(…))` or an `@media` rule.
+- The custom property is set by your own script or markup, and nothing in CSS needs to change it.
+
+### When when() helps
+- CSS also owns and changes the value, through `state()` and event rules such as `.b:on(click)`.
+- You need a comparison such as `--count > 3` or a combination such as `--open and not --pinned`.
+
+## Conditional style blocks
+`:when()` applies a whole rule while a condition is true. The useful case is a condition native selectors can't see, such as a counter crossing a threshold.
+
+<Compare id="whensel" />
+
+<Callout kind="note">
+
+Not a replacement for :checked: If the state is something the platform already tracks, such as a checked box, an open `<details>` or a focused field, use `:checked`, `[open]`, `:focus-within` or `:has()`. They need no runtime.
+
+</Callout>
+
+## When native CSS is already simpler
+Reactive CSS does not add alternatives for things CSS already expresses well. Duplicates would mean two ways to do the same thing, two behaviors to learn, and runtime work the browser can do for free.
+
+| Need | Native CSS | Why there is no Reactive CSS version |
+| --- | --- | --- |
+| Arithmetic | `calc(var(--gap) * 2)` | Already concise, and computed by the browser |
+| Fluid sizes | `clamp(1rem, 2.5vw, 2rem)` | One function, no runtime |
+| Mapping a range | `progress(var(--x), 0px, 600px)` | The proposed `map()` was rejected in favor of it |
+| Distance | `hypot(var(--dx), var(--dy))` | The proposed `distance()` was rejected in favor of it |
+| Mixing colors | `color-mix(in oklch, red 40%, white)` | Already declarative and typed |
+| Light and dark | `light-dark(#fff, #171717)` | Follows `color-scheme` with no state |
+| Parent and sibling state | `.card:has(input:checked)` | The platform already tracks it |
+| Disclosure, popups, dialogs | `<details>`, `popover`, `<dialog>` | Accessible by default |
+| Form state | `:checked`, `:invalid`, `:user-valid` | Native controls know their own state |
+
+### Example: native first
+```css card.css
+.card {
+  color-scheme: light dark;
+  background: light-dark(#ffffff, #171717);
+  padding: clamp(12px, 3vw, 24px);
+}
+
+.card:has(input:checked) {
+  outline: 2px solid color-mix(in oklch, #f2542d 60%, transparent);
+}
+```
+
+No part of this needs Reactive CSS. Reach for it when a value has to change in response to something the selectors above can't express.
+
+## Compatibility
+- Reactive CSS syntax needs the runtime. Without it, browsers drop the unknown values and keep any static declarations before them.
+- Native `if()`, `progress()` and some newer selectors are not available in every browser. Check support for the native side of each comparison too.
+- Runtime behavior is tested in Chromium and WebKit through Playwright engine builds. Firefox is unverified for 0.9.0: its automated suite has not run. See [Browser Compatibility](/docs/compat/).
+
+## Related
+<Related ids={["reference/typed","reference/when","reference/when-selector","conditions","core-concepts"]} />

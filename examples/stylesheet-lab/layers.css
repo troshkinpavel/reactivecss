@@ -1,0 +1,6 @@
+/* Cascade layers and a media query, with text: */
+@layer low, high;
+@layer high { .lab .layer { text: "high layer wins"; } }
+@layer low { .lab.lab.lab .layer { text: "low layer (should not win)"; } }
+.lab .media { text: "wide (more than 600px)"; }
+@media (max-width: 600px) { .lab .media { text: "narrow (600px or less)"; } }

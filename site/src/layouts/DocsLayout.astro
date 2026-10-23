@@ -1,0 +1,64 @@
+---
+// Documentation page: sidebar (264px), article (max 960px), table of contents (220px).
+// The TOC folds into the article below 1300px, the sidebar into a popover menu below 900px.
+import AppShell from './AppShell.astro';
+import { DocsSidebar } from '~/components/navigation/DocsSidebar';
+import { Breadcrumbs, InlineToc, PrevNext, TableOfContents, type Crumb, type TocEntry } from '~/components/navigation/PageNav';
+import { Tag } from '~/components/ui/Tag';
+import { neighbours, sidebar } from '~/lib/content/docs';
+
+interface Props {
+  id: string;
+  title: string;
+  description: string;
+  crumbs: Crumb[];
+  tags: { label: string; experimental?: boolean }[];
+  toc: TocEntry[];
+  /** API pages: the title is reactive syntax, set in mono vermilion. */
+  mono?: boolean;
+  /** Search result context. */
+  section: string;
+  /** False keeps the page out of the search index (the legacy 0.8 reference pages). */
+  search?: boolean;
+}
+const { id, title, description, crumbs, tags, toc, mono = false, section, search = true } = Astro.props;
+const groups = await sidebar(id);
+const { prev, next } = await neighbours(id);
+const current = id.startsWith('examples') ? 'examples' : id === 'changelog' ? 'changelog' : undefined;
+---
+<AppShell title={title} description={description} context="docs" current={current} menuTarget="docs-nav">
+  <div class="mx-auto flex max-w-(--container-docs) items-start">
+    <DocsSidebar groups={groups} />
+    <main class="min-w-0 flex-1 px-[clamp(16px,4vw,56px)] pt-[clamp(24px,4vw,48px)] pb-24">
+      <article class="max-w-(--container-article)" data-pagefind-body={search ? '' : undefined} data-pagefind-meta={search ? `section:${section}${mono ? ', mono:1' : ''}` : undefined}>
+        <Breadcrumbs items={crumbs} />
+        <div class="mb-4 flex flex-wrap items-center gap-x-3.5 gap-y-2.5">
+          <h1 data-pagefind-meta="title" class:list={['m-0 font-semibold', mono ? 'font-mono text-[clamp(32px,5vw,46px)] leading-[1.05] tracking-[-0.03em] text-rx' : 'text-[clamp(34px,5vw,50px)] leading-[1.02] tracking-h1']}>{title}</h1>
+          {tags.map((t) => <Tag tone={t.experimental ? 'experimental' : 'default'}>{t.label}</Tag>)}
+        </div>
+        <p class="mb-7 max-w-(--container-prose) text-lede leading-[1.6] text-pretty text-ink-2">{description}</p>
+        {toc.length > 2 && <InlineToc entries={toc} />}
+        <slot />
+        <div data-pagefind-ignore>
+          <PrevNext prev={prev} next={next} />
+          <div class="mt-5 text-[13px] text-mute">Experimental · syntax may change between minor versions</div>
+        </div>
+      </article>
+    </main>
+    {toc.length > 2 && <TableOfContents entries={toc} />}
+  </div>
+</AppShell>
+
+<script>
+  // Table of contents follows the scroll position (the design marks the last heading above 150px).
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-toc]')];
+  const heads = links.map((a) => document.getElementById(a.dataset.toc!)).filter((h): h is HTMLElement => !!h);
+  let raf = 0;
+  const update = () => {
+    raf = 0;
+    let active = 0;
+    heads.forEach((h, i) => { if (h.getBoundingClientRect().top < 150) active = i; });
+    links.forEach((a, i) => a.toggleAttribute('data-active', i === active));
+  };
+  if (heads.length) { addEventListener('scroll', () => { raf ||= requestAnimationFrame(update); }, { passive: true }); update(); }
+</script>

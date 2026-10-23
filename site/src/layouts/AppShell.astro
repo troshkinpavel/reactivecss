@@ -1,0 +1,29 @@
+---
+// Shell for docs and tools: app header, status banner, search. Pages provide the body.
+import BaseLayout from './BaseLayout.astro';
+import { DocsBanner, SiteHeader, type NavLink } from '~/components/navigation/SiteHeader';
+import { SearchDialog } from '~/components/navigation/SearchDialog';
+import { SUGGESTED } from '~/lib/content/site';
+import { LIBRARY_VERSION } from '~/lib/content/reference';
+import { FEATURES } from '~/lib/config';
+
+interface Props { title: string; description?: string; context: string; current?: 'examples' | 'experiments' | 'playground' | 'changelog'; menuTarget?: string; robots?: string }
+const { title, description, context, current, menuTarget, robots } = Astro.props;
+const links: NavLink[] = [
+  { label: 'Examples', href: '/examples/', current: current === 'examples' },
+  { label: 'Experiments', href: '/experiments/', current: current === 'experiments' },
+  { label: 'Vision', href: '/vision/' },
+  { label: 'Playground', href: '/playground/', current: current === 'playground' },
+  { label: 'Changelog', href: '/docs/changelog/', current: current === 'changelog' },
+];
+---
+<BaseLayout title={title} description={description} robots={robots}>
+  <div class="min-h-screen" style={FEATURES.docsStatusBanner ? undefined : '--height-banner: 0px'}>
+    <div class="sticky top-0 z-30">
+      <SiteHeader context={context} contextHref={context === 'docs' ? '/docs/introduction/' : undefined} links={links} menuTarget={menuTarget} />
+      {FEATURES.docsStatusBanner && <DocsBanner>{`Documents v${LIBRARY_VERSION} (local, unpublished) · previews run the real runtime · experimental features are marked exp`}</DocsBanner>}
+    </div>
+    <slot />
+  </div>
+  <SearchDialog client:idle suggested={SUGGESTED} />
+</BaseLayout>

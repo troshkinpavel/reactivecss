@@ -1,0 +1,59 @@
+---
+import '~/styles/global.css';
+import { SEO, pageTitle } from '~/lib/config';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Path for canonical and Open Graph URLs. */
+  path?: string;
+  /** Overrides config/seo.json for this page, e.g. noindex on pages the docs only embed. */
+  robots?: string;
+}
+// Site-wide defaults come from config/seo.json; pages pass their own title and description.
+const { title, description = SEO.description, path = Astro.url.pathname, robots = SEO.robots } = Astro.props;
+const fullTitle = pageTitle(title);
+const canonical = new URL(path, Astro.site);
+const ogImage = SEO.ogImage && new URL(SEO.ogImage, Astro.site);
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content={robots} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SEO.siteName} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {SEO.sitemap && <link rel="sitemap" href="/sitemap-index.xml" />}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Red+Hat+Mono:wght@400;500;600&display=swap" rel="stylesheet" crossorigin="anonymous" />
+    <slot name="head" />
+  </head>
+  <body>
+    <slot />
+    <script>
+      // Copy buttons in static HTML (code blocks that are not hydrated, the install snippet).
+      document.addEventListener('click', (e) => {
+        const btn = (e.target as Element | null)?.closest?.<HTMLElement>('[data-copy]');
+        if (!btn || btn.closest('astro-island:not([ssr])')) return;
+        navigator.clipboard?.writeText(btn.dataset.copy ?? '').catch(() => {});
+        const label = btn.querySelector<HTMLElement>('[data-copy-label]');
+        if (!label) return;
+        const was = label.dataset.was ?? label.textContent ?? 'Copy';
+        label.dataset.was = was;
+        label.textContent = 'Copied';
+        setTimeout(() => { label.textContent = was; }, 1400);
+      });
+    </script>
+  </body>
+</html>

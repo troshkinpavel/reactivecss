@@ -1,0 +1,2 @@
+.stage { display: grid; place-items: center; width: 320px; height: 190px; border: 1px dashed oklch(0.6 0.01 80); border-radius: 6px; background: oklch(0.97 0.004 85); }
+.card { display: grid; place-items: center; width: 96px; height: 70px; border-radius: 6px; background: oklch(0.21 0.01 80); color: white; font-size: 14px; font-weight: 500; cursor: grab; user-select: none; transition: scale 120ms; }

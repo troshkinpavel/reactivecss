@@ -1,0 +1,18 @@
+{
+  "title": "Conditional style blocks",
+  "relation": "only",
+  "features": ["selector:when"],
+  "nativeNote": "script + class",
+  "reactiveNote": ":when()",
+  "example": "compare-whensel",
+  "native": [{ "file": "cart.js", "lang": "js" }, { "file": "cart.css", "lang": "css" }],
+  "simpler": "The threshold is part of the selector. The count, the rule that changes it and the styles that depend on it are in one place, with no class name shared between files.",
+  "differences": [
+    "Native CSS has no counter state, so this is not a shorter spelling of an existing feature. It replaces the script that counts and toggles a class.",
+    "Native style queries such as @container style(--free-shipping: true) can match a custom property, but they need a container ancestor, and something else must still count and set the value.",
+    ":when() compiles to an attribute selector with the specificity of one pseudo-class.",
+    "For state the platform already tracks, such as a checked box, :checked and :has() are simpler. Use those.",
+    "An unknown condition, for example a missing state, makes :when() not match and logs a warning."
+  ],
+  "links": [[":when() reference", "/docs/reference/when-selector/"], ["State guide", "/docs/state/"]]
+}

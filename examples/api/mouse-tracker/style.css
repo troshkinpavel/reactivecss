@@ -1,0 +1,22 @@
+/* Mouse tracker */
+.tracker .pad {
+  position: relative; height: 240px; overflow: hidden; container-type: size; touch-action: none;
+  border-radius: 4px; background: repeating-linear-gradient(0deg, transparent 0 23px, #eeebe5 23px 24px),
+    repeating-linear-gradient(90deg, #fbfaf8 0 23px, #eeebe5 23px 24px);
+}
+.tracker .dot {
+  position: absolute; top: -12px; left: -12px; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--accent); translate: 50cqw 50cqh; transition: translate 90ms linear;
+}
+.tracker .coords { position: absolute; right: 10px; bottom: 8px; }
+.tracker .coords::after { content: "point here"; }
+.tracker .hint { margin: 12px 0 0; font-size: 14px; color: var(--ink-2); }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+/* mouse(…, local): the pointer position measured from .pad's top-left corner, in px. */
+.tracker .pad { --x: mouse(x, local); --y: mouse(y, local); }
+.tracker .pad:hover .dot { translate: var(--x) var(--y); }
+.tracker .pad:hover .coords::after {
+  counter-reset: x round(var(--x) / 1px) y round(var(--y) / 1px);    /* native: px → number */
+  content: "x " counter(x) "  y " counter(y);
+}

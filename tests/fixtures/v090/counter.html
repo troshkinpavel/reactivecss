@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Counter · 0.9 fixture</title>
+<script src="/dist/reactive-css.js" defer></script>
+<style>
+  body { font: 16px/1.4 system-ui, sans-serif; margin: 24px; }
+  .counter { --count: state(0); display: flex; gap: 8px; align-items: center; }
+  .counter .inc:on(click) { --count: increment(1); }
+  .counter .dec:on(click) { --count: decrement(1); }
+  /* Event-time arithmetic against the value before the click, clamped. */
+  .counter .double:on(click) { --count: set(clamp(0, var(--count) * 2, 100)); }
+  .counter .reset:on(click) { --count: set(0); }
+  /* The same state from two rules: the cascade picks one mutation (here the more specific rule). */
+  .counter .inc.big:on(click) { --count: increment(10); }
+  .counter .value { content: var(--count); min-width: 3ch; font-weight: 600; }
+  .counter:when(--count >= 10) .value { color: crimson; }
+  .counter .dec { --attr-disabled: when(--count <= 0); }
+</style>
+</head>
+<body>
+  <div class="counter" id="c1">
+    <button class="dec">−</button>
+    <output class="value">0</output>
+    <button class="inc">+</button>
+    <button class="inc big">+10</button>
+    <button class="double">×2</button>
+    <button class="reset">Reset</button>
+  </div>
+  <div class="counter" id="c2">
+    <button class="dec">−</button>
+    <output class="value">0</output>
+    <button class="inc">+</button>
+  </div>
+</body>
+</html>

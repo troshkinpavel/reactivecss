@@ -1,0 +1,11 @@
+---
+import { getCollection } from 'astro:content';
+import { ExampleList } from '~/components/docs/Tables';
+import { API } from '~/lib/content/reference';
+const pages = (await getCollection('docs')).filter((d) => d.data.type === 'Example').sort((a, b) => a.data.order - b.data.order);
+const rows = pages.map((p) => ({
+  title: p.data.title, href: `/docs/${p.id}/`, summary: p.data.description,
+  uses: (p.data.uses ?? []).map((u) => API.find((a) => 'reference/' + a.id === u)?.name ?? u),
+}));
+---
+<ExampleList rows={rows} />

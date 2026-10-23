@@ -1,0 +1,19 @@
+/* Element size */
+.size { display: grid; gap: 14px; }
+.size .card { display: grid; place-items: center; height: 120px; border: 1px solid var(--line); border-radius: 4px; background: var(--accent-soft); overflow: hidden; }
+.size .big { font-weight: 700; line-height: 1; color: var(--accent); }
+.size .readout { margin: 0; }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+.size { --width: state(300); }
+
+/* The slider sets the section's state at each input. */
+.size .width:on(input) { --width: set(event(value-as-number)); }
+.size .set { content: var(--width); }
+
+.size .card {
+  width: min(var(--width) * 1px, 100%);
+  --w: element(width);                          /* the card's own border-box width */
+}
+.size .big { font-size: calc(var(--w, 300px) / 6); }   /* follows the measured width */
+.size .measured::after { counter-reset: w round(var(--w, 0px) / 1px); content: counter(w); }

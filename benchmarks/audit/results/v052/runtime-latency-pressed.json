@@ -1,0 +1,56 @@
+{
+ "date": "2026-10-18T22:44:19.193Z",
+ "browser": "156.0.8078.4",
+ "bundle": "min",
+ "runs": 5,
+ "rows": [
+  {
+   "widget": "pressedAttr",
+   "impl": "rcss",
+   "load": "idle",
+   "k": 100,
+   "n": 40,
+   "p50": 14.3,
+   "p95": 15,
+   "max": 15.2,
+   "incorrect": 0,
+   "errors": 0
+  },
+  {
+   "widget": "pressedAttr",
+   "impl": "plain",
+   "load": "idle",
+   "k": 100,
+   "n": 40,
+   "p50": 14.3,
+   "p95": 15.2,
+   "max": 15.4,
+   "incorrect": 0,
+   "errors": 0
+  },
+  {
+   "widget": "pressedAttr",
+   "impl": "rcss",
+   "load": "busy",
+   "k": 100,
+   "n": 40,
+   "p50": 12.2,
+   "p95": 20.5,
+   "max": 20.6,
+   "incorrect": 0,
+   "errors": 0
+  },
+  {
+   "widget": "pressedAttr",
+   "impl": "plain",
+   "load": "busy",
+   "k": 100,
+   "n": 40,
+   "p50": 11.7,
+   "p95": 17.6,
+   "max": 22.3,
+   "incorrect": 0,
+   "errors": 0
+  }
+ ]
+}

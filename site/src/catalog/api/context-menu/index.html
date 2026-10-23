@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Context menu — Reactive CSS example</title>
+</head>
+<body>
+  <main>
+    <p class="kicker">API example 15 · <code>:on()</code> <code>prevent()</code> <code>event()</code> <code>focus:</code></p>
+    <h1>Context menu</h1>
+    <p class="lede">Right-click anywhere on the desk to open a custom menu where you clicked.</p>
+    <section class="demo ctx" aria-label="Context menu">
+      <div class="stage">
+        <div class="desk" tabindex="0" aria-label="Desk. Right-click, or press Shift+F10, for the menu.">
+          <p class="hint">Right-click anywhere</p>
+        </div>
+        <div class="menu" role="menu" aria-label="Desk actions">
+          <button type="button" role="menuitem" data-action="New note">New note</button>
+          <button type="button" role="menuitem" data-action="Paste">Paste</button>
+          <button type="button" role="menuitem" data-action="Sort by name">Sort by name</button>
+          <button type="button" role="menuitem" data-action="Clear desk">Clear desk</button>
+        </div>
+      </div>
+      <p class="readout">Last action: <output class="last">none</output></p>
+    </section>
+  </main>
+</body>
+</html>

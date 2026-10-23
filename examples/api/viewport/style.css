@@ -1,0 +1,12 @@
+/* Viewport tracking */
+.vp .size { margin: 0 0 14px; font-size: 40px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.vp .track { height: 14px; border-radius: 7px; background: #efece6; overflow: hidden; }
+.vp .fill { display: block; height: 100%; background: var(--accent); transform-origin: left; }
+.vp .readout { margin: 12px 0 0; }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+/* viewport() compiles to 100dvw / 100dvh: plain CSS that the browser keeps current. No script runs. */
+.vp { --vw: viewport(width); --vh: viewport(height); }
+.vp .fill { scale: min(1, var(--vw) / 1600px) 1; }
+.vp .w::after { counter-reset: w round(var(--vw) / 1px); content: counter(w); }   /* native: px → number */
+.vp .h::after { counter-reset: h round(var(--vh) / 1px); content: counter(h); }

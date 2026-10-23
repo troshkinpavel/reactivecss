@@ -1,0 +1,3 @@
+/* Inserted by the harness: a more specific rule changes the step and the label. */
+.counter .inc.inc { on: click(increment(--n, 2)); }
+.counter .label { text: "count (step 2)"; }

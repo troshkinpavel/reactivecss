@@ -1,0 +1,86 @@
+---
+// A full advanced-example page: header, the workspace island, and the notes below it.
+import AppShell from '~/layouts/AppShell.astro';
+import { Breadcrumbs, PrevNext } from '~/components/navigation/PageNav';
+import { Callout } from '~/components/docs/Callout';
+import { Tag } from '~/components/ui/Tag';
+import { getExample } from '~/examples/manifest';
+import { highlight } from '~/lib/code/highlight';
+import { API, apiHref } from '~/lib/content/reference';
+import { WORKSPACES } from '~/lib/content/workspaces';
+import { ControlCenterWorkspace } from './ControlCenterWorkspace';
+import type { ViewerFile } from './SourceViewer';
+
+interface Props { id: string }
+const ws = WORKSPACES[Astro.props.id]!;
+const ex = getExample(ws.example);
+const file = async (name: string, lang: ViewerFile['lang'], code: string | null | undefined): Promise<ViewerFile[]> =>
+  code ? [{ name, lang, code, lines: await highlight(code, lang) }] : [];
+const files = {
+  rcss: [...await file('style.css', 'css', ex.files.css), ...await file('index.html', 'html', ex.files.html)],
+  js: [...await file('style.css', 'css', ex.files.vanillaCss), ...await file('index.html', 'html', ex.files.vanillaHtml), ...await file('script.js', 'js', ex.files.js)],
+};
+// Reference links per expression function, resolved from the API entries.
+const byFeature = (key: string) => API.find((a) => a.features.includes(key as never));
+const fnKey: Record<string, string> = { state: 'function:state', set: 'action:set', toggle: 'action:toggle', cycle: 'action:cycle', increment: 'action:increment', decrement: 'action:decrement', when: 'function:when', ':when': 'selector:when', ':changed': 'selector:changed', previous: 'function:previous', direction: 'function:direction', event: 'expression:event', ':on': 'rule:on' };
+const apiHrefs = Object.fromEntries(Object.entries(fnKey).flatMap(([fn, k]) => { const e = byFeature(k); return e ? [[fn, apiHref(e.id)]] : []; }));
+const native = ws.native ?? [];
+---
+<AppShell title={ws.title} description={ws.summary} context="docs" current="examples">
+  <main class="mx-auto max-w-(--container-workspace) px-[clamp(10px,2.4vw,32px)] pt-[clamp(20px,3vw,36px)] pb-20" data-pagefind-body data-pagefind-meta="section:Advanced Examples">
+    <Breadcrumbs items={[{ label: 'Examples', href: '/examples/' }, { label: 'Advanced', href: '/examples/#advanced' }]} />
+    <div class="mb-[22px] flex flex-wrap items-end justify-between gap-x-10 gap-y-[18px]">
+      <div class="flex max-w-[720px] flex-col gap-3.5">
+        <div class="flex flex-wrap items-center gap-x-3.5 gap-y-2.5">
+          <h1 class="m-0 text-[clamp(32px,4.6vw,48px)] leading-[1.02] font-semibold tracking-h1">{ws.title}</h1>
+          <Tag>{ws.tag}</Tag>
+        </div>
+        <p class="m-0 text-lede leading-[1.55] text-pretty text-ink-2">{ws.summary}</p>
+      </div>
+      <div class="flex max-w-[520px] flex-col gap-[7px]">
+        <span class="font-mono text-tag text-mute">uses</span>
+        <div class="flex flex-wrap gap-[5px]">{ws.uses.map(([t, href]) => <a href={href} class="rounded-tag border border-line px-[7px] py-0.5 font-mono text-meta whitespace-nowrap text-rx no-underline hover:border-rx">{t}</a>)}</div>
+        {native.length > 0 && <>
+          <span class="mt-1 font-mono text-tag text-mute">native</span>
+          <div class="flex flex-wrap gap-[5px]">{native.map((t) => <span class="rounded-tag border border-line px-[7px] py-0.5 font-mono text-meta whitespace-nowrap text-ink">{t}</span>)}</div>
+        </>}
+      </div>
+    </div>
+
+    <ControlCenterWorkspace client:load ws={ws} example={ex} files={files} apiHrefs={apiHrefs} />
+
+    {ws.id === 'control-center' ? (
+      <section aria-labelledby="flow-h" class="mt-9 max-w-[1100px]">
+        <h2 id="flow-h" class="m-0 mb-1.5 text-[24px] leading-[1.2] font-semibold tracking-h2">Changing state is not saving data</h2>
+        <p class="m-0 mb-4 max-w-(--container-prose) text-[16px] leading-[1.6] text-pretty text-ink-body">The same controls feed two separate paths. One updates the page as you type. The other only runs when the form is submitted.</p>
+        <div class="grid grid-cols-[repeat(auto-fit,minmax(min(100%,340px),1fr))] gap-3">
+          {[
+            ['live · in memory · Reactive CSS', ['input', 'bind:', 'state()', 'preview'], 'Runs on every keystroke and click. A state lives in memory and resets on reload. Reactive CSS has no storage, never writes to localStorage and makes no network requests.', true],
+            ['saved · native HTML and your server', ['<form>', 'submit', 'POST /settings', 'server'], 'The browser validates and sends every named control, with or without Reactive CSS. Persistence, authentication and server-side validation stay in your application.', false],
+          ].map(([label, chain, text, rx]) => (
+            <div class:list={['flex flex-col gap-3 rounded-block border px-[18px] py-4', rx ? 'border-rx-soft' : 'border-ink']}>
+              <span class:list={['font-mono text-tag', rx ? 'text-rx' : 'text-ink-2']}>{label}</span>
+              <div class="flex flex-wrap items-center gap-1.5 font-mono text-[13px]">
+                {(chain as string[]).map((c, i) => <>
+                  {i > 0 && <span aria-hidden="true" class="text-mute">→</span>}
+                  <span class:list={['rounded-block border px-2 py-1', rx && (i === 1 || i === 2) ? 'border-rx-soft font-semibold text-rx' : i === 3 ? 'border-line' : 'border-ink']}>{c}</span>
+                </>)}
+              </div>
+              <p class="m-0 text-[14.5px] leading-[1.6] text-pretty text-ink-body">{text}</p>
+            </div>
+          ))}
+        </div>
+        <ul class="mt-4 flex max-w-[760px] list-none flex-col gap-2 p-0">
+          <li class="prose-li flex gap-3 text-base leading-[1.6] text-ink-body"><span>Unchecked checkboxes are left out of submitted data. Treat a missing <span class="font-mono text-[0.88em]">notifications</span> field as off on the server.</span></li>
+          <li class="prose-li flex gap-3 text-base leading-[1.6] text-ink-body"><span>Reset is native too. The form restores its HTML defaults and the <a href="/docs/reference/on-rule/" class="font-mono text-[0.88em] text-rx">:on(reset)</a> rule restores each state’s initial value, so keep the two in agreement.</span></li>
+          <li class="prose-li flex gap-3 text-base leading-[1.6] text-ink-body"><span>The preview runs the real runtime in a sandboxed frame. Save settings is stopped before it is sent and shows the form data instead, because this page has no server.</span></li>
+        </ul>
+      </section>
+    ) : (
+      <div class="mt-9 flex max-w-[760px] flex-col">
+        <Callout kind="caution" title="Visual behavior"><p>This stylesheet changes styles only. Here the switch, theme buttons and swatches never expose <code class="font-mono text-[0.9em]">aria-checked</code> or <code class="font-mono text-[0.9em]">aria-pressed</code>. The vanilla version does. The experimental <a href="/docs/reference/attr-property/">--attr-*</a> properties can write both, for example <code class="font-mono text-[0.9em]">--attr-aria-checked: var(--notify)</code>. For production, prefer native checkboxes and radios, as the <a href="/examples/control-center/">Control Center</a> does.</p></Callout>
+      </div>
+    )}
+    <PrevNext prev={{ label: ws.back.label, href: ws.back.href }} prevLabel="← Back" next={{ label: ws.next.label, href: ws.next.href }} nextLabel={ws.next.caption} />
+  </main>
+</AppShell>

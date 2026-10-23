@@ -1,0 +1,50 @@
+/* Score history: all behavior is in this file (Reactive CSS + native CSS). */
+
+body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #1c1c1e; background: #f6f6f4; }
+main { max-width: 760px; margin: 0 auto; padding: 24px 16px; }
+.boards { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.score { background: #fff; border-radius: 14px; padding: 20px; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
+.score h2 { margin: 0; }
+.buttons { display: flex; gap: 8px; }
+.buttons button { font: inherit; padding: 8px 14px; border-radius: 8px; border: 1px solid #bbb; background: #fafafa; }
+:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+
+/* ---- state and actions ------------------------------------------------------------------------ */
+.score { --points: state(0); }
+.score .up    { on: click(increment(--points)); }
+.score .down  { on: click(decrement(--points)); }
+.score .reset { on: click(set(--points, 0)); }
+/* attr: (0.5.3): Reset is natively disabled while the score is 0 (a reset at 0 would be a
+   no-op anyway: an unchanged value is not a change). The board reports the last direction as
+   data-direction, for plain attribute selectors, tests or other scripts. */
+.score .reset { attr: disabled when(--points == 0); }
+.score .reset:disabled { opacity: 0.45; cursor: not-allowed; }
+.score { attr: data-direction "none"; }
+.score:when(direction(--points) > 0) { attr: data-direction "up"; }
+.score:when(direction(--points) < 0) { attr: data-direction "down"; }
+
+/* ---- current, previous and change: real DOM text (text:, 0.5.1) -----------------------------
+   previous() and direction() are kept by the state engine. A registered integer property makes
+   the browser compute the signed change. */
+@property --delta { syntax: "<integer>"; inherits: true; initial-value: 0; }
+.score { --delta: calc(var(--points) - previous(--points)); }
+.score .current { text: var(--points); font-size: 48px; font-weight: 700; margin: 8px 0 0; font-variant-numeric: tabular-nums; }
+.score .prev { text: previous(--points); }
+.score .delta { text: var(--delta); }
+.score .history, .score .nochange { color: #555; margin: 0; }
+.score .history, .score:when(previous(--points) == --points) .nochange { display: block; }
+.score .nochange, .score:when(previous(--points) == --points) .history { display: none; }
+
+.score .direction { margin: 4px 0 12px; font-weight: 600; color: #888; }
+.score:when(direction(--points) > 0) .direction { text: "▲ up"; color: #166534; }
+.score:when(direction(--points) < 0) .direction { text: "▼ down"; color: #b42318; }
+
+/* ---- visual feedback: native keyframes, started by :changed() on every change --------------- */
+.score:changed(--points) .current { animation: bump 300ms ease-out; }
+.score:changed(--points):when(direction(--points) < 0) .current { animation-name: dip; }
+@keyframes bump { from { transform: scale(1.15); color: #166534; } }
+@keyframes dip { from { transform: scale(0.88); color: #b42318; } }
+.score .current { display: inline-block; }
+@media (prefers-reduced-motion: reduce) {
+  .score:changed(--points) .current { animation: none; }
+}

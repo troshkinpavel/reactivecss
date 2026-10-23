@@ -1,0 +1,19 @@
+/* Task list */
+.tasks { display: grid; gap: 4px; }
+.tasks .task { display: flex; align-items: center; gap: 12px; min-height: 44px; cursor: pointer; }
+.tasks input { width: 18px; height: 18px; margin: 0; accent-color: var(--ink); }
+.tasks span { display: inline-block; transform-origin: left center; transition: opacity 200ms; }
+@keyframes tasks-pop { 50% { scale: 1.06; } }
+@keyframes tasks-settle { 50% { translate: 3px 0; } }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+/* The text next to the checkbox reads the state, so it lives on the label around both. */
+.tasks .task { --done: state(false); }
+
+.tasks .task input:on(change) { --done: set(event(checked)); }
+
+.tasks .task span { opacity: when(--done, 0.5, 1); }
+
+/* :just-checked matches for one animation after a real check. */
+.tasks input:just-checked + span { animation: tasks-pop 300ms; }
+.tasks input:just-unchecked + span { animation: tasks-settle 300ms; }

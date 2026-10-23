@@ -1,0 +1,50 @@
+/* Keyboard playground: all behavior is in this file (Reactive CSS + native CSS). */
+
+body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #1c1c1e; background: #f6f6f4; }
+main { max-width: 620px; margin: 0 auto; padding: 24px 16px; }
+.note { color: #555; }
+.playground { background: #fff; border-radius: 14px; padding: 16px 20px; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
+.playground h2 { font-size: 18px; margin: 16px 0 6px; }
+.pad { position: relative; height: 180px; border: 2px dashed #999; border-radius: 12px; background: #fafafa; }
+.dot { position: absolute; left: calc(50% - 12px); top: calc(50% - 12px); width: 24px; height: 24px; border-radius: 50%; background: #1d4ed8; transition: translate 120ms; }
+.status { font-variant-numeric: tabular-nums; color: #555; }
+.outer, .inner { border: 1px solid #ccc; border-radius: 10px; padding: 8px 12px; margin: 6px 0; }
+.inner { background: #f4f4f5; }
+.outer p, .inner p { margin: 0 0 6px; }
+button { font: inherit; padding: 6px 12px; border-radius: 8px; border: 1px solid #888; background: #fafafa; cursor: pointer; }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .dot { transition: none; } }
+
+/* ---- state: owned by the playground ---------------------------------------------------------- */
+.playground { --x: state(0); --y: state(0); --last: state("none"); --focused: state(false); --outer: state(0); --inner: state(0); }
+
+/* ---- the pad: key() for movement, focusin/focusout for focus state -----------------------------
+   key() runs on the focused element and its ancestors. prevent() (0.7.0) stops the arrow keys from
+   also scrolling the page while the pad has focus; Escape has no default to cancel. The dot's
+   position is clamped by CSS to -4…4 steps; the state itself is not bounded (see the README). */
+.pad {
+  on: key(ArrowRight, prevent(), increment(--x), set(--last, "ArrowRight")), key(ArrowLeft, prevent(), decrement(--x), set(--last, "ArrowLeft")),
+      key(ArrowDown, prevent(), increment(--y), set(--last, "ArrowDown")), key(ArrowUp, prevent(), decrement(--y), set(--last, "ArrowUp")),
+      key(Escape, set(--x, 0), set(--y, 0), set(--last, "Escape")),
+      focusin(set(--focused, true)), focusout(set(--focused, false));
+}
+.pad .dot { translate: calc(clamp(-4, var(--x), 4) * 28px) calc(clamp(-2, var(--y), 2) * 28px); }
+.playground .x { text: var(--x); }
+.playground .y { text: var(--y); }
+.playground .last { text: var(--last); }
+.playground .focus-text { text: when(--focused, "pad focused", "pad not focused"); }
+
+/* attr: (0.5.3): the pad reports focus and its position as data attributes. */
+.playground .pad { attr: data-focused var(--focused); attr: data-x var(--x); attr: data-y var(--y); }
+.pad[data-focused="1"] { border-color: #1d4ed8; background: #eef2ff; }
+
+/* ---- nested regions: one key press, every matching ancestor runs its own handler ------------- */
+.outer { on: key(Enter, increment(--outer)); }
+.inner { on: key(Enter, increment(--inner)); }
+.outer .outer-n { text: var(--outer); }
+.inner .inner-n { text: var(--inner); }
+
+/* ---- reset: disabled while there is nothing to reset ----------------------------------------- */
+.playground .reset { on: click(set(--x, 0), set(--y, 0), set(--last, "none"), set(--outer, 0), set(--inner, 0));
+  attr: disabled when(--x == 0 and --y == 0 and --outer == 0 and --inner == 0 and --last == "none"); }

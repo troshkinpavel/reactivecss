@@ -1,0 +1,4 @@
+.pad { position: relative; width: 280px; height: 170px; border: 1px dashed oklch(0.6 0.01 80); border-radius: 6px; background: oklch(0.97 0.004 85); touch-action: none; }
+.pad .dot { position: absolute; left: -5px; top: -5px; width: 10px; height: 10px; border-radius: 50%; background: #f2542d; pointer-events: none; }
+.pad p { position: absolute; left: 10px; bottom: 6px; margin: 0; font: 12px ui-monospace, monospace; color: oklch(0.43 0.01 80); pointer-events: none; }
+.pad output { color: oklch(0.21 0.01 80); }

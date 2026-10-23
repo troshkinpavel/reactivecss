@@ -1,0 +1,23 @@
+/* State history */
+.history { display: grid; gap: 12px; justify-items: center; }
+.history .now { min-width: 3ch; text-align: center; font-size: 44px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.history .arrow { display: inline-block; opacity: 0.25; transition: rotate 200ms; }
+@keyframes bump { 50% { scale: 1.15; } }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+.history { --score: state(0); }
+
+.history .up:on(click) { --score: increment(1); }
+.history .down:on(click) { --score: decrement(1); }
+
+.history .now { content: var(--score); }
+.history .prev { content: previous(--score); }    /* the value before the last change */
+
+/* direction(): 1 after a rise, -1 after a fall, 0 before any change */
+.history .word { content: when(direction(--score) > 0, "up", "nowhere yet"); }
+.history:when(direction(--score) < 0) .word { content: when(direction(--score) < 0, "down", ""); }
+.history:when(direction(--score) > 0) .arrow { opacity: 1; color: #1a7f37; }
+.history:when(direction(--score) < 0) .arrow { opacity: 1; color: var(--accent); rotate: 180deg; }
+
+/* :changed(): matches right after each change, until its animation ends */
+.history:changed(--score) .now { animation: bump 250ms; }

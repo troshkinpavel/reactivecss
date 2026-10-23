@@ -1,0 +1,27 @@
+---
+title: "Accordion"
+description: "Independent panels, each with its own state, and a chevron that rotates with it."
+group: Examples
+type: Example
+order: 23
+uses: ["reference/state","reference/toggle","reference/when-selector"]
+---
+<Example id="accordion" size="expanded" />
+
+## How it works
+1. Every `.item` owns its own `--open`.
+2. The item's button toggles it.
+3. `.body:when(--open)` shows the panel and `when()` rotates the chevron.
+
+## Consider native HTML first
+`<details>` and `<summary>` need no script and are accessible by default. Use state when you need behavior they can't give you, such as styling the whole item from the open state.
+
+## Accessibility
+<Callout kind="warning" title="Visual only">
+
+`aria-expanded` doesn't update.
+
+</Callout>
+
+## APIs used
+<Related ids={["reference/state","reference/toggle","reference/when-selector","reference/when"]} />

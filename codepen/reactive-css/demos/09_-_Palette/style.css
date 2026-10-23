@@ -1,0 +1,104 @@
+/* 09 · Palette. Shared theme and layer order: lib/theme.css */
+
+/* ---- Reactive CSS ------------------------------------------------------- */
+
+@layer reactive {
+  .palette {
+    --h1: state(20);
+    --h2: state(90);
+    --h3: state(160);
+    --h4: state(230);
+    --h5: state(300);
+    --name: state("Rainbow");
+
+    /* random() and pick() inside a mutation roll again at every click. */
+    .roll:on(click) {
+      --h1: set(random(0, 359, 1));
+      --h2: set(random(0, 359, 1));
+      --h3: set(random(0, 359, 1));
+      --h4: set(random(0, 359, 1));
+      --h5: set(random(0, 359, 1));
+      --name: set(pick("Sunset", "Lagoon", "Orchard", "Neon", "Dune", "Glacier", "Candy", "Forest"));
+    }
+
+    .s1 { --h: var(--h1); } .h1 { content: var(--h1); }
+    .s2 { --h: var(--h2); } .h2 { content: var(--h2); }
+    .s3 { --h: var(--h3); } .h3 { content: var(--h3); }
+    .s4 { --h: var(--h4); } .h4 { content: var(--h4); }
+    .s5 { --h: var(--h5); } .h5 { content: var(--h5); }
+
+    .name { content: var(--name); }
+    &:changed(--name) .swatch { animation: drop 400ms var(--ease) backwards; }
+  }
+
+  /* live(): the expression runs again every 4 s. random() per element, so each blob takes its own path. */
+  .blobs i {
+    translate: live(random(-30vw, 30vw), 4s) live(random(-30vh, 30vh), 4s);
+    background: pick(oklch(70% 0.16 30), oklch(70% 0.16 150), oklch(70% 0.16 260), oklch(70% 0.16 320));
+  }
+}
+
+/* ---- Plain CSS ---------------------------------------------------------- */
+
+@layer components {
+  .blobs {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    filter: blur(60px);
+    opacity: .35;
+
+    i {
+      grid-area: 1 / 1;
+      inline-size: 40vmin;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      transition: translate 4s ease-in-out;
+    }
+  }
+
+  .swatches {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    block-size: 180px;
+    overflow: hidden;
+    border-radius: var(--radius-box);
+    box-shadow: 0 12px 32px oklch(0% 0 0 / .2);
+  }
+
+  .swatch {
+    display: flex;
+    align-items: end;
+    justify-content: center;
+    padding: 10px 0;
+    background: oklch(70% 0.15 var(--h));
+    color: oklch(25% 0.05 var(--h));
+    font-size: .8125rem;
+    font-variant-numeric: tabular-nums;
+    transition: background-color 400ms;
+
+    &:nth-child(2) { animation-delay: 40ms; }
+    &:nth-child(3) { animation-delay: 80ms; }
+    &:nth-child(4) { animation-delay: 120ms; }
+    &:nth-child(5) { animation-delay: 160ms; }
+  }
+
+  .mood {
+    margin-block: 20px;
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  .roll {
+    padding: 10px 24px;
+    border-color: var(--fg);
+    font-weight: 600;
+  }
+
+  @keyframes drop {
+    from { translate: 0 -12px; opacity: 0; }
+  }
+}

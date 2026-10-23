@@ -1,0 +1,17 @@
+/* Pricing toggle */
+.billing { display: grid; justify-items: center; gap: 14px; }
+.billing .switch { display: flex; align-items: center; gap: 10px; border: 0; background: transparent; }
+.billing .switch::before { content: ""; width: 40px; height: 24px; border-radius: 24px; background: color-mix(in srgb, var(--accent) calc(var(--annual) * 100%), #d9d5cf); transition: background 200ms; }
+.billing .price { margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.025em; }
+.billing .saving { display: none; padding: 1px 6px; border: 1px solid var(--ink); border-radius: 3px; font-size: 13px; }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+.billing { --annual: state(false); }
+
+.billing .switch:on(click) { --annual: toggle(); }
+
+/* role="switch" needs aria-checked: written from the state. */
+.billing .switch { --attr-aria-checked: var(--annual); }
+
+.billing .price { content: when(--annual, "$96 / year", "$10 / month"); }
+.billing:when(--annual) .saving { display: inline; }

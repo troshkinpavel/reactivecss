@@ -1,0 +1,11 @@
+--- a/src/core/parser.ts
++++ b/src/core/parser.ts
+@@ -313,7 +313,7 @@
+             ? 'prevent() is not allowed in outside(): it would cancel clicks on unrelated elements anywhere on the page'
+             : `prevent() only works in click(…) and key(…); ${ev.value === 'key' ? 'key' : trigger} events ${trigger === 'reset' ? 'are restored by bind: after a reset, so cancelling them is not supported' : 'are not cancelable'}`);
+         use('act:' + def.name);
+-        try { handler.actions.push({ def, data: def.compile(args) }); } catch (e) { throw new Error(`${def.name}(): ${(e as Error).message}`); }
++        try { handler.actions.push({ def, data: def.compile(args, { trigger, use }) }); } catch (e) { throw new Error(`${def.name}(): ${(e as Error).message}`); }
+       }
+       set.set(trigger, list);
+     }

@@ -1,0 +1,91 @@
+/* Demo gallery. Shared theme and layer order: lib/theme.css */
+
+@layer components {
+  main { inline-size: min(100%, 1040px); }
+
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+    gap: 16px;
+    text-align: start;
+  }
+
+  .card {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-box);
+    background: var(--surface);
+    transition: border-color 150ms, translate 150ms var(--ease);
+
+    &:hover, &:has(:focus-visible) { border-color: var(--fg); translate: 0 -2px; }
+
+    /* The title link covers the whole card. */
+    h2 a {
+      text-decoration: none;
+      &::after { content: ""; position: absolute; inset: 0; }
+      &:focus-visible { outline: none; }
+    }
+    &:has(h2 a:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+  }
+
+  /* A live miniature of the demo: the frame is 2.5× the preview box, scaled down to fit. */
+  .preview {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-block-end: 1px solid var(--line);
+    background: var(--bg);
+
+    iframe {
+      inline-size: 250%;
+      block-size: 250%;
+      border: 0;
+      scale: .4;
+      transform-origin: 0 0;
+      pointer-events: none;
+    }
+  }
+
+  .info {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-content: start;
+    gap: 4px 12px;
+    padding: 16px 20px 20px;
+
+    > :not(.num) { grid-column: 2; }
+  }
+
+  .num {
+    grid-row: span 3;
+    color: var(--accent);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  h2 { font-size: 1.125rem; }
+  .info p { color: var(--muted); font-size: .9375rem; }
+
+  .apis {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-block-start: 8px;
+
+    code {
+      padding: 4px 8px;
+      border-radius: var(--radius);
+      background: color-mix(in oklch, var(--fg) 7%, transparent);
+      color: var(--fg);
+      font-size: .75rem;
+    }
+  }
+
+  .credits {
+    margin-block-start: 40px;
+    color: var(--muted);
+    font-size: .875rem;
+  }
+}

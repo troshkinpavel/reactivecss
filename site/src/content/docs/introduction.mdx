@@ -1,0 +1,76 @@
+---
+title: "Introduction"
+description: "Reactive CSS adds state, events, conditions and bindings to the CSS you already write. Add one script tag, and many common interactions need no JavaScript of your own."
+group: Start
+type: Guide
+order: 0
+---
+## What it is
+Reactive CSS reads your stylesheets and compiles the reactive parts to standard CSS plus custom properties, or to native CSS such as `if()` where that is equivalent. It then updates only the elements that use them. The browser still does all styling, transitions and animations.
+
+Its syntax is an extension that the runtime interprets, not standard CSS: without the script, browsers ignore it. It adds a small set of composable primitives:
+- `state()` declares a value an element owns;
+- event rules such as `.button:on(click)` change states, with mutations like `--open: toggle()`;
+- `when()` and `:when()` read states in conditions;
+- `bind()`, `--attr-*` and `content` connect states to form controls, attributes and text.
+
+<Example id="docs-toggle" />
+
+The first rule declares the state and reflects it into `aria-pressed`, the `:on(click)` rule changes it, and the other rules read it. Hover any vermilion token to see what it does.
+
+## Why it exists
+Many interface details are small state machines. A switch is on or off, a panel is open or closed, one tab is selected. Today each one usually needs a script that listens for an event, stores a value and writes a class or attribute, while the stylesheet separately describes what that class looks like.
+
+Reactive CSS lets one stylesheet hold both halves. The value, the event that changes it and the styles that depend on it sit together, so there is no class name to keep in sync between two files.
+
+## The same switch, two ways
+<CodePair>
+
+```js switch.js
+const el = document.querySelector('.switch');
+
+el.addEventListener('click', () => {
+  const on = el.getAttribute('aria-checked') !== 'true';
+  el.setAttribute('aria-checked', String(on));
+});
+```
+
+```css switch.css
+.switch {
+  --on: state(false, bind(aria-checked));
+  background: when(--on, #f2542d, #d9d5cf);
+}
+
+.switch:on(click) {
+  --on: toggle();
+}
+```
+
+</CodePair>
+
+Both keep `aria-checked` in sync with the switch. The JavaScript version styles the switch from the attribute in a separate stylesheet; the CSS version keeps the state, the event and the style in one place. A native `<input type="checkbox" role="switch">` needs neither.
+
+## What it is not
+- **Not a framework**, not a JavaScript replacement, and not a programming language inside CSS.
+- **Not a duplicate of native CSS.** Math, colors, `:has()`, `@container`, `if()`, `:focus-visible` and so on stay native. See the [feature policy](/docs/core-concepts/#feature-selection-policy).
+- **Not a CSS standard**, and not endorsed by any browser vendor. It is an experiment in what CSS could do.
+- **Not an accessibility layer.** It can write a few allowlisted attributes ([`--attr-*`](/docs/binding/#--attr--attributes-from-a-value) and `bind()`, such as `aria-expanded`, `aria-pressed` and `disabled`) and move focus after a user action ([`focus:`](/docs/focus/)). It does not announce changes, and setting attributes does not make a component accessible by itself.
+
+Many interactions still need JavaScript: data, routing, complex focus management and real accessibility semantics.
+
+<Callout kind="note" title="Status">
+
+0.9.0 is a local release candidate and is not published. It adds the 0.9 syntax: event rules with `:on()`, `bind()` in `state()`, `--attr-*`, reactive `content`, drag, `persist()` and `:blur`. The 0.8 syntax keeps working; see [Migrating from 0.8](/docs/migration/). Features are tested automatically in Chromium and WebKit; Firefox, real Safari, touch hardware and screen readers are not verified yet ([Browser compatibility](/docs/compat/)). Features marked `exp` in the reference are experimental, among them `persist()`, reactive `content`, drag, `focus:` and the `--attr-*` namespace.
+
+</Callout>
+
+## What you can build
+Tabs, accordions, toggles, counters, live previews, dropdowns, simple settings forms that survive a reload, draggable cards and sliders, and small motion and geometry effects.
+
+## Next steps
+<Cards>
+  <Card href="/docs/getting-started/" title="Getting Started">Build a working like button in about five minutes.</Card>
+  <Card href="/docs/core-concepts/" title="Core Concepts">How compilation, state and updates fit together.</Card>
+  <Card href="/docs/migration/" title="Migrating from 0.8">The 0.9 form of every 0.8 declaration.</Card>
+  <Card href="/examples/" title="Examples">Small live examples of every capability, complete interfaces and the Control Center.</Card>
+</Cards>

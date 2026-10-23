@@ -1,0 +1,18 @@
+--- a/examples/api/README.md
++++ b/examples/api/README.md
+@@ -1,6 +1,6 @@
+ # API examples — small interactions (0.8.0)
+ 
+-Sixteen small pages, one Reactive CSS capability each, with the real runtime and no application JavaScript. They are the vocabulary of the library; the application-sized demos (configurator, wizard, quiz…) stay in `examples/<name>/` and the [demo lab](../lab/).
++Seventeen small pages, one Reactive CSS capability each, with the real runtime and no application JavaScript. They are the vocabulary of the library; the application-sized demos (configurator, wizard, quiz…) stay in `examples/<name>/` and the [demo lab](../lab/).
+ 
+ | # | Example | Primary API |
+ |---|---|---|
+@@ -20,6 +20,7 @@
+ | 14 | [Change animation](change-animation/) | `:changed()` |
+ | 15 | [Viewport tracking](viewport/) | `viewport()` |
+ | 16 | [Visibility detection](visibility/) | `visible()` |
++| 17 | [Context menu](context-menu/) | `set(--x, mouse(x, local))` (unreleased) |
+ 
+ - **Run:** `npm run serve`, then open `http://localhost:8080/examples/api/`.
+ - **Each folder:**

@@ -1,0 +1,56 @@
+{
+ "date": "2026-10-19T00:19:49.519Z",
+ "browser": "156.0.8078.4",
+ "bundle": "min",
+ "runs": 5,
+ "rows": [
+  {
+   "widget": "derivedDisabled",
+   "impl": "rcss",
+   "load": "idle",
+   "k": 100,
+   "n": 40,
+   "p50": 13.9,
+   "p95": 15.2,
+   "max": 15.2,
+   "incorrect": 0,
+   "errors": 0
+  },
+  {
+   "widget": "derivedDisabled",
+   "impl": "plain",
+   "load": "idle",
+   "k": 100,
+   "n": 40,
+   "p50": 14.2,
+   "p95": 15.1,
+   "max": 15.5,
+   "incorrect": 0,
+   "errors": 0
+  },
+  {
+   "widget": "derivedDisabled",
+   "impl": "rcss",
+   "load": "busy",
+   "k": 100,
+   "n": 40,
+   "p50": 13.4,
+   "p95": 19.1,
+   "max": 22.9,
+   "incorrect": 0,
+   "errors": 0
+  },
+  {
+   "widget": "derivedDisabled",
+   "impl": "plain",
+   "load": "busy",
+   "k": 100,
+   "n": 40,
+   "p50": 9.8,
+   "p95": 18.3,
+   "max": 23.6,
+   "incorrect": 0,
+   "errors": 0
+  }
+ ]
+}

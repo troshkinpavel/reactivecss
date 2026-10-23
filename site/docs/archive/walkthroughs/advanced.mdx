@@ -1,0 +1,30 @@
+---
+title: "Advanced Examples"
+description: "Larger interfaces composed from several small primitives. Each runs in a full workspace: the source, a live preview, an expression inspector, a state panel and a trace of every change."
+group: Examples
+type: Index
+order: 32
+status: new
+---
+<AdvancedIndex />
+
+## How to read an advanced example
+<Flow>
+  <FlowStep title="Interaction">Use the preview like a real app</FlowStep>
+  <FlowStep title="Expression">The trigger line lights up in the source</FlowStep>
+  <FlowStep title="State">The state panel shows the new and the previous value</FlowStep>
+  <FlowStep title="Result">Lines that read the state light up, then the preview updates</FlowStep>
+</Flow>
+
+Every reactive expression in the source can be selected. The inspector shows what it reads or writes, its current value and which part of the preview it changes. Turn on **Follow interactions** to keep the source scrolled to whatever you last touched, or leave it off to read one section while you click around.
+
+<Callout kind="note" title="Real runtime">
+
+The preview runs the Reactive CSS runtime in a sandboxed frame, as on the other example pages. The state panel, trace and inspector read the values the runtime reports; the source mapping comes from a static analysis of the stylesheet.
+
+</Callout>
+
+For complete components from the library itself, including a multi-step wizard with focus management, see the [Interfaces](/examples/#interfaces) in the Examples gallery.
+
+## Related
+<Related ids={["examples","state","conditions","binding","history"]} />

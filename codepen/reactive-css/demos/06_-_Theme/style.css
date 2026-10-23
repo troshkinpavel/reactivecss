@@ -1,0 +1,112 @@
+/* 06 · Theme. Shared theme and layer order: lib/theme.css */
+
+/* ---- Reactive CSS ------------------------------------------------------- */
+
+@layer reactive {
+  /* The states live on :root, so the whole page can read them. persist() keeps them in localStorage. */
+  :root {
+    --scheme: state(auto, persist("reactive-css-demos.scheme"));
+    --hue: state(38, persist("reactive-css-demos.hue"));
+
+    /* The shared tokens use light-dark(), so switching color-scheme recolors everything. */
+    &:when(--scheme == light) { color-scheme: light; }
+    &:when(--scheme == dark)  { color-scheme: dark; }
+
+    --accent: light-dark(oklch(58% 0.19 var(--hue)), oklch(72% 0.17 var(--hue)));
+  }
+
+  .group {
+    .auto  { --attr-aria-pressed: when(--scheme == auto);  &:on(click) { --scheme: set(auto); } }
+    .light { --attr-aria-pressed: when(--scheme == light); &:on(click) { --scheme: set(light); } }
+    .dark  { --attr-aria-pressed: when(--scheme == dark);  &:on(click) { --scheme: set(dark); } }
+  }
+
+  .swatches {
+    .orange { --attr-aria-pressed: when(--hue == 38);  &:on(click) { --hue: set(38); } }
+    .green  { --attr-aria-pressed: when(--hue == 150); &:on(click) { --hue: set(150); } }
+    .blue   { --attr-aria-pressed: when(--hue == 250); &:on(click) { --hue: set(250); } }
+    .violet { --attr-aria-pressed: when(--hue == 300); &:on(click) { --hue: set(300); } }
+    .pink   { --attr-aria-pressed: when(--hue == 0);   &:on(click) { --hue: set(0); } }
+  }
+
+  .theme .cta:on(click, prevent()) {}                /* the sample link goes nowhere */
+
+  .scheme { content: var(--scheme); }
+  .hue    { content: var(--hue); }
+}
+
+/* ---- Plain CSS ---------------------------------------------------------- */
+
+@layer components {
+  :root { transition: background-color 300ms; }
+  body { transition: background-color 300ms, color 300ms; }
+
+  .theme {
+    display: grid;
+    gap: 20px;
+    justify-items: center;
+  }
+
+  .group {
+    display: inline-flex;
+    padding: 4px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+
+    button {
+      padding: 6px 16px;
+      border: 0;
+      font-size: .875rem;
+      color: var(--muted);
+
+      &[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+    }
+  }
+
+  .swatches {
+    display: flex;
+    gap: 12px;
+
+    button {
+      inline-size: 32px;
+      aspect-ratio: 1;
+      border: 2px solid var(--bg);
+      background: oklch(65% 0.17 var(--h));
+      box-shadow: 0 0 0 1px var(--line);
+
+      &[aria-pressed="true"] { box-shadow: 0 0 0 2px oklch(65% 0.17 var(--h)); }
+    }
+  }
+
+  .sample {
+    inline-size: 100%;
+    padding: 20px 24px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-box);
+    background: var(--surface);
+    text-align: start;
+    transition: background-color 300ms, border-color 300ms;
+
+    h2 { margin-block: 8px 4px; font-size: 1.25rem; }
+    p { color: var(--muted); }
+  }
+
+  .tag {
+    padding: 2px 10px;
+    border-radius: var(--radius);
+    background: color-mix(in oklch, var(--accent) 18%, transparent);
+    color: var(--accent);
+    font-size: .75rem;
+    font-weight: 600;
+  }
+
+  .cta {
+    display: inline-block;
+    margin-block-start: 12px;
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .readout { color: var(--muted); font-size: .875rem; }
+}

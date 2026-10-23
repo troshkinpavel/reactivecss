@@ -1,0 +1,46 @@
+---
+title: "Limitations"
+description: "What Reactive CSS deliberately leaves to HTML and JavaScript, and the constraints of the 0.9.0 runtime."
+group: Project
+type: Project
+order: 41
+---
+## Out of scope by design
+- **Accessibility semantics.** [`--attr-*`](/docs/binding/#--attr--attributes-from-a-value) writes a short allowlist of attributes and [`focus:`](/docs/focus/) moves focus after user actions; both are experimental and not verified with screen readers. Roles, most free-text ARIA, keyboard patterns and live announcements stay with HTML and JavaScript.
+- **Data, routing and network.** Behavior can only change declared state cells. Storage is limited to declared states with [`persist()`](/docs/persistence/).
+- **Duplicating native CSS.** Math, colors, `:has()`, `@container`, `if()` and the rest stay native.
+
+## Stylesheets
+- The library must read the stylesheet source. Cross-origin sheets need CORS and `crossorigin`; `file://` pages can't fetch linked sheets.
+- `@import`ed sheets, `style=""` attributes and shadow DOM stylesheets are not processed. The native rules of an imported sheet still apply; its reactive rules do not.
+- Reactive values inside `@keyframes`, `@font-face`, `@page` and `@property` are left unchanged, with a diagnostic.
+- A processed sheet's CSSOM contains the compiled rules (`var(--rcss-…)`).
+- **Minifiers remove empty rules.** A modifier-only rule such as `a:on(click, prevent()) {}` is deleted by esbuild (`minify`, `minifySyntax`), csso and Lightning CSS. Use whitespace-only minification for these sheets.
+- **`--attr-*` names are reserved.** An existing custom property named `--attr-<allowlisted attribute>`, used for something else, now writes that attribute. Rename it.
+
+## Runtime
+- The first paint can happen before the deferred script runs, so transitions on reactive properties may play once on load.
+- When thousands of values change at once, the frame budget spreads writes over a few frames.
+- **State** lives in memory and resets on reload, unless it is declared with `persist()`.
+- **Event rules** (`:on()`) support 32 DOM events, key filters, `outside()` and drag. `prevent()` works only with cancelable events. There is no `once` modifier, and a mutation always changes the nearest owner of its state: explicit owners with `closest()` need the legacy `on:`.
+- **Units that need layout**, such as `em`, `vw` or `%` of something, are not resolved in mutation expressions. Use `element()` or `viewport()`.
+- **`bind()`** doesn't support multiple selects or file, date and color inputs, and never bind password or payment fields.
+- **Reactive `content`** writes DOM text only on elements, from values that read state, with no image or `attr()`, and only into elements that are empty or hold one text node. Everything else stays native `content`.
+- **Drag** is pointer gestures only, not HTML drag and drop. On touch screens the element needs `touch-action: none`, or the browser scrolls instead. Moving the element to another parent during a drag cancels the gesture. A drag has no keyboard path by itself: add key rules or a native control.
+- **`persist()`** falls back to an ordinary, non-persisted state when storage is unavailable (private mode, sandboxed iframes) or full, with one note. It never stores password, one-time-code or payment fields.
+- **`:changed()`** stays matched by an infinite animation until the next change.
+- **Production diagnostics** are codes such as `RCSS-P001⟦…⟧`. Decode them with `npx reactive-css explain` or use the development bundle.
+
+## Experimental functions
+- **`element()`** measures the border box and lags one frame behind a resize. A long monotonic resize driven by something else pauses updates for two frames every half second while the loop guard checks it.
+- **`attr()`, `pick()` and `split()` in `state()` and mutations** always give one string or scalar value, read only the element itself (no ancestor lookup) and work only in trusted stylesheets.
+- **`typed()`** registrations are document-wide and permanent.
+
+## Browsers
+Firefox, real Safari, touch and pen hardware and screen readers have not been verified for 0.9.0. See [Browser Compatibility](/docs/compat/).
+
+<Callout kind="note" title="Performance">
+
+Benchmark results are in the repository's `benchmarks/` folder, and the figures measured for a release are in its report, such as `docs/release-0.9.0-hardening.md` §D. They were measured in Chromium 156 on one machine. GPU raster, Firefox and real devices are not measured.
+
+</Callout>

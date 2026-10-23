@@ -1,0 +1,22 @@
+/* Accessible toggle button: all behavior is in this file (Reactive CSS + native CSS). */
+
+body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #1c1c1e; background: #f6f6f4; }
+main { max-width: 640px; margin: 0 auto; padding: 24px 16px; }
+.note { color: #555; }
+.demo { background: #fff; border-radius: 14px; padding: 16px 20px; margin: 16px 0; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
+button { font: inherit; padding: 8px 16px; border-radius: 8px; border: 1px solid #888; background: #fafafa; cursor: pointer; }
+:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+
+/* ---- toggle: the state is bound to the button's own aria-pressed (0.5.2) ----------------------
+   The markup gives the initial value (aria-pressed="true" starts pressed). Each click writes the
+   attribute; native CSS styles it, and assistive technology reads it. */
+.toggle { --pressed: state(false, bind(aria-pressed)); on: click(toggle(--pressed)); }
+.toggle[aria-pressed="true"] { background: #1d4ed8; border-color: #1d4ed8; color: #fff; }
+.toggle[aria-pressed="true"]::after { content: " ✓" / ""; }
+
+/* ---- disclosure: the button's aria-expanded, and its panel next to it ------------------------ */
+.disclosure { --open: state(false, bind(aria-expanded)); on: click(toggle(--open)); }
+.disclosure + .panel { display: none; padding: 8px 0 0; }
+.disclosure[aria-expanded="true"] + .panel { display: block; }
+.disclosure::before { content: "▸ " / ""; }
+.disclosure[aria-expanded="true"]::before { content: "▾ " / ""; }

@@ -1,0 +1,12 @@
+.tabs { width: 100%; max-width: 340px; }
+[role="tablist"] { display: flex; gap: 18px; border-bottom: 1px solid oklch(0.885 0.006 85); }
+.tab {
+  padding: 10px 0;
+  margin-bottom: -1px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  font-size: 15px;
+  color: oklch(0.43 0.01 80);
+}
+.panel { margin: 14px 0 0; min-height: 66px; font-size: 14.5px; line-height: 1.55; color: oklch(0.43 0.01 80); text-wrap: pretty; }

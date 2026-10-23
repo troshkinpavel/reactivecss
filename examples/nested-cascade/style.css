@@ -1,0 +1,38 @@
+/* Nested state and cascade: all behavior is in this file (Reactive CSS + native CSS). */
+
+body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #1c1c1e; background: #f6f6f4; }
+main { max-width: 760px; margin: 0 auto; padding: 24px 16px; }
+.note { color: #555; }
+.box { background: #fff; border: 2px solid #ccc; border-radius: 14px; padding: 8px 14px; margin: 8px 0; }
+.box .box { background: #f8fafc; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.n, .v { font-variant-numeric: tabular-nums; font-weight: 600; }
+.label, .chip, .imp { font: 12px/1.6 ui-monospace, monospace; padding: 0 6px; border-radius: 6px; background: #eef2ff; }
+.chip[data-layer="override"] { background: #dcfce7; } .imp[data-imp="important"] { background: #fee2e2; }
+button { font: inherit; padding: 2px 10px; border-radius: 8px; border: 1px solid #888; background: #fafafa; cursor: pointer; }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+
+/* ---- runtime ownership: every .box owns its own --n; actions change the NEAREST owner --------- */
+.box { --n: state(0); }
+.box > .row > .inc { on: click(increment(--n)); }
+.box > .row > .dec { on: click(decrement(--n)); attr: disabled when(--n <= 0); }   /* ancestor state → descendant attribute */
+.box > .row > .n { text: var(--n); }
+/* An explicit owner instead of the nearest one. */
+.box .outer-inc { on: click(increment(--n, 1, closest(#outer))); }
+/* No state of its own: var(--n) is inherited from the nearest owner, like any custom property. */
+.inherit .v { text: var(--n); }
+
+/* ---- the cascade decides which declaration applies (not the runtime) --------------------------- */
+/* Specificity: .box.special is more specific than .box. */
+.box > .row > .label { text: "base"; }
+.box.special > .row > .label { text: "specific"; }
+/* Conditions: a :when() rule is one more selector with the specificity of one pseudo-class. */
+.box:when(--n >= 3) > .row > .label { text: "three or more"; }
+/* @layer: a later layer wins over an earlier one, regardless of specificity. */
+@layer base, override;
+@layer override { .box > .row > .chip { attr: data-layer "override"; } }
+@layer base { .box.box.box > .row > .chip { attr: data-layer "base"; } }
+/* !important wins over higher specificity. */
+.box > .row > .imp { attr: data-imp "important" !important; }
+.box.box.box > .row > .imp { attr: data-imp "normal"; }

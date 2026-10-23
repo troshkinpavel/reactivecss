@@ -1,0 +1,18 @@
+.reader {
+  --size: state(16px);
+}
+
+.reader .s:on(click) { --size: set(14px); }
+.reader .m:on(click) { --size: set(16px); }
+.reader .l:on(click) { --size: set(20px); }
+
+.reader .s:when(--size == 14px),
+.reader .m:when(--size == 16px),
+.reader .l:when(--size == 20px) {
+  background: oklch(0.21 0.01 80);
+  color: oklch(0.985 0.004 85);
+}
+
+.reader p {
+  font-size: var(--size);
+}

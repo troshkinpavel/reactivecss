@@ -1,0 +1,14 @@
+.switch {
+  --on: state(false);
+  --attr-aria-checked: var(--on);
+  background: when(--on, #f2542d, #d9d5cf);
+  transition: background 200ms;
+}
+
+.switch::after {
+  translate: when(--on, 32px, 0);
+}
+
+.switch:on(click) {
+  --on: toggle();
+}

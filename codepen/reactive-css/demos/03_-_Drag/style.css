@@ -1,0 +1,78 @@
+/* 03 · Drag. Shared theme and layer order: lib/theme.css */
+
+/* ---- Reactive CSS ------------------------------------------------------- */
+
+@layer reactive {
+  .drag {
+    /* --max-x and --max-y: how far the card can move from the centre, until the area is measured. */
+    --x: state(0px);
+    --y: state(0px);
+    --dragging: state(false);
+    --max-x: state(140px);
+    --max-y: state(64px);
+
+    /* The limits follow the area's real size (112 × 74 px is the card plus the area's border). */
+    .area:on(pointerenter) { --max-x: set((element(width) - 112px) / 2); --max-y: set((element(height) - 74px) / 2); }
+    .area:on(focusin)      { --max-x: set((element(width) - 112px) / 2); --max-y: set((element(height) - 74px) / 2); }
+
+    .card {
+      translate: var(--x) var(--y);
+
+      &:on(drag(start)) { --dragging: set(true); }
+      &:on(drag) {                                   /* event(x): position at drag start + distance moved */
+        --x: set(round(clamp(0px - var(--max-x), event(x), var(--max-x)), 1px));
+        --y: set(round(clamp(0px - var(--max-y), event(y), var(--max-y)), 1px));
+      }
+      &:on(drag(end)) { --dragging: set(false); }
+
+      /* A keyboard alternative for the same states. */
+      &:on(keydown(ArrowRight), prevent()) { --x: set(min(var(--x) + 10px, var(--max-x))); }
+      &:on(keydown(ArrowLeft), prevent())  { --x: set(max(var(--x) - 10px, 0px - var(--max-x))); }
+      &:on(keydown(ArrowDown), prevent())  { --y: set(min(var(--y) + 10px, var(--max-y))); }
+      &:on(keydown(ArrowUp), prevent())    { --y: set(max(var(--y) - 10px, 0px - var(--max-y))); }
+    }
+
+    &:when(--dragging) .card { cursor: grabbing; scale: 1.05; box-shadow: 0 10px 24px oklch(0% 0 0 / .25); }
+
+    .x { content: var(--x); }
+    .y { content: var(--y); }
+  }
+}
+
+/* ---- Plain CSS ---------------------------------------------------------- */
+
+@layer components {
+  .drag {
+    .area {
+      position: relative;
+      display: grid;
+      place-items: center;
+      block-size: 220px;
+      overflow: hidden;
+      border: 1px dashed var(--line);
+      border-radius: var(--radius-box);
+      background: var(--surface);
+    }
+
+    .card {
+      display: grid;
+      place-items: center;
+      inline-size: 110px;
+      block-size: 72px;
+      border-radius: 10px;
+      background: var(--fg);
+      color: var(--bg);
+      font-weight: 600;
+      cursor: grab;
+      user-select: none;
+      touch-action: none;                            /* the browser must not take the gesture for scrolling */
+      transition: scale 120ms, box-shadow 120ms;
+    }
+
+    .readout {
+      margin-block-start: 12px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+  }
+}

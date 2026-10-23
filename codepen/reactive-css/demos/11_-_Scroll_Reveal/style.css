@@ -1,0 +1,67 @@
+/* 11 · Scroll Reveal. Shared theme and layer order: lib/theme.css */
+
+/* ---- Reactive CSS ------------------------------------------------------- */
+
+@layer reactive {
+  /* visible(0.6): 1 while at least 60 % of the step is in view, else 0. Native transitions do the rest. */
+  .reveal li {
+    --seen: visible(0.6);
+    opacity: calc(0.15 + var(--seen) * 0.85);
+    translate: calc((1 - var(--seen)) * -24px) 0;
+    scale: calc(0.94 + var(--seen) * 0.06);
+  }
+}
+
+/* ---- Plain CSS ---------------------------------------------------------- */
+
+@layer components {
+  .reveal { text-align: start; }
+
+  .scroller {
+    position: relative;
+    block-size: 320px;
+    overflow-y: auto;
+    padding: 24px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-box);
+    background: var(--surface);
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+
+  /* Native scroll-driven animation: the bar fills as the box scrolls. Ignored where unsupported. */
+  .progress {
+    position: sticky;
+    inset-block-start: -24px;
+    display: block;
+    block-size: 3px;
+    margin: -24px -24px 21px;
+    background: var(--accent);
+    transform-origin: 0 50%;
+    animation: grow linear both;
+    animation-timeline: scroll();
+  }
+
+  .hint { color: var(--muted); font-size: .875rem; margin-block-end: 120px; }
+
+  ol {
+    display: grid;
+    gap: 96px;
+    margin: 0 0 140px;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2px 16px;
+    transition: opacity 400ms var(--ease), translate 400ms var(--ease), scale 400ms var(--ease);
+
+    b { grid-row: span 2; color: var(--accent); font-variant-numeric: tabular-nums; }
+    h2 { font-size: 1.25rem; }
+    p { color: var(--muted); }
+  }
+
+  @keyframes grow { from { scale: 0 1; } }
+}

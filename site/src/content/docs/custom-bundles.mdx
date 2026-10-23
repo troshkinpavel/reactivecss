@@ -1,0 +1,328 @@
+---
+title: "Custom Bundles"
+description: "Ship only the Reactive CSS capabilities your project uses. Analyze your stylesheets or choose features, let the resolver add what they require, and build one file with the reactive-css CLI."
+navLabel: "Custom bundles"
+group: Start
+type: Guide
+order: 3
+status: new
+---
+import { SelectionResolver } from '~/components/docs/CustomBundles';
+
+{/* Design: design-source/Custom Bundles.dc.html. Every command and output below was run with the 0.9.0 CLI; tests/e2e/bundle-cli.spec.ts runs them again (see docs/custom-bundles-design-integration.md). */}
+
+Since 0.8.0 the runtime is modular; 0.9.0 has 15 features. Reactive CSS can analyze your stylesheets, determine which capabilities they need, and build a production bundle with those features and everything they depend on.
+
+<BundleIntro />
+
+## How it works
+<Lead>From your CSS to one file.</Lead>
+
+<Flow label="From your CSS to one file">
+  <FlowStep title="Your CSS">You pass the stylesheets and pages you serve. The analyzer reads only those inputs.</FlowStep>
+  <FlowStep title="Feature analyzer">`reactive-css analyze` compiles them with the library's own compiler and lists the Reactive CSS features they use. Native CSS is left alone.</FlowStep>
+  <FlowStep title="Dependency resolver">The core is always included. Each feature adds what it requires: `focus` adds `events`.</FlowStep>
+  <FlowStep title="Custom bundle">`reactive-css.min.js`, one file you host yourself, and a manifest that records the version, features and sizes.</FlowStep>
+</Flow>
+
+For this stylesheet:
+
+```css styles.css
+.tabs { --tab: state(1); }
+.tab:on(click) { --tab: set(2); }
+.panel:when(--tab == 2) { display: block; }
+```
+
+the analyzer reports:
+
+```txt npx reactive-css analyze styles.css
+Stylesheets analyzed: 1
+Features used: events, conditions
+Recommended: --features events,conditions
+```
+
+## Quick start
+<Lead>Your first custom bundle.</Lead>
+
+<QuickStart>
+<QuickStep title="Install">
+Install the package and esbuild. The CLI needs esbuild; the runtime never does. See [Installation](/docs/installation/#npm).
+
+<Bundles part="install" />
+</QuickStep>
+<QuickStep title="Analyze your CSS" path="analyze">
+Point the analyzer at your stylesheets, HTML files or the folder you deploy. It lists the features they use and recommends a build.
+
+```sh terminal
+npx reactive-css analyze public/
+```
+
+If it reports the analysis as incomplete, include the missing stylesheets or use the full runtime.
+</QuickStep>
+<QuickStep title="Choose features" path="select">
+Name the features you use. `resolve` prints the full selection, with requirements added.
+
+```sh terminal
+npx reactive-css resolve --features focus
+```
+
+```txt output
+Features: core, events, focus
+Added automatically: events (required by focus)
+```
+
+Or start from a profile: `--profile basic`.
+</QuickStep>
+<QuickStep title="Build">
+Build the bundle. The CLI prints what it included and why, the size, and the path of the manifest.
+
+```sh terminal
+npx reactive-css build --features events,conditions,focus --out public/reactive-css.min.js
+```
+
+```txt output
+Built public/reactive-css.min.js
+Features: core, events, conditions, focus
+Optional, not included: forms (useful for focus)
+Excluded: gestures, persist, nth-var, history, forms, text, attributes, blur, values, dynamic, geometry
+Size: 85503 B minified (83.5 KB), 29351 B gzip, 26340 B brotli
+Manifest: public/reactive-css.min.manifest.json
+```
+</QuickStep>
+<QuickStep title="Use the file">
+Serve the file from your site and load it with a script tag. An `iife` bundle starts itself.
+
+```html index.html
+<link rel="stylesheet" href="/styles.css">
+<script src="/reactive-css.min.js"></script>
+```
+
+Then open your pages and check `ReactiveCSS.diagnostics`.
+</QuickStep>
+</QuickStart>
+
+<SelectionResolver client:visible />
+
+## Features and dependencies
+<Lead>Every bundle contains the core.</Lead>
+
+Each other feature is a real module with the requirements below. Selecting a feature adds what it requires; a feature that is only useful with another one is never added automatically. The [Bundle Builder](/bundle-builder/) makes the same selection with sizes.
+
+<FeatureList />
+
+- **A counter** needs `events` for its `:on(click)` rules and `text` for `content: var(--count)`, over the core.
+- **Focus requires events.** `focus:` moves focus only after a trusted user action, which the event dispatcher records. Form bindings record it too, so `forms` is useful with `focus` but not required. `focus: when(--open)` also needs `conditions` for `when()`, which the analyzer adds; `focus: var(--open)` does not.
+- **Gestures require events.** Drag rules reuse the event dispatcher and the event-time evaluator. `gestures` is the only feature with pointer-gesture code, so form and event bundles never carry drag.
+- **Persistence stands alone.** `persist` needs neither `forms` nor `events`: a persisted state works in a core-only page.
+- **Forms do not need drag or focus**, and `blur` needs only the core.
+- **History as values vs operands.** `previous(--x)` and `direction(--x)` as operands of a condition, such as `:when(direction(--n) > 0)`, are part of the core. The `history` feature adds them as values, as in `content: previous(--n)`, and adds `:changed()`.
+- **Profiles** are named selections, not separate builds: `basic`, `forms`, `stateful-ui`, `interactive`, `dynamic` and `full`. `interactive` is new in 0.9.0: events, gestures, persistence, conditions, attributes and text.
+
+<Disclosure title="Full feature table" sub="reactive-css features --json">
+<Bundles part="catalog" />
+</Disclosure>
+
+### Missing something? You'll know
+A custom bundle still recognizes all Reactive CSS syntax. When a stylesheet uses a feature the bundle does not contain, the browser ignores that declaration, as it would without the library, and the library adds one entry to `ReactiveCSS.diagnostics`.
+
+<Flow label="A missing feature">
+  <FlowStep title="The stylesheet uses">`.count output { content: var(--n); }`</FlowStep>
+  <FlowStep title="The bundle contains">`core`, `events`, `conditions`, `focus`</FlowStep>
+  <FlowStep title="Result">The native `content` stays, no DOM text is written, and one diagnostic names the feature</FlowStep>
+</Flow>
+
+A minified bundle reports the diagnostic as a code with its values:
+
+```txt ReactiveCSS.diagnostics
+inline <style> #1: RCSS-P001⟦content: var(…) as DOM text⟧⟦text⟧⟦text⟧
+```
+
+Decode it offline with the CLI, or load the development bundle `reactive-css.js`, which logs the full text:
+
+```txt npx reactive-css explain 'inline <style> #1: RCSS-P001⟦content: var(…) as DOM text⟧⟦text⟧⟦text⟧'
+inline <style> #1: content: var(…) as DOM text is not included in this bundle (feature "text"); build a bundle with it (reactive-css build --features text) or use the full bundle
+```
+
+Fix it by adding the feature and building again:
+
+```sh terminal
+npx reactive-css build --features events,conditions,focus,text --out public/reactive-css.min.js
+```
+
+- `random()` and `element()` also exist in native CSS, so for them the entry is a note rather than a warning.
+- `ReactiveCSS.describe().bundle` lists the features a bundle contains.
+- After switching a site to a custom bundle, open its pages and check `ReactiveCSS.diagnostics`.
+
+## Analyzer
+<Lead>Let your CSS tell you what it needs.</Lead>
+
+The analyzer compiles stylesheets with the library's real compiler and lists the features they use. It handles nested functions, `@media`, `@layer`, comments, strings, and native look-alikes such as `element(#id)`, which it does not count. With `--build` it builds the recommended bundle in the same step.
+
+```sh terminal
+npx reactive-css analyze public/ --build public/reactive-css.min.js
+```
+
+When something is missing from its input, it says so and recommends the full runtime (the warning names the file by its absolute path):
+
+```css imp/styles.css
+@import url("theme.css");
+.a { --n: state(0); }
+.a:on(click) { --n: increment(1); }
+```
+
+```txt npx reactive-css analyze imp/styles.css
+Stylesheets analyzed: 1
+Features used: events
+Recommended: the full runtime (analysis incomplete (see notes)).
+warning [import-not-followed] …/imp/styles.css: @import rules are not followed: analyze the imported files too.
+```
+
+With `--json`, each file also lists its 0.8 declarations (`on:`, `text:`, `attr:`) under `legacy`, with their 0.9 form. See [Migrating from 0.8](/docs/migration/#tools).
+
+To try it on your own CSS without installing anything, paste it into the [Bundle Builder](/bundle-builder/). It runs the same compiler in the page, without sending your CSS anywhere.
+
+<Callout kind="caution" title="Static analysis sees only what you give it">
+
+It cannot see:
+- stylesheets loaded or created by scripts;
+- CSS produced at runtime, or inline `style` attributes;
+- stylesheets you did not include, including ones loaded with `@import`.
+
+When the CLI meets a remote stylesheet, an `@import`, an unreadable file or a page with other scripts, it reports the analysis as incomplete and recommends the full runtime. That fallback is the safe choice whenever you are not sure every stylesheet was included.
+
+</Callout>
+
+## Bundle sizes
+<Lead>Smaller by design. Measured in bytes.</Lead>
+
+<SizeBars />
+
+Only the builds in the release report have exact sizes. Any other combination gets its size when you build it: the CLI prints it and writes it to the manifest. Per-feature numbers do not add up, because features share code with the core and with each other. The core is the largest part: it holds the whole compiler, which recognizes every syntax so that missing features can be reported, plus the stylesheet rewrite, the state engine and the scheduler.
+
+<Disclosure title="Detailed benchmark data" sub="docs/release-0.9.0-hardening.md · benchmarks/audit/results/v090">
+The library's benchmark builds each bundle and compresses it with gzip level 9 and brotli quality 11, for the version shown in the report.
+
+<Bundles part="sizes" />
+
+What each feature added when it was built alone over its requirements:
+
+<Bundles part="overhead" />
+</Disclosure>
+
+## Advanced configuration
+<Lead>Reference for the build tools.</Lead>
+
+<Disclosure title="CLI commands and options" sub="features · resolve · build · analyze" open>
+
+| Command | Options |
+| --- | --- |
+| `features` | `--json` |
+| `resolve` | `--features a,b`, `--profile name`, `--exclude a,b`, `--json` |
+| `build` | `--features a,b` or `--profile name`, `--exclude a,b`, `--format iife` (default) or `esm`, `--no-minify`, `--out file`, `--json` |
+| `analyze` | stylesheets, HTML files or folders, `--root dir` (the folder served as `/`, for links like `/css/site.css`), `--assume-complete`, `--build file`, `--json` (adds the legacy syntax of each file) |
+| `explain` | a production diagnostic in quotes, such as `"RCSS-P001⟦…⟧"`; works offline, without esbuild |
+
+- **Exit codes:** `0` on success, `1` for input the CLI rejects (unknown feature or profile, a conflict, nothing to build), `2` for an internal error or missing esbuild.
+- **Formats.** An `iife` bundle loads with a script tag and starts itself, like the full bundle. An `esm` bundle exports the same API as the package; call `start()` yourself.
+- **The core alone** builds with `--features core`.
+- **The [Bundle Builder](/bundle-builder/)** writes these commands, and the Node script below, for any selection.
+
+Errors name a code and suggest a fix:
+
+```txt npx reactive-css build --features evnts
+error [unknown-feature]: Unknown feature "evnts". Did you mean "events"? Features: core, events, gestures, persist, conditions, nth-var, history, forms, text, attributes, focus, blur, values, dynamic, geometry.
+```
+
+</Disclosure>
+<Disclosure title="Node API" sub="@reactivecss/core/bundle">
+
+The same build from a Node script, through the package's `bundle` export. It writes a file byte-identical to the CLI's.
+
+```js build-reactive-css.mjs
+import { build } from '@reactivecss/core/bundle';
+
+const result = await build({ features: ['events', 'conditions', 'focus'], outfile: 'public/reactive-css.min.js' });
+if (!result.ok) throw new Error(result.errors.map((e) => e.message).join('\n'));
+```
+
+`build()`, `resolve()`, `analyze()`, `catalog()` and `sizes()` return plain JSON. Invalid input comes back as `errors` with a `code` and a `message`, never as an exception.
+
+</Disclosure>
+<Disclosure title="Dependency resolution" sub="requirements, optional features, profiles">
+
+- Every bundle contains the core. Selecting a feature adds what it requires, recursively.
+- A feature listed as optional, such as `forms` for `focus`, is reported as "Optional, not included" and never added.
+- `--exclude` names features that must never be included. If a selected feature requires an excluded one, or a feature is both requested and excluded, the CLI rejects the input as a `conflict`:
+
+```txt npx reactive-css build --features focus --exclude events
+error [conflict]: "events" is excluded, but "focus" requires it. Remove "events" from the exclusions or "focus" from the features.
+```
+
+- Profiles are named selections, not separate builds: `basic`, `forms`, `stateful-ui`, `interactive`, `dynamic` and `full`.
+
+</Disclosure>
+<Disclosure title="Manifest" sub="what a build records">
+
+A build writes a manifest next to the bundle, for example `public/reactive-css.min.manifest.json`. It records the version, the format, the features and why each one is there, and the sizes, so you can tell which build is deployed. From the build above, without its `provides` and `modules` lists:
+
+```json reactive-css.min.manifest.json
+{
+  "name": "reactive-css",
+  "version": "0.9.0",
+  "format": "iife",
+  "minify": true,
+  "features": ["core", "events", "conditions", "focus"],
+  "requested": ["events", "conditions", "focus"],
+  "added": [],
+  "excluded": ["gestures", "persist", "nth-var", "history", "forms", "text", "attributes", "blur", "values", "dynamic", "geometry"],
+  "optionalMissing": [{ "id": "forms", "usefulFor": "focus" }],
+  "sizes": { "minified": 85503, "gzip": 29351, "brotli": 26340 }
+}
+```
+
+</Disclosure>
+<Disclosure title="Security and determinism" sub="CSP, runtime, reproducible builds">
+
+- A custom bundle works under a strict Content-Security-Policy, like the full bundle.
+- It needs nothing at runtime. A feature that is not in the bundle is never fetched.
+- Builds are deterministic: equal selections give byte-identical bundles.
+- The website does not build, host or download bundles: building on demand would need a build service, which does not exist. The CLI produces the same file on your machine.
+
+</Disclosure>
+
+## Hosting
+<Lead>Host it yourself.</Lead>
+
+<Facts>
+  <Fact label="npm package">The full and compact bundles and the CLI, from the package. Not published yet: install it from a local `npm pack`.</Fact>
+  <Fact label="CDN">The full and compact bundles, version-pinned, once the package is published. There is no working CDN URL yet.</Fact>
+  <Fact label="Custom bundle">Built on your machine and served from your site. It has no CDN URL.</Fact>
+</Facts>
+
+```html index.html
+<link rel="stylesheet" href="/styles.css">
+<script src="/reactive-css.min.js"></script>
+```
+
+- Rebuild it when you upgrade the package. Bundles from different versions are not interchangeable.
+- Rebuild it when your stylesheets start using a new feature, or run the analyzer in your build step.
+
+The distributions and the CDN status are in the [Installation guide](/docs/installation/).
+
+## FAQ
+<Faq>
+  <FaqItem q="Do I need a custom bundle for a small project?">No. Start with the full bundle. It needs no tooling. Build a custom one when its size matters.</FaqItem>
+  <FaqItem q="What happens when I start using a new feature?">The declaration is ignored and a diagnostic names the feature to add. Build again with it, or run the analyzer in your build step.</FaqItem>
+  <FaqItem q="Can the analyzer see dynamically loaded stylesheets?">No. It reads only the files you give it. When it suspects missing input, it reports the analysis as incomplete.</FaqItem>
+  <FaqItem q="Do custom bundles work with a strict CSP?">Yes, like the full bundle. Serve the file from your own origin.</FaqItem>
+  <FaqItem q="Full, compact or custom?">Full when you are not sure what your stylesheets use. Compact is the same full runtime with a shorter `describe()` registry; it is not a feature selection. Custom when you know, and the analysis is complete.</FaqItem>
+  <FaqItem q="Can I load a custom bundle from a CDN?">No. Only the full and compact bundles will be published. A custom bundle is a file you host.</FaqItem>
+</Faq>
+
+<Cards>
+  <Card href="/bundle-builder/" title="Open Bundle Builder">Choose features with sizes, or paste your CSS.</Card>
+  <Card href="/docs/installation/" title="Installation">Distributions, npm and CDN status.</Card>
+  <Card href="#features-and-dependencies" title="Feature catalog">Every feature and its requirements.</Card>
+  <Card href="/docs/troubleshooting/" title="Troubleshooting">What the diagnostics mean.</Card>
+  <Card href="/examples/" title="Examples">Every capability, running.</Card>
+</Cards>

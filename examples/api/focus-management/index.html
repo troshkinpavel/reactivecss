@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Focus management — Reactive CSS API example</title>
+  <link rel="stylesheet" href="../api.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="kicker">API example 12 · <code>focus:</code></p>
+    <h1>Focus management</h1>
+    <p class="lede">Three panels. Moving to the next one moves keyboard focus to its heading.</p>
+    <section class="demo steps" aria-label="Three steps">
+      <ol class="panels">
+        <li class="panel"><h2 tabindex="-1">1. Choose a plan</h2><p>Pick what fits. You can change it later.</p></li>
+        <li class="panel"><h2 tabindex="-1">2. Your details</h2><p>We only need a name and an email address.</p></li>
+        <li class="panel"><h2 tabindex="-1">3. Confirm</h2><p>Check the summary, then confirm.</p></li>
+      </ol>
+      <div class="row">
+        <button type="button" class="next">Next step</button>
+        <span class="readout">Step <span class="n">1</span> of 3</span>
+      </div>
+    </section>
+    <p class="files"><a href="style.css">style.css</a> · <a href="README.md">README</a> · <a href="../">All API examples</a></p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,28 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { Playground } from '~/components/examples/Playground';
+import { SearchDialog } from '~/components/navigation/SearchDialog';
+import { SiteHeader } from '~/components/navigation/SiteHeader';
+import { getExample } from '~/examples/manifest';
+import { SUGGESTED } from '~/lib/content/site';
+import { inCategory } from '~/lib/content/catalog';
+
+const items = [
+  { key: 'blank', label: 'Blank', example: getExample('pg-blank') },
+  { key: 'toggle', label: 'Toggle', example: getExample('pg-toggle') },
+  { key: 'counter', label: 'Counter', example: getExample('pg-counter') },
+  { key: 'tabs', label: 'Tabs', example: getExample('pg-tabs') },
+  { key: 'input', label: 'Input binding', example: getExample('pg-input') },
+  { key: 'drag', label: 'Drag', example: getExample('pg-drag') },
+];
+// The API examples open here from their pages (?example=<id>).
+const extra = [...inCategory('api'), ...inCategory('interfaces')].map((e) => ({ key: e.id, label: e.title, example: e.example! }));
+---
+<BaseLayout title="Playground" description="Write HTML and Reactive CSS and watch the real runtime run them, with their state, events and diagnostics.">
+  <SiteHeader context="playground" links={[{ label: 'Docs', href: '/docs/getting-started/' }, { label: 'API', href: '/docs/reference/' }]} />
+  <main data-pagefind-body data-pagefind-meta="section:Playground">
+    <h1 class="visually-hidden">Playground</h1>
+    <Playground client:load items={items} extra={extra} />
+  </main>
+  <SearchDialog client:idle suggested={SUGGESTED} />
+</BaseLayout>

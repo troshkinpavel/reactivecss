@@ -1,0 +1,72 @@
+---
+title: "Performance and Tests"
+description: "What the library measured for 0.9.0 against 0.8.1, and earlier: input latency against plain JavaScript, event dispatch, drag, startup, memory, bundle sizes and test counts, with the source and limits of each measurement."
+group: Project
+type: Project
+order: 44
+---
+These numbers come from the library's own release reports. The latest is the 0.9.0 hardening report; the sections after it are earlier measurements, kept as history, and each says which report it comes from. The site does not measure the runtime; it copies the figures and keeps their source. Reactive CSS is not claimed to be faster than equivalent JavaScript.
+
+<Callout kind="caution" title="Read these numbers with">
+
+All measurements ran in headless Chromium 156 (and, for tests, WebKit 27.2) on one development machine. Playwright's Firefox does not start there, so Firefox is not covered by the automated tests; a manual pass of the examples in Chrome, Safari and Firefox was user-reported for 0.7.1, without logs or browser versions. Screen readers and real devices have not been verified for 0.9.0.
+
+</Callout>
+
+## 0.9.0 compared with 0.8.1
+From the library's `docs/release-0.9.0-hardening.md` (§D). The method runs v0.8.1, the first 0.9.0 candidate and the hardened 0.9.0 build on the same pages in one Chromium process, interleaved, five runs per cell, median. Absolute numbers move between sessions, so compare only within this table. Apple M4 Max, Chromium 156.
+
+| Scenario | v0.8.1 | 0.9.0 |
+| --- | ---: | ---: |
+| Startup, 10,000 components (task ms) | 169.7 | 169.3 with the 0.9 syntax, 169.7 with the 0.8 syntax |
+| Mounted memory, 10,000 components | 16.7 MB | 16.9 MB |
+| Retained after 100 × 500 mount and unmount | 0.456 MB | 0.444 MB |
+| Idle for 10 s: script, flushes, timer ticks | 0, 0, 0 | 0, 0, 0 |
+| Script per click | 0.0349 ms | 0.0393 ms (0.9 syntax), 0.0378 ms (0.8 syntax) |
+| Click → DOM text / attribute / focus | 0.4 / 0.4 / 0.5 ms | 0.3 / 0.3 / 0.5 ms |
+| Form input, script per keystroke, `bind:` + `text:` | 0.0078 ms | 0.0080 ms |
+| Compile, 5,000 native rules + 1 reactive rule | 24.5 ms | 26.1 ms |
+| Compile, 500 event rules: `on:` / `:on()` | 4.6 ms / — | 4.8 ms / 6.2 ms |
+
+New 0.9 workloads, with no 0.8.1 equivalent:
+- **Drag:** 0.178 ms of script per move with one draggable, 0.171 ms among 1,000 candidates. A hand-written handler takes 0.038 ms. No forced layout and no long task.
+- **`:on(pointermove)`:** 12.2 ms of script per second at 60 events per second; plain JavaScript 3.3 ms.
+- **Persisted drag:** 21 storage writes during 300 moves (about 5 s), about 4 per second, with the last value kept.
+- **The 0.9 form pattern** (`:on(input)` with `event(value)`, `bind(value)` and `content`): 0.0259 ms per keystroke, doing two bindings' work; plain JavaScript 0.0056 ms.
+
+The report found no confirmed regression above its thresholds: more than 10% in time, more than 15% in memory, or long tasks over 50 ms. The click difference, about 4 µs, is within run-to-run variance. With the CPU throttled 4×, event-to-DOM latency stayed at a p95 of 0.7–0.8 ms in every version.
+
+**Sizes** (same report, §J, after the final API cleanup): `reactive-css.min.js` is 149,039 B minified and 49,233 B gzip, against 117,830 B and 39,715 B for 0.8.1. The compact bundle is 42,488 B gzip. The cleanup itself changed no measured timing beyond run-to-run variation (§J). Custom bundles are measured on [Custom bundles](/docs/custom-bundles/#bundle-sizes).
+
+**Tests** (same report, §J, final): 196 unit tests and 848 browser tests passed across Chromium and WebKit, with 6 skipped; 427 passed in Chromium with the CPU throttled 4×.
+
+These figures come from a build made before the final 0.9.0 syntax revision, which writes modifiers as `prevent()` and `stop()` and requests focus with `focus:`. They have not been measured again since.
+
+## Earlier measurements
+
+### Input to correct frame
+The time from a real click to the first frame with the expected style, on a page with 100 widgets whose `disabled` attribute is derived with `attr:`, over 40 clicks. One 60 Hz frame is 16.7 ms. Measured for 0.7.0 (report §10); 0.7.1 and 0.8.0 did not repeat it.
+
+<EngineeringReport part="latency" />
+
+The remaining cost is mostly the browser's style recalculation for custom-property writes, which plain JavaScript writing the same properties pays too.
+
+### Startup, event dispatch and memory
+
+<EngineeringReport part="notes" />
+
+### Bundle sizes
+In bytes, from the 0.8.0 report (§4) and the 0.8.1 preparation report (§4). In 0.8.1 the standard bundle grew by 1.5 KB for the pre-beta stabilization fixes (mostly the `:changed()` animation tracking and the `bind:` fix); the compact bundle drops the `describe()` descriptions. Smaller bundles with only some features are measured on [Custom bundles](/docs/custom-bundles/#bundle-sizes).
+
+<EngineeringReport part="bundles" />
+
+### Tests
+From the 0.8.1 preparation report (§6).
+
+<EngineeringReport part="tests" />
+
+What the tests cover, engine by engine, is on [Browser Compatibility](/docs/compat/). The previews on this site run the same bundle: the site's unit tests check that its version matches the library's `package.json`, `describe()` and the CHANGELOG.
+
+For where these numbers fit in the project's direction, see the [Vision](/vision/) page.
+
+<Related ids={["compat","custom-bundles","limitations","changelog"]} />

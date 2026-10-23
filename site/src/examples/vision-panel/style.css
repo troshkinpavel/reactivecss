@@ -1,0 +1,23 @@
+.panel {
+  --open: state(false);
+  --name: state("");
+}
+
+.panel .toggle:on(click) {
+  --open: toggle();
+}
+
+.panel .toggle {
+  --attr-aria-expanded: var(--open);
+}
+
+.panel input:on(input) {
+  --name: set(event(value));
+}
+
+.panel:when(--name != "") .who {
+  content: var(--name);
+}
+
+.panel .body { display: none; }
+.panel:when(--open) .body { display: block; }

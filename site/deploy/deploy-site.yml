@@ -1,0 +1,90 @@
+# Template, not active: GitHub runs only files in .github/workflows/. Move it there when the
+# repository, the Cloudflare token and the GitHub environments exist (site/deploy/README.md).
+#
+# Staging: every push to main. Production: only a manual run with target "production", which
+# also waits for the reviewers of the GitHub "production" environment.
+name: deploy-site
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Where to deploy
+        type: choice
+        options: [staging, production]
+        default: staging
+permissions:
+  contents: read
+concurrency:
+  group: deploy-site-${{ github.event.inputs.target || 'staging' }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            site/package-lock.json
+      # The site reads the library's bundles and registry from ../dist.
+      - run: npm ci && npm run build
+      - run: npm ci && npm run build
+        working-directory: site
+      - name: Verify static assets
+        working-directory: site/dist
+        run: |
+          for f in index.html 404.html _headers playground/index.html experiments/perihelion/index.html \
+                   embed/experiments/perihelion.stage.html runtime/reactive-css.min.js runtime/reactive-css.js \
+                   pagefind/pagefind.js sitemap-index.xml robots.txt; do
+            test -s "$f" || { echo "missing: $f"; exit 1; }
+          done
+          ls _astro/*.js > /dev/null
+          if find . -name '.env*' -o -name '.dev.vars*' -o -name '*.pem' -o -name '*.key' | grep .; then exit 1; fi
+          grep -q 'https://reactivecss.com' robots.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site-dist
+          path: site/dist/
+          include-hidden-files: true
+          retention-days: 7
+
+  staging:
+    needs: build
+    if: github.event_name == 'push' || github.event.inputs.target == 'staging'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: site-dist
+          path: site/dist/
+      - run: npx --yes wrangler@4.152.0 deploy --env staging
+        working-directory: site
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  production:
+    needs: build
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'production' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: site-dist
+          path: site/dist/
+      - run: npx --yes wrangler@4.152.0 deploy --env=""
+        working-directory: site
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

@@ -1,0 +1,6 @@
+.toggle { display: inline-flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 16px 0 8px; border: 1px solid oklch(0.21 0.01 80); border-radius: 999px; background: transparent; font-weight: 500; }
+.toggle .knob { position: relative; width: 44px; height: 24px; border-radius: 999px; background: oklch(0.9 0.006 85); }
+.toggle .knob::after { content: ""; position: absolute; inset: 3px auto 3px 3px; width: 18px; border-radius: 50%; background: white; }
+.toggle .knob { transition: background 180ms; }
+.toggle .knob::after { transition: translate 180ms; }
+.toggle .label { min-width: 3ch; text-align: left; }

@@ -1,0 +1,10 @@
+.spotlight {
+  --x: mouse(x, local);
+  --y: mouse(y, local);
+  background:
+    radial-gradient(
+      240px circle at var(--x) var(--y),
+      #fde2d6, transparent
+    ),
+    #f5f3ef;
+}

@@ -1,0 +1,27 @@
+.counter { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 18px 32px; max-width: 360px; }
+.counter output {
+  display: inline-block;
+  min-width: 2.2ch;
+  font-size: 56px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 72px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+/* The number itself: history.css only adds the motion. */
+.counter output::before { counter-reset: n var(--count); content: counter(n); }
+@keyframes slide-up { from { translate: 0 44px; opacity: 0; } }
+@keyframes slide-down { from { translate: 0 -44px; opacity: 0; } }
+/* The strip of numbers under the counter: history.css picks the current one and hides the rest. */
+.trail { flex-basis: 100%; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.trail span {
+  min-width: 32px;
+  padding: 4px 6px;
+  border: 1px solid oklch(0.885 0.006 85);
+  border-radius: 3px;
+  font: 14px/1.4 'Red Hat Mono', ui-monospace, monospace;
+  color: oklch(0.55 0.01 80);
+  text-align: center;
+}

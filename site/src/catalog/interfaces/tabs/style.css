@@ -1,0 +1,24 @@
+/* Tabs */
+.tabs [role="tablist"] { display: flex; gap: 18px; border-bottom: 1px solid var(--line); }
+.tabs .tab { min-height: 0; padding: 10px 0; margin-bottom: -1px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--ink-2); }
+.tabs .panel { display: none; margin: 14px 0 0; min-height: 48px; color: var(--ink-2); }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+.tabs { --active: state(1); }
+
+.tabs .tab:on(click) { --active: set(sibling-index()); }
+
+/* Arrow keys move the selection, wrapping at the ends. prevent() keeps the page from scrolling. */
+.tabs [role="tablist"]:on(keydown(ArrowRight), prevent()) { --active: cycle(1, 2, 3); }
+.tabs [role="tablist"]:on(keydown(ArrowLeft), prevent()) { --active: cycle(3, 2, 1); }
+
+/* The ARIA tab pattern: one selected tab, the only one in the Tab order. */
+.tabs .tab { --attr-aria-selected: false; --attr-tabindex: -1; }
+.tabs .tab:nth-var(--active) { --attr-aria-selected: true; --attr-tabindex: 0; color: var(--ink); border-bottom-color: currentColor; }
+
+/* Focus follows the selection after a key press. */
+.tabs .tab:nth-child(1) { focus: when(--active == 1); }
+.tabs .tab:nth-child(2) { focus: when(--active == 2); }
+.tabs .tab:nth-child(3) { focus: when(--active == 3); }
+
+.tabs .panel:nth-var(--active) { display: block; }

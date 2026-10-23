@@ -1,0 +1,59 @@
+---
+title: "Dynamic Selectors"
+description: "Reactive pseudo-classes match from state: a sibling by index, a checkbox after it changes, an element right after a state changes, or a field after it loses focus."
+group: Concepts
+type: Concept
+order: 14
+---
+## :nth-var()
+`:nth-var(--name)` matches the element whose one-based index among its element siblings equals the integer value of `--name`, read on the parent of the siblings. It has the same specificity as `:nth-child()`.
+
+<Example id="tabs" />
+
+When `--name` is a `state()`, the cell is read directly and only the old and new active elements are touched. It also works with a plain custom property, such as `.carousel { --active: 3; }`.
+
+<Callout kind="note" title="What it can't see">
+
+For plain custom properties, a sibling group is re-checked on DOM and attribute changes, including `el.style.setProperty()`. Changes that come only from media queries, container queries, animations or stylesheet edits need `ReactiveCSS.refresh()`. For `calc()` values, register the property as `<integer>` with `@property`.
+
+</Callout>
+
+## :just-checked and :just-unchecked
+`:just-checked` matches a checkbox or radio after an observed unchecked → checked change, **until its next observed change**. It never matches on page load. `:just-unchecked` is the reverse, including a radio that loses its state when another one in its group is selected.
+
+<Example id="check" />
+
+### Why it stays on
+There are no timers, so a cancelled or interrupted animation can't leave a stuck state. On each change the markers swap and the animation starts again. The cost: non-animation declarations such as `scale: 1.2` stay applied until the next change, so write those with native `:checked`.
+
+<Callout kind="caution" title="Programmatic changes">
+
+Setting `input.checked = true` fires no event. Dispatch `new Event('change', { bubbles: true })` afterwards, or call `ReactiveCSS.refresh()`.
+
+</Callout>
+
+## :changed()
+`:changed(--x)` matches briefly after an observed change of the nearest state `--x`: from the frame after the change until the animations and transitions it started in the element's subtree have finished, or one frame if none started. "It started" means the animations named, and the transitions of properties set, in the `:changed()` rules: an unrelated animation that restarts in the same frame does not hold it. It never matches on load or after a no-op write.
+
+```css changed.css
+.cart:changed(--items) .count {
+  animation: bump 240ms;
+}
+```
+
+## :blur
+`:blur` matches an element from a real focus loss until it is focused again, never on load. Like `:just-checked`, it marks a moment, so an animation on it plays once per blur:
+
+```css blur.css
+input:blur:invalid {
+  animation: shake 250ms;
+}
+```
+
+Use `.form:has(:blur)` for a container. Details and the difference from `:not(:focus)`: [Focus & Blur](/docs/focus/#blur).
+
+## Focus is not a selector here
+`:focus`, `:focus-visible` and `:focus-within` stay native. Reactive CSS has no functional `:focus()`: to move focus when a state becomes true, use the declaration [`focus: when(condition)`](/docs/focus/#focus-requests-focus-when).
+
+## Related
+<Related ids={["reference/nth-var","reference/just-checked","reference/just-unchecked","reference/changed","reference/blur","focus","history"]} />

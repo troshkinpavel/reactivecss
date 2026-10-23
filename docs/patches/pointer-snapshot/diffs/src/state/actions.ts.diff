@@ -1,0 +1,81 @@
+--- a/src/state/actions.ts
++++ b/src/state/actions.ts
+@@ -8,7 +8,7 @@
+ // any other property. Bubbling events (click, change, input) run handlers on the target and
+ // its ancestors, innermost first; the others only on their target.
+ 
+-import { defineAction, runtimeStats, runtimes, type ActionDef } from '../core/registry';
++import { defineAction, runtimeStats, runtimes, expressions, type ActionDef } from '../core/registry';
+ import { urgently, sync, activation } from '../core/scheduler';
+ import { warn, note, dev, probes } from '../core/log';
+ import type { Watcher } from '../core/elements';
+@@ -192,16 +192,40 @@
+   return s;
+ };
+ 
+-type Source = { kind: 'expr'; e: Expr } | { kind: 'sibling-index' } | { kind: 'sibling-count' };
++type Source = { kind: 'expr'; e: Expr } | { kind: 'sibling-index' } | { kind: 'sibling-count' } | { kind: 'mouse'; axis: 'x' | 'y'; local: boolean };
+ 
+-function source(text: string): Source {
++/** Triggers whose event has a pointer position (docs/rfc-pointer-snapshot.md, section 3). */
++const POINTER_TRIGGERS = new Set(['click', 'pointerenter', 'pointerleave', 'outside:click', 'outside:pointerdown']);
++
++function source(text: string, at: { trigger: string; use(key: string): void }): Source {
+   const s = text.trim().toLowerCase();
+   if (s === 'sibling-index()') return { kind: 'sibling-index' };
+   if (s === 'sibling-count()') return { kind: 'sibling-count' };
++  if (/^mouse\s*\(/.test(s)) {
++    const m = /^mouse\(\s*([xy])\s*(?:,\s*(viewport|local)\s*)?\)$/.exec(s);
++    if (!m) throw new Error(`expected mouse(x) or mouse(y), optionally with viewport or local; got "${text.trim()}"`);
++    if (!POINTER_TRIGGERS.has(at.trigger))
++      throw new Error(`mouse() needs an event with a pointer position: click(…), pointerenter(…), pointerleave(…) or outside(click | pointerdown, …); not ${at.trigger === 'keydown' ? 'key(…)' : at.trigger.replace(/^outside:(.*)/, 'outside($1, …)')}`);
++    at.use('expr:mouse');
++    return { kind: 'mouse', axis: m[1] as 'x' | 'y', local: m[2] === 'local' };
++  }
+   const e = parseExpr(text);
+   if (e.k === 'lit' && s.includes('('))
+-    throw new Error(`"${text}" is not supported; use a value, attr(), pick(), sibling-index() or sibling-count()`);
++    throw new Error(`"${text}" is not supported; use a value, attr(), pick(), sibling-index(), sibling-count() or mouse()`);
+   return { kind: 'expr', e };
++}
++
++/**
++ * The pointer position of the event, in px: viewport, or from the border box of `el` (the
++ * element with on:). A click without a pointer (keyboard, element.click(): detail 0) gives
++ * the center of `el`.
++ */
++function pointerAt(el: Element, e: Event, axis: 'x' | 'y', local: boolean): Typed {
++  const r = el.getBoundingClientRect();
++  const start = axis === 'x' ? r.left : r.top;
++  const v = e.type === 'click' && (e as MouseEvent).detail === 0 ? start + (axis === 'x' ? r.width : r.height) / 2
++    : axis === 'x' ? (e as MouseEvent).clientX : (e as MouseEvent).clientY;
++  return { type: 'dimension', v: local ? v - start : v, unit: 'px' };
+ }
+ 
+ function siblingIndex(el: Element) {
+@@ -241,19 +265,21 @@
+   c.set(coerce(c.value, v));
+ }
+ 
++expressions.push('mouse');
+ defineAction({
+   name: 'set',
+-  syntax: 'set(--state, value | attr(name) | pick(...) | sibling-index() | sibling-count(), closest(selector)?)',
+-  compile(all) {
++  syntax: 'set(--state, value | attr(name) | pick(...) | sibling-index() | sibling-count() | mouse(x|y [, local]), closest(selector)?)',
++  compile(all, at) {
+     const [args, scope] = scoped(all);
+     if (args.length !== 2) throw new Error('expected set(--state, value)');
+-    return { name: stateName(args[0]), src: source(args[1]), scope };
++    return { name: stateName(args[0]), src: source(args[1], at), scope };
+   },
+-  run(el, d: { name: string; src: Source; scope?: string }) {
++  run(el, d: { name: string; src: Source; scope?: string }, e) {
+     const s = d.src;
+     // sibling-* use the element that carries the on: declaration (e.g. the clicked tab).
+     // attr() too: read at event time from the element with the on: declaration.
+     const v = s.kind === 'expr' ? evaluate(s.e, el)
++      : s.kind === 'mouse' ? pointerAt(el, e, s.axis, s.local)
+       : { type: 'number' as const, unit: '', v: s.kind === 'sibling-index' ? siblingIndex(el) : el.parentElement?.childElementCount ?? 1 };
+     if (v) apply(el, d.name, 'set', v, d.scope); // an empty pick() has no value: nothing changes
+   },

@@ -1,0 +1,3 @@
+.f { --q: state(""); }
+.f .q:on(input) { --q: set(event(value)); }
+.f .o { content: var(--q); }

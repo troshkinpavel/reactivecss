@@ -1,0 +1,17 @@
+/* Random colors */
+.random { display: grid; gap: 12px; justify-items: center; }
+.random .swatch { width: 100%; height: 110px; border-radius: 4px; transition: background-color 250ms; }
+.random .readout { margin: 0; }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+.random { --hue: state(200); --mood: state("calm"); }
+
+/* random() and pick() inside a mutation are rolled again at every click. */
+.random .roll:on(click) {
+  --hue: set(random(0, 359, 1));
+  --mood: set(pick("calm", "bold", "bright", "soft"));
+}
+
+.random .swatch { background-color: hsl(var(--hue) 80% 55%); }
+.random .hue { content: var(--hue); }
+.random .mood { content: var(--mood); }

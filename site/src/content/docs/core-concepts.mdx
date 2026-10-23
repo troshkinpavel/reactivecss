@@ -1,0 +1,86 @@
+---
+title: "Core Concepts"
+description: "Reactive CSS compiles its syntax extensions into ordinary CSS and custom properties, then keeps those properties up to date. This page explains the pipeline, the reaction loop, and where native CSS takes over."
+group: Concepts
+type: Concept
+order: 5
+---
+## From stylesheet to page
+<Flow>
+  <FlowStep title="Read">Source text of inline and same-origin sheets</FlowStep>
+  <FlowStep title="Compile">Reactive calls become `var(--rcss-…)` splices; event rules become ordinary rules</FlowStep>
+  <FlowStep title="Rewrite">The same sheet is updated in place through the CSSOM</FlowStep>
+  <FlowStep title="Bind">Matching elements get one binding each</FlowStep>
+  <FlowStep title="Update">A shared scheduler writes only changed values</FlowStep>
+</Flow>
+
+The compiled sheet keeps its position, `media`, `disabled` state and entry in `document.styleSheets`. Nothing else in the text changes. The runtime reads the source text because the browser drops what it does not understand, such as the selector `:on(click)`.
+
+```css compiled.css
+.particle { transform: translateX(live(random(0px, 500px), 200ms)); }
+/* becomes */
+.particle { transform: translateX(var(--rcss-1)); }
+```
+
+## The reaction loop
+<Flow>
+  <FlowStep title="Event">An event rule such as `:on(click)` or `:on(keydown(Escape))` matches</FlowStep>
+  <FlowStep title="Mutation">`--open: toggle()`, `--n: increment(1)` … compute new values</FlowStep>
+  <FlowStep title="State">The nearest owner's cell changes</FlowStep>
+  <FlowStep title="Subscribers">Only the declarations and selectors that read it re-evaluate</FlowStep>
+  <FlowStep title="Browser">Style, transitions and paint happen natively</FlowStep>
+</Flow>
+
+Every interactive example in these docs shows this loop: the trigger line lights first, then the state line, then its dependents.
+
+<Example id="docs-counter" size="expanded" />
+
+Each DOM event is one transaction. Every mutation reads the values from before the event, then all writes are applied together, so two mutations never see each other's half-finished result. When several rules on an element change the same state for the same event, the cascade picks one winner, as it does for any property.
+
+## Four kinds of syntax
+### Values
+Functions on the right side of a declaration: `state()`, `when()`, `previous()`, `direction()`, `random()`, `pick()`, `live()`, `on()`, `mouse()`, `visible()`, `viewport()`, `element()` and `typed()`. You can nest them: `live(pick(red, blue), 1s)` or `calc(0.2 + visible() * 0.8)`. `state()` takes the modifiers `bind()` and `persist()`.
+
+### Event rules
+`.button:on(click) { --open: toggle(); }` runs mutations when an event happens. Selectors say when, declarations say what: an `:on()` rule contains only state changes, and styles stay in ordinary rules. See [Events & Actions](/docs/events/).
+
+### DOM integration
+`--attr-*` writes attributes, `content` on an element writes its DOM text, and `focus:` moves focus after a user action. All of them cascade like any declaration. See [DOM Integration](/docs/binding/) and [Focus & Blur](/docs/focus/).
+
+### Selectors
+`:when()`, `:nth-var()`, `:changed()`, `:just-checked`, `:just-unchecked` and `:blur` compile to attribute selectors with the same specificity as one pseudo-class (or `:nth-child()` for `:nth-var()`).
+
+## Native first
+Work the browser can do is compiled to plain CSS and costs nothing at runtime.
+
+| Feature | Runs as |
+| --- | --- |
+| `viewport(width)` | Native `100dvw` |
+| `state()` initial values | Native `var()` fallback, no write until the state changes |
+| `when()` on boolean states | Native `if()` where supported, else the runtime |
+| Top-level `random()` | Native `random()` when the browser supports the call as written and gives per-element values |
+| `content` on `::before` and `::after`, literal `content` | Native generated content, untouched |
+| `:focus`, `:focus-visible`, `:focus-within` | Native, untouched |
+| Everything else | One delegated listener per event type and per-element work only for subscribers |
+
+## Feature selection policy
+Every construct is classified before it ships. The rule: reduce the JavaScript people write, not increase the functions they must learn.
+
+| Category | Meaning | Examples |
+| --- | --- | --- |
+| Keep native | Never duplicated or reinterpreted | `calc()`, `progress()`, `hypot()`, `:has()`, `sibling-index()`, `anchor-size()`, `if()`, `@container`, `popover`, `<details>` |
+| Simplify | Shorter syntax with equivalent behavior | `when()`, `viewport()`, `typed()` |
+| Extend | What CSS cannot do | state, event rules, bindings, history, stateful selectors, `element()`, drag gestures, `persist()` |
+| Evaluate | Not built without a concrete case and a native gap | physics, network, DOM mutation |
+
+## Updates and cost
+A state change re-evaluates only that cell's subscribers, in an urgent lane that is never deferred. Other updates are coalesced into one read pass and one write pass per animation frame, with a budget of about 4 ms of script time.
+
+<Callout kind="note" title="What updates cost">
+
+Writing a custom property doesn't rebuild the DOM, but the browser still recalculates style, and may need layout and paint. Prefer `translate`, `scale`, `rotate` and `opacity` for values that change often.
+
+</Callout>
+
+## Related
+<Related ids={["reference/state","reference/on-rule","reference/when","reactive-values","events","binding"]} />

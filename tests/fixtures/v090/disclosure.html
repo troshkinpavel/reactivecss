@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Toggle, tabs, accordion · 0.9 fixture</title>
+<script src="/dist/reactive-css.js" defer></script>
+<style>
+  body { font: 16px/1.4 system-ui, sans-serif; margin: 24px; }
+  /* Toggle: aria-pressed reflects the state (bind), data-state derives from it (--attr-*). */
+  .toggle { --on: state(false, bind(aria-pressed)); --attr-data-state: when(--on, "on", "off"); }
+  .toggle:on(click) { --on: toggle(); }
+  .toggle .label { content: when(--on, "On", "Off"); }
+
+  /* Tabs: arrows move the selection, keys never wrap past the ends. */
+  .tabs { --tab: state(1); }
+  .tabs [role=tab]:on(click) { --tab: set(sibling-index()); }
+  .tabs [role=tablist]:on(keydown(ArrowRight), prevent()) { --tab: set(min(var(--tab) + 1, 3)); }
+  .tabs [role=tablist]:on(keydown(ArrowLeft), prevent()) { --tab: set(max(var(--tab) - 1, 1)); }
+  .tabs [role=tab] { --attr-aria-selected: false; --attr-tabindex: -1; }
+  .tabs [role=tab]:nth-var(--tab) { --attr-aria-selected: true; --attr-tabindex: 0; }
+  .tabs [role=tabpanel] { display: none; }
+  .tabs [role=tabpanel]:nth-var(--tab) { display: block; }
+
+  /* Accordion: each item owns its state. */
+  .accordion .item { --open: state(false); }
+  .accordion .item > button { --attr-aria-expanded: var(--open); }
+  .accordion .item > button:on(click) { --open: toggle(); }
+  .accordion .item > .panel { display: none; }
+  .accordion .item:when(--open) > .panel { display: block; }
+</style>
+</head>
+<body>
+  <button class="toggle" id="toggle"><span class="label">Off</span></button>
+
+  <div class="tabs" id="tabs">
+    <div role="tablist"><button role="tab">One</button><button role="tab">Two</button><button role="tab">Three</button></div>
+    <div><section role="tabpanel">Panel one</section><section role="tabpanel">Panel two</section><section role="tabpanel">Panel three</section></div>
+  </div>
+
+  <div class="accordion" id="accordion">
+    <div class="item"><button>First</button><div class="panel">First panel</div></div>
+    <div class="item"><button>Second</button><div class="panel">Second panel</div></div>
+  </div>
+</body>
+</html>

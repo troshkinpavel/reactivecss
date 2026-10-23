@@ -1,0 +1,77 @@
+/* Multi-step wizard: all behavior is in this file (Reactive CSS + native CSS).
+   Child combinators (>) keep each wizard's rules on its own elements, so wizards can be nested. */
+
+body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #1c1c1e; background: #f6f6f4; }
+main { max-width: 760px; margin: 0 auto; padding: 24px 16px; display: grid; gap: 24px; }
+.note { color: #555; margin: 0; }
+.wizard { background: #fff; border-radius: 14px; padding: 20px; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
+.wizard label { display: block; margin: 8px 0; }
+.wizard input[name] { font: inherit; }
+fieldset { border: 1px solid #ddd; border-radius: 10px; }
+.nav { display: flex; gap: 8px; margin-top: 16px; }
+.nav button, .restart { font: inherit; padding: 8px 16px; border-radius: 8px; border: 1px solid #bbb; background: #fafafa; }
+.nav .next, .nav .finish { background: #2563eb; color: #fff; border-color: #2563eb; }
+:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+
+/* ---- state: the current step (1–4; 5 = done) ---------------------------------------------- */
+.wizard { --step: state(1); --tried: state(false); }
+
+/* Only the current panel is rendered. display: none also removes hidden panels and their
+   controls from the tab order and the accessibility tree. */
+.wizard > .panels > .panel { display: none; }
+.wizard > .panels > .panel:nth-var(--step) { display: block; }
+
+/* ---- navigation ------------------------------------------------------------------------------
+   attr: (0.5.3): Back is natively disabled on step 1, Next on step 4 (where Finish appears).
+   The attribute is written in the same task as the click, so a burst of clicks cannot leave
+   1–4. Finish acts only on step 4 (disabled elsewhere, also while not rendered: a script can
+   still click a display: none button). After Finish, the whole nav is not rendered. */
+.wizard > .nav > .next   { on: click(increment(--step), set(--tried, false)); attr: disabled when(--step >= 4); }
+.wizard > .nav > .back   { on: click(decrement(--step), set(--tried, false)); attr: disabled when(--step <= 1); }
+.wizard > .nav > .finish { on: click(set(--step, 5)); attr: disabled when(--step != 4); }
+.wizard > .panels > .panel > .restart { on: click(set(--step, 1)); }
+.wizard:when(--step != 4) > .nav > .finish,
+.wizard:when(--step == 5) > .nav { display: none; }
+.wizard > .nav > button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ---- focus (focus:, 0.6.0) ---------------------------------------------------------------------
+   When a user action changes the step, focus moves to the new step's heading (tabindex="-1" in
+   the HTML makes it programmatically focusable; the library never adds tabindex). Only one
+   heading is true at a time; page load, scripts and the native reset never move focus. */
+.wizard > .panels > .panel > h2 { focus: false; }
+.wizard > .panels > .panel:nth-var(--step) > h2 { focus: true; }
+.wizard > .panels > .panel > h2:focus:not(:focus-visible) { outline: none; }
+
+/* Native validation gates Next: while the current panel has an :invalid field, a more specific
+   rule replaces the action, and the hint appears. (:has() is evaluated by the browser's cascade
+   when the click happens.) */
+.wizard:has(> .panels > .panel:nth-var(--step) :invalid) > .nav > .next { on: click(set(--tried, true)); }
+.wizard > .hint { display: none; color: #b42318; }
+.wizard:when(--tried):has(> .panels > .panel:nth-var(--step) :invalid) > .hint { display: block; }
+
+/* ---- step indicator, progress and status ------------------------------------------------------ */
+.wizard > .steps { display: flex; gap: 6px; padding: 0; margin: 0 0 12px; list-style: none; flex-wrap: wrap; }
+.wizard > .steps > li { padding: 4px 10px; border-radius: 99px; background: #eee; color: #555; font-size: 14px; }
+.wizard > .steps > li:nth-var(--step) { background: #2563eb; color: #fff; font-weight: 600; }
+/* aria-current="step" on the current step only (attr:, 0.5.3). The other steps get no
+   declaration, so their attribute stays absent. */
+.wizard > .steps > li:nth-var(--step) { attr: aria-current "step"; }
+.wizard:when(--step > 1) > .steps > li:nth-child(1),
+.wizard:when(--step > 2) > .steps > li:nth-child(2),
+.wizard:when(--step > 3) > .steps > li:nth-child(3),
+.wizard:when(--step > 4) > .steps > li:nth-child(4) { background: #dcfce7; color: #166534; }
+.wizard:when(--step > 1) > .steps > li:nth-child(1)::before,
+.wizard:when(--step > 2) > .steps > li:nth-child(2)::before,
+.wizard:when(--step > 3) > .steps > li:nth-child(3)::before,
+.wizard:when(--step > 4) > .steps > li:nth-child(4)::before { content: "✓ " / "completed: "; }
+
+.wizard > .progress { height: 6px; background: #eee; border-radius: 3px; overflow: hidden; }
+.wizard > .progress > span { display: block; height: 100%; background: #2563eb;
+  width: calc((min(var(--step), 5) - 1) / 4 * 100%); transition: width 250ms ease; }
+@media (prefers-reduced-motion: reduce) { .wizard > .progress > span { transition: none; } }
+
+/* Real DOM text (text:, 0.5.1); "Completed" is static HTML shown at the end. */
+.wizard > .status, .wizard > .done { margin: 8px 0; color: #555; }
+.wizard > .status > .n { text: var(--step); }
+.wizard > .done, .wizard:when(--step == 5) > .status { display: none; }
+.wizard:when(--step == 5) > .done { display: block; }

@@ -1,0 +1,11 @@
+.greeting {
+  --message: state("Hello!");
+}
+
+.shuffle:on(click) {
+  --message: set(pick("Hello!", "Bonjour!", "Hola!", "Ciao!"));
+}
+
+.message::after {
+  content: var(--message);
+}

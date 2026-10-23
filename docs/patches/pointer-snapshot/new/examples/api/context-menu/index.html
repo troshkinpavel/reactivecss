@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Context menu — Reactive CSS API example</title>
+  <link rel="stylesheet" href="../api.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="kicker">API example 17 · <code>set(--x, mouse(x, local))</code></p>
+    <h1>Context menu</h1>
+    <p class="lede">A menu that opens where you click. The click position is stored once, in two states.</p>
+    <section class="demo ctx" aria-label="Menu at the click position">
+      <div class="stage">
+        <button type="button" class="area">Click anywhere in this area</button>
+        <ul class="menu" aria-label="Actions">
+          <li><button type="button" data-label="Copy">Copy</button></li>
+          <li><button type="button" data-label="Rename">Rename</button></li>
+          <li><button type="button" data-label="Delete">Delete</button></li>
+        </ul>
+      </div>
+      <p class="readout" aria-live="polite">Chosen: <span class="choice">nothing yet</span> · <span class="at"></span></p>
+    </section>
+    <p class="files"><a href="style.css">style.css</a> · <a href="README.md">README</a> · <a href="../">All API examples</a></p>
+  </main>
+</body>
+</html>

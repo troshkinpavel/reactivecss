@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Settings panel — Reactive CSS example</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Settings panel</h1>
+    <p class="note">A local UI example: nothing is saved or sent. Reset returns every control to its HTML default.</p>
+
+    <form class="settings" aria-labelledby="settings-title">
+      <h2 id="settings-title">Preferences</h2>
+
+      <fieldset>
+        <legend>Notifications</legend>
+        <label class="master"><input type="checkbox" name="notify" checked> Enable notifications</label>
+        <!-- A disabled fieldset disables every control inside it natively. -->
+        <fieldset class="channels">
+          <legend>Channels</legend>
+          <label><input type="checkbox" name="email" checked> Email</label>
+          <label><input type="checkbox" name="push"> Push</label>
+          <label>Digest <select name="digest"><option selected>Daily</option><option>Weekly</option></select></label>
+        </fieldset>
+      </fieldset>
+
+      <fieldset>
+        <legend>Appearance</legend>
+        <label>Theme
+          <select name="theme">
+            <option value="light" selected>Light</option>
+            <option value="dark">Dark</option>
+            <option value="contrast">High contrast</option>
+          </select>
+        </label>
+        <label>Text size <input type="range" name="size" min="14" max="22" step="2" value="16"> <span class="size">16</span>&nbsp;px</label>
+      </fieldset>
+
+      <button type="button" class="more" aria-controls="advanced">Advanced settings</button>
+      <div class="advanced" id="advanced">
+        <label><input type="checkbox" name="beta"> Try beta features</label>
+      </div>
+
+      <div class="preview" aria-label="Preview">
+        <p>The quick brown fox jumps over the lazy dog.</p>
+      </div>
+
+      <button type="reset">Reset to defaults</button>
+    </form>
+  </main>
+</body>
+</html>

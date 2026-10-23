@@ -1,0 +1,26 @@
+---
+title: "State-history animation"
+description: "A counter whose number slides in from the direction it moved."
+group: Examples
+type: Example
+order: 28
+uses: ["reference/previous","reference/direction","reference/changed"]
+---
+<Example id="history" size="expanded" />
+
+## How it works
+1. `previous()` and `direction()` read the state's history.
+2. `.counter:changed(--count) output` matches after each change until its animation finishes.
+3. `when(direction(--count) > 0, …)` picks the keyframes.
+
+## Compared with JavaScript
+The JavaScript version restarts the animation by removing the class, forcing a reflow with `offsetWidth` and adding it back.
+
+<Callout kind="tip" title="Reduced motion">
+
+Disable the animation under `prefers-reduced-motion: reduce`. See [State History](/docs/history/).
+
+</Callout>
+
+## APIs used
+<Related ids={["reference/previous","reference/direction","reference/changed"]} />

@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-19T23:26:37.320Z",
+  "engine": "Chromium (headless, Playwright)",
+  "runs": 7,
+  "initialJsGzKB": 80.5,
+  "analyzerJsGzKB": 37.6,
+  "toggleMs": 6.9,
+  "analyzeFirstMs": 15.6,
+  "analyzeNextMs": 14.5,
+  "cls": 0.0149,
+  "catalogDataKB": {
+    "raw": 16.6,
+    "gz": 3
+  }
+}

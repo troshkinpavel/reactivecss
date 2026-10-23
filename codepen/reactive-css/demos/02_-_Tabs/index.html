@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabs · ReactiveCSS</title>
+    <link rel="stylesheet" href="../../lib/theme.css">
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+
+    <main>
+      <a class="back" href="../../index.html">← All demos</a>
+      <p class="kicker">Reactive CSS · 02</p>
+      <h1>Tabs</h1>
+      <p class="lede">Click or use the arrow keys. One state drives the tabs, the panels and the ARIA attributes.</p>
+
+      <section class="tabs" aria-label="Tabs">
+        <div role="tablist" aria-label="About Reactive CSS">
+          <button type="button" class="tab" role="tab" id="tab-1" aria-controls="panel-1">Overview</button>
+          <button type="button" class="tab" role="tab" id="tab-2" aria-controls="panel-2">Syntax</button>
+          <button type="button" class="tab" role="tab" id="tab-3" aria-controls="panel-3">Support</button>
+        </div>
+        <div class="panels">
+          <div class="panel" role="tabpanel" id="panel-1" aria-labelledby="tab-1">One state on the tab set, <code>--active</code>, picks the tab and the panel.</div>
+          <div class="panel" role="tabpanel" id="panel-2" aria-labelledby="tab-2"><code>:nth-var(--active)</code> matches the tab and the panel at that position.</div>
+          <div class="panel" role="tabpanel" id="panel-3" aria-labelledby="tab-3">Arrow keys move the selection and the focus, as the ARIA tab pattern expects.</div>
+        </div>
+      </section>
+    </main>
+
+    <script src="../../lib/reactive-css-0.9.0.min.js" defer></script>
+  </body>
+</html>

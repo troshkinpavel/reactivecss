@@ -1,0 +1,21 @@
+.switch {
+  position: relative;
+  width: 76px;
+  height: 42px;
+  padding: 0;
+  border: none;
+  border-radius: 42px;
+  background: #d9d5cf;
+}
+.switch::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.18);
+  transition: translate 200ms cubic-bezier(0.2, 0, 0, 1);
+}

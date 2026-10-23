@@ -1,0 +1,18 @@
+{
+  "links": [
+    { "id": "getting-started", "label": "Getting started", "url": "/docs/getting-started/", "category": "Documentation", "description": "First steps with the full runtime.", "visible": true, "footer": "Learn" },
+    { "id": "examples", "label": "Examples", "url": "/examples/", "category": "Documentation", "description": "Gallery of runnable examples.", "visible": true, "footer": "Learn" },
+    { "id": "experiments", "label": "Experiments", "url": "/experiments/", "category": "Documentation", "description": "Curated demos of light, depth and motion.", "visible": true, "footer": "Learn" },
+    { "id": "browser-support", "label": "Browser support", "url": "/docs/compat/", "category": "Documentation", "description": "Compatibility notes.", "visible": true, "footer": "Learn" },
+    { "id": "playground", "label": "Playground", "url": "/playground/", "category": "Documentation", "description": "Try Reactive CSS in the browser.", "visible": true, "footer": "Build" },
+    { "id": "bundle-builder", "label": "Bundle builder", "url": "/bundle-builder/", "category": "Documentation", "description": "Configure a custom bundle.", "visible": true, "footer": "Build" },
+    { "id": "design-system", "label": "Design system", "url": "/design-system/", "category": "Documentation", "description": "Colours, type and components of the site.", "visible": true, "footer": "Build" },
+    { "id": "changelog", "label": "Changelog", "url": "/docs/changelog/", "category": "Documentation", "description": "Rendered from CHANGELOG.md.", "visible": true, "footer": "Project" },
+    { "id": "simplify-css", "label": "Simplify CSS", "url": "/docs/simplify-css/", "category": "Documentation", "description": "Patterns that replace JavaScript.", "visible": true, "footer": "Project" },
+    { "id": "vision", "label": "Vision", "url": "/vision/", "category": "Documentation", "description": "Where the project is going.", "visible": true, "footer": "Project" },
+    { "id": "performance", "label": "Performance", "url": "/docs/performance/", "category": "Documentation", "description": "How the library measures itself.", "visible": true, "footer": "Project" },
+    { "id": "npm", "label": "npm package", "url": "https://www.npmjs.com/package/@reactivecss/core", "category": "Distribution", "description": "Expected package page. Not published yet; keep hidden until publication is verified.", "visible": false },
+    { "id": "jsdelivr", "label": "jsDelivr", "url": "https://cdn.jsdelivr.net/npm/@reactivecss/core/", "category": "Distribution", "description": "Expected CDN path. Serves files only after npm publication.", "visible": false },
+    { "id": "unpkg", "label": "unpkg", "url": "https://unpkg.com/@reactivecss/core/", "category": "Distribution", "description": "Expected CDN path. Serves files only after npm publication.", "visible": false }
+  ]
+}

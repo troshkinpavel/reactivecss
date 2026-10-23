@@ -1,0 +1,276 @@
+{
+  "date": "2026-10-21T15:48:41.811Z",
+  "version": "0.8.1",
+  "n": 1000,
+  "runs": 7,
+  "sizes": [
+    {
+      "name": "core",
+      "features": [
+        "core"
+      ],
+      "minified": 41873,
+      "gzip": 15530,
+      "brotli": 14102
+    },
+    {
+      "name": "basic",
+      "features": [
+        "core",
+        "events"
+      ],
+      "minified": 53208,
+      "gzip": 18844,
+      "brotli": 17049
+    },
+    {
+      "name": "forms",
+      "features": [
+        "core",
+        "events",
+        "forms",
+        "text",
+        "attributes"
+      ],
+      "minified": 72134,
+      "gzip": 24758,
+      "brotli": 22127
+    },
+    {
+      "name": "stateful-ui",
+      "features": [
+        "core",
+        "events",
+        "conditions",
+        "history",
+        "attributes",
+        "focus"
+      ],
+      "minified": 76037,
+      "gzip": 26317,
+      "brotli": 23450
+    },
+    {
+      "name": "dynamic",
+      "features": [
+        "core",
+        "values",
+        "dynamic",
+        "geometry"
+      ],
+      "minified": 54540,
+      "gzip": 19833,
+      "brotli": 17962
+    },
+    {
+      "name": "full",
+      "features": [
+        "core",
+        "events",
+        "conditions",
+        "nth-var",
+        "history",
+        "forms",
+        "text",
+        "attributes",
+        "focus",
+        "values",
+        "dynamic",
+        "geometry"
+      ],
+      "minified": 100112,
+      "gzip": 34023,
+      "brotli": 30110
+    },
+    {
+      "name": "dist full",
+      "features": null,
+      "minified": 117830,
+      "gzip": 39715,
+      "brotli": 34983
+    },
+    {
+      "name": "dist compact",
+      "features": null,
+      "minified": 101644,
+      "gzip": 34357,
+      "brotli": 30418
+    }
+  ],
+  "overhead": [
+    {
+      "id": "events",
+      "over": [
+        "core"
+      ],
+      "minified": 11335,
+      "gzip": 3314,
+      "brotli": 2947
+    },
+    {
+      "id": "conditions",
+      "over": [
+        "core"
+      ],
+      "minified": 7342,
+      "gzip": 2614,
+      "brotli": 2315
+    },
+    {
+      "id": "nth-var",
+      "over": [
+        "core"
+      ],
+      "minified": 4107,
+      "gzip": 1486,
+      "brotli": 1306
+    },
+    {
+      "id": "history",
+      "over": [
+        "core"
+      ],
+      "minified": 5175,
+      "gzip": 1796,
+      "brotli": 1620
+    },
+    {
+      "id": "forms",
+      "over": [
+        "core"
+      ],
+      "minified": 8219,
+      "gzip": 2704,
+      "brotli": 2412
+    },
+    {
+      "id": "text",
+      "over": [
+        "core"
+      ],
+      "minified": 3078,
+      "gzip": 1097,
+      "brotli": 922
+    },
+    {
+      "id": "attributes",
+      "over": [
+        "core"
+      ],
+      "minified": 9427,
+      "gzip": 3132,
+      "brotli": 2745
+    },
+    {
+      "id": "focus",
+      "over": [
+        "core",
+        "events"
+      ],
+      "minified": 3504,
+      "gzip": 1177,
+      "brotli": 1054
+    },
+    {
+      "id": "values",
+      "over": [
+        "core"
+      ],
+      "minified": 5490,
+      "gzip": 2001,
+      "brotli": 1784
+    },
+    {
+      "id": "dynamic",
+      "over": [
+        "core"
+      ],
+      "minified": 5022,
+      "gzip": 1637,
+      "brotli": 1492
+    },
+    {
+      "id": "geometry",
+      "over": [
+        "core"
+      ],
+      "minified": 2188,
+      "gzip": 863,
+      "brotli": 758
+    }
+  ],
+  "startup": [
+    {
+      "name": "core",
+      "bindings": 0,
+      "diagnostics": 2,
+      "errors": [],
+      "scriptMs": 4.5,
+      "taskMs": 19.5,
+      "heapMB": 1.68
+    },
+    {
+      "name": "basic",
+      "bindings": 0,
+      "diagnostics": 1,
+      "errors": [],
+      "scriptMs": 5.1,
+      "taskMs": 20.3,
+      "heapMB": 1.81
+    },
+    {
+      "name": "forms",
+      "bindings": 1000,
+      "diagnostics": 0,
+      "errors": [],
+      "scriptMs": 5.9,
+      "taskMs": 20.8,
+      "heapMB": 2.07
+    },
+    {
+      "name": "stateful-ui",
+      "bindings": 0,
+      "diagnostics": 1,
+      "errors": [],
+      "scriptMs": 5.7,
+      "taskMs": 20.6,
+      "heapMB": 1.84
+    },
+    {
+      "name": "dynamic",
+      "bindings": 0,
+      "diagnostics": 2,
+      "errors": [],
+      "scriptMs": 4.8,
+      "taskMs": 19.9,
+      "heapMB": 1.7
+    },
+    {
+      "name": "full",
+      "bindings": 1000,
+      "diagnostics": 0,
+      "errors": [],
+      "scriptMs": 5.9,
+      "taskMs": 20.6,
+      "heapMB": 2.11
+    },
+    {
+      "name": "dist full",
+      "bindings": 1000,
+      "diagnostics": 0,
+      "errors": [],
+      "scriptMs": 6,
+      "taskMs": 20.7,
+      "heapMB": 2.14
+    },
+    {
+      "name": "dist compact",
+      "bindings": 1000,
+      "diagnostics": 0,
+      "errors": [],
+      "scriptMs": 5.8,
+      "taskMs": 20.4,
+      "heapMB": 2.11
+    }
+  ]
+}

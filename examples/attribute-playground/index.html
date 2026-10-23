@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Attribute playground — Reactive CSS example</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Attribute playground</h1>
+    <p class="note">Change the states on the left; the targets on the right get real HTML attributes. The live attribute table reads the DOM with CSS selectors only (no script).</p>
+
+    <section class="p" id="p" aria-label="Attribute playground">
+      <fieldset class="controls">
+        <legend>States</legend>
+        <button type="button" class="t-open" id="t-open">Toggle --open</button>
+        <label><input type="checkbox" class="c-locked" id="c-locked"> --locked</label>
+        <label><input type="checkbox" class="c-busy" id="c-busy"> --busy</label>
+        <label>--status <select class="c-status" id="c-status"><option value="idle" selected>idle</option><option value="loading">loading</option><option value="done">done</option></select></label>
+        <label><input type="checkbox" class="c-selected" id="c-selected"> --selected</label>
+      </fieldset>
+
+      <div class="targets">
+        <h2>Targets</h2>
+        <p><button type="button" class="disclosure" id="disclosure" aria-controls="region">Disclosure</button></p>
+        <div class="region" id="region">The disclosed region.</div>
+        <p><button type="button" class="submit" id="submit">Native disabled</button> clicks: <span class="submits">0</span></p>
+        <p><button type="button" class="save" id="save">aria-disabled</button> clicks that counted: <span class="saves">0</span></p>
+        <div class="card" id="card">Status card</div>
+        <p><span class="item" id="item">An item (tabindex)</span></p>
+        <p><button type="button" class="bound" id="bound" aria-expanded="false">Bound to its own aria-expanded</button></p>
+      </div>
+
+      <table class="diag" aria-label="Live attributes">
+        <caption>Live DOM attributes</caption>
+        <tr><th scope="row">disclosure aria-expanded</th><td class="d-exp"></td></tr>
+        <tr><th scope="row">region hidden</th><td class="d-hidden"></td></tr>
+        <tr><th scope="row">submit disabled</th><td class="d-disabled"></td></tr>
+        <tr><th scope="row">save aria-disabled</th><td class="d-aria"></td></tr>
+        <tr><th scope="row">card data-state</th><td class="d-state"></td></tr>
+        <tr><th scope="row">item tabindex</th><td class="d-tab"></td></tr>
+        <tr><th scope="row">bound aria-expanded</th><td class="d-bound"></td></tr>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

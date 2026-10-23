@@ -1,0 +1,6 @@
+/* 0.5 demo: attribute expressions. No script on the page drives it. */
+.greeting { --message: state(attr(data-message, "Hello!")); display: grid; gap: 12px; }
+.greeting output { font-size: 28px; min-height: 1.4em; }
+.greeting output::after { content: var(--message); }
+.greeting .choice  { on: click(set(--message, attr(data-message))); }
+.greeting .shuffle { on: click(set(--message, pick(split(attr(data-greetings), "|")))); }

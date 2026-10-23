@@ -1,0 +1,95 @@
+{
+ "_comment": "Old URLs → their replacement. Read by src/pages/examples/<old>.astro, src/pages/docs/examples/ and astro.config.mjs (kept out of the sitemap). One hop each: never point at another redirect.",
+ "examples": {
+  "input-binding": [
+   "/examples/form-mirror/",
+   "Form mirror"
+  ],
+  "dynamic-attributes": [
+   "/examples/attribute-sync/",
+   "Attribute sync"
+  ],
+  "focus-management": [
+   "/examples/focus-blur/",
+   "Focus & blur"
+  ],
+  "conditional-styles": [
+   "/examples/conditional-state/",
+   "Conditional state"
+  ],
+  "change-animation": [
+   "/examples/state-history/",
+   "State history"
+  ],
+  "pick-value": [
+   "/examples/random-colors/",
+   "Random colors"
+  ],
+  "keyboard-controls": [
+   "/examples/tabs/",
+   "Tabs"
+  ],
+  "state-selection": [
+   "/examples/tabs/",
+   "Tabs"
+  ],
+  "viewport": [
+   "/docs/reference/viewport/",
+   "viewport()"
+  ],
+  "visibility": [
+   "/docs/reference/visible/",
+   "visible()"
+  ]
+ },
+ "walkthroughs": {
+  "": [
+   "/examples/",
+   "Examples"
+  ],
+  "toggle": [
+   "/examples/state-toggle/",
+   "State toggle"
+  ],
+  "counter": [
+   "/examples/counter/",
+   "Counter"
+  ],
+  "accordion": [
+   "/examples/accordion/",
+   "Accordion"
+  ],
+  "tabs": [
+   "/examples/tabs/",
+   "Tabs"
+  ],
+  "form": [
+   "/examples/signup-form/",
+   "Signup form"
+  ],
+  "theme": [
+   "/examples/theme-switcher/",
+   "Theme switcher"
+  ],
+  "dropdown": [
+   "/examples/dropdown/",
+   "Dropdown menu"
+  ],
+  "history": [
+   "/examples/state-history/",
+   "State history"
+  ],
+  "pointer": [
+   "/examples/mouse-tracker/",
+   "Mouse tracker"
+  ],
+  "geometry": [
+   "/examples/element-size/",
+   "Element size"
+  ],
+  "advanced": [
+   "/examples/#advanced",
+   "Advanced examples"
+  ]
+ }
+}

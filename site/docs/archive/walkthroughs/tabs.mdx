@@ -1,0 +1,24 @@
+---
+title: "Tabs"
+description: "Tabs selected by position. :nth-var() shows the matching panel without classes."
+group: Examples
+type: Example
+order: 24
+uses: ["reference/state","reference/set","reference/nth-var"]
+---
+<Example id="tabs" size="expanded" />
+
+## How it works
+1. `--active: state(1)` on `.tabs` holds the selected position.
+2. Each tab writes its own position with `set(--active, sibling-index())`.
+3. `.panel:nth-var(--active)` shows the matching panel; only the old and new panel are touched.
+
+## Accessibility
+<Callout kind="warning" title="Visual switching">
+
+Tabs made of buttons are not an ARIA tabs widget. A complete pattern needs `aria-selected`, roving `tabindex` and arrow keys, which need JavaScript today. The playground also includes a native radio-group variant with `bind:`.
+
+</Callout>
+
+## APIs used
+<Related ids={["reference/state","reference/set","reference/nth-var"]} />

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en" data-experiment="perihelion">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Perihelion · motion card · Reactive CSS</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- The Reactive CSS 0.9.0 runtime. On the website it is served from /runtime/; elsewhere, point this at your copy of dist/reactive-css.min.js. -->
+  <script src="/runtime/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main class="stage">
+    <h1 class="sr">Perihelion, a collector card from the Lumen Atlas series</h1>
+
+    <div class="slot">
+      <span class="shadow" aria-hidden="true"></span>
+      <button class="card" type="button" aria-describedby="edition">
+        <span class="face" aria-hidden="true">
+          <span class="art"></span>
+          <span class="orbits"></span>
+          <span class="foil"><span></span></span>
+          <span class="glitter"></span>
+          <span class="frame"></span>
+        </span>
+        <span class="glyph" aria-hidden="true">VII</span>
+        <span class="moon" aria-hidden="true"></span>
+        <span class="meta">
+          <span class="series">Lumen Atlas</span>
+          <span class="no">07/24</span>
+          <span class="name">Perihelion</span>
+        </span>
+        <span class="gloss" aria-hidden="true"><span></span></span>
+        <span class="edge" aria-hidden="true"><span></span></span>
+        <span class="sweep" aria-hidden="true"></span>
+        <span class="sr">. Next edition</span>
+      </button>
+    </div>
+
+    <div class="caption">
+      <p class="edition" id="edition" aria-live="polite"><span class="ed-name">aurora</span> <span class="ed-word">edition</span></p>
+      <ol class="pips" aria-hidden="true"><li></li><li></li><li></li></ol>
+      <label class="foil-ctl"><span>Foil</span> <input class="foil-range" type="range" min="0" max="100" step="5" value="70"></label>
+      <p class="hint">Move or drag across the card to tilt it. Click, tap or press Enter for the next edition.</p>
+    </div>
+  </main>
+</body>
+</html>

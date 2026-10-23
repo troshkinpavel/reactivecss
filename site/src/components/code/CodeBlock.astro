@@ -1,0 +1,21 @@
+---
+// Every code block on the site: highlighted at build time. Blocks with Reactive CSS hydrate when
+// visible, for the explanation rail; all others stay static HTML (Copy works through a small
+// delegated script in the layout).
+import { highlight } from '~/lib/code/highlight';
+import type { Lang } from '~/lib/code/types';
+import { CodePanel } from './CodePanel';
+
+interface Props { lang?: string; code: string; label?: string; header?: boolean; fontSize?: number; wide?: boolean; class?: string; /** The explanation rail for reactive tokens (off for a series of short examples). */ explain?: boolean }
+const { lang = 'txt', code, label, header = true, fontSize = 14, wide = false, class: cls = '', explain = true } = Astro.props;
+const LANGS: Record<string, Lang> = { css: 'css', html: 'html', js: 'js', javascript: 'js', ts: 'ts', typescript: 'ts', json: 'json', sh: 'sh', bash: 'sh', shell: 'sh' };
+const l = LANGS[lang];
+const lines = l ? await highlight(code, l) : code.split('\n').map((t, i) => [{ t, k: 'id' as const, start: i }]);
+const name = label ?? (l === 'css' ? 'styles.css' : l === 'js' ? 'script.js' : l === 'html' ? 'index.html' : l === 'sh' ? 'terminal' : 'file');
+const reactive = explain && l === 'css' && lines.some((line) => line.some((t) => t.k === 'rx'));
+---
+<div class:list={['mt-1 mb-6', wide ? 'max-w-(--container-article)' : 'max-w-[760px]', cls]}>
+  {reactive
+    ? <CodePanel client:visible lines={lines} code={code} label={name} header={header} fontSize={fontSize} />
+    : <CodePanel lines={lines} code={code} label={name} header={header} fontSize={fontSize} explain={false} />}
+</div>

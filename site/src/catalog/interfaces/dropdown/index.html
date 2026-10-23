@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dropdown menu — Reactive CSS example</title>
+</head>
+<body>
+  <main>
+    <p class="kicker">Interface 03 · <code>state()</code> <code>outside()</code> <code>:on()</code> <code>attr()</code> <code>--attr-*</code> <code>focus:</code></p>
+    <h1>Dropdown menu</h1>
+    <p class="lede">A menu that opens on click and closes on Escape, on a choice or on a click anywhere else.</p>
+    <section class="demo dropdown" aria-label="Dropdown menu">
+      <div class="menu">
+        <button class="trigger" aria-haspopup="true" aria-controls="menu-list">Options</button>
+        <ul id="menu-list">
+          <li><button data-choice="Rename">Rename</button></li>
+          <li><button data-choice="Duplicate">Duplicate</button></li>
+          <li><button data-choice="Archive">Archive</button></li>
+        </ul>
+      </div>
+      <p class="readout">Last choice: <output class="choice">none</output></p>
+    </section>
+  </main>
+</body>
+</html>

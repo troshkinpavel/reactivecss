@@ -1,0 +1,24 @@
+---
+// A static redirect page: immediate (Astro's built-in one waits 2 s), with a language, a heading
+// and a link, so it is accessible where meta refresh is blocked. Prefer a host redirect in production.
+interface Props { to: string; title: string }
+const { to, title } = Astro.props;
+const target = new URL(to, Astro.site);
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} · Reactive CSS</title>
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={target} />
+    <meta http-equiv="refresh" content={`0;url=${to}`} />
+  </head>
+  <body>
+    <main>
+      <h1>{title}</h1>
+      <p><a href={to}>Continue to {to}</a></p>
+    </main>
+  </body>
+</html>

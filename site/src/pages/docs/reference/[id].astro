@@ -1,0 +1,89 @@
+---
+// API reference page: prose from src/content/api/entries.json, status and syntax facts from
+// the library's feature registry (describe()).
+import DocsLayout from '~/layouts/DocsLayout.astro';
+import CodeBlock from '~/components/code/CodeBlock.astro';
+import Heading from '~/components/mdx/Heading.astro';
+import Example from '~/components/mdx/Example.astro';
+import Related from '~/components/mdx/Related.astro';
+import { InlineMarkdown } from '~/components/docs/InlineMarkdown';
+import { Callout } from '~/components/docs/Callout';
+import { ParamList } from '~/components/docs/Tables';
+import { CATEGORIES as EXAMPLE_CATEGORIES, catalogEntry } from '~/lib/content/catalog';
+import { API, entryKind, entryStatus, isLegacy, registryFeature, type ApiEntry } from '~/lib/content/reference';
+
+export function getStaticPaths() {
+  return API.map((entry) => ({ params: { id: entry.id }, props: { entry } }));
+}
+const { entry } = Astro.props as { entry: ApiEntry };
+const status = entryStatus(entry);
+const kind = entryKind(entry);
+const feature = registryFeature(entry.features[0]!);
+const runtime = feature?.requiresRuntime === false ? 'compiles to native CSS' : feature?.requiresRuntime === 'conditional' ? 'native when possible' : 'requires runtime';
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const effect = /Action|Declaration|Trigger|Scope|Rule/.test(kind);
+const usage = entry.usage ?? [];
+// Examples from the catalog that show this feature (API examples, interfaces, lab cases).
+const demos = (entry.demos ?? []).map((id) => catalogEntry(id)).filter((d) => !!d);
+const sections = ['Syntax', 'Parameters', effect ? 'Effect' : 'Return value', 'Example', ...(usage.length ? ['Correct and incorrect usage'] : []), 'Behavior', 'Supported contexts', 'Limitations', ...(demos.length ? ['Examples'] : []), 'Related'];
+const toc = sections.map((s) => ({ id: slug(s), label: s, depth: 2 as const }));
+const legacy = isLegacy(entry);
+const tags = legacy ? [{ label: kind.toLowerCase() }, ...(status.since ? [{ label: 'since ' + status.since }] : []), { label: '0.8 syntax' }] : status.removedIn ? [{ label: kind.toLowerCase() }, { label: `removed in ${status.removedIn}` }] : [
+  { label: kind.toLowerCase() },
+  ...(status.since ? [{ label: 'since ' + status.since }] : []),
+  ...(status.experimental ? [{ label: 'experimental', experimental: true }] : []),
+  { label: runtime },
+];
+const crumbs = legacy
+  ? [{ label: 'Docs', href: '/docs/introduction/' }, { label: 'Migrating from 0.8', href: '/docs/migration/' }, { label: 'Legacy 0.8.x compatibility', href: '/docs/migration/#legacy-08x-compatibility' }]
+  : [{ label: 'Docs', href: '/docs/introduction/' }, { label: 'Reference', href: '/docs/reference/' }, { label: entry.category, href: `/docs/reference/#${slug(entry.category)}` }];
+const list = (items: string[]) => items;
+---
+<DocsLayout id={'reference/' + entry.id} title={entry.name} description={entry.summary.replace(/`/g, '')} crumbs={crumbs} tags={tags} toc={toc} mono section={legacy ? 'Legacy 0.8.x' : entry.category} search={!legacy}>
+  {legacy && <Callout kind="caution" title="0.8.x compatibility syntax"><p>This page documents 0.8 syntax that Reactive CSS 0.9.0 still runs. New code uses the 0.9 form: see <a href="/docs/migration/#legacy-08x-compatibility">Legacy 0.8.x compatibility</a>.</p></Callout>}
+  {entry.removal && <Callout kind="caution" title={`Removed in ${status.removedIn}`}><p><InlineMarkdown text={entry.removal} /></p></Callout>}
+  <Heading level={2} id="syntax">Syntax</Heading>
+  <CodeBlock lang="css" code={entry.signature} header={false} fontSize={15} />
+  {feature && feature.syntax !== entry.signature && (legacy || feature.kind !== 'trigger') && (
+    <p class="-mt-3 mb-6 font-mono text-label text-mute">registry syntax: {feature.syntax}</p>
+  )}
+  <Heading level={2} id="parameters">Parameters</Heading>
+  {entry.params.length ? <ParamList params={entry.params} /> : <p class="mb-[18px] text-body text-ink-body">None.</p>}
+  <Heading level={2} id={slug(effect ? 'Effect' : 'Return value')}>{effect ? 'Effect' : 'Return value'}</Heading>
+  <p class="mb-[18px] max-w-(--container-prose) text-body leading-[1.7] text-ink-body"><InlineMarkdown text={entry.returns} /></p>
+  <Heading level={2} id="example">Example</Heading>
+  {'id' in entry.example ? <Example id={entry.example.id} size={entry.example.size} /> : <CodeBlock lang="css" label={entry.example.label} code={entry.example.code} />}
+  {usage.length > 0 && (
+    <>
+      <Heading level={2} id="correct-and-incorrect-usage">Correct and incorrect usage</Heading>
+      {usage.map((u) => (
+        <div class="mb-6 max-w-(--container-article)" data-usage={u.verdict}>
+          <p class="mb-2 flex flex-wrap items-baseline gap-x-3 text-[16.5px] font-semibold text-ink"><span class:list={['rounded-tag border px-1.5 py-px font-mono text-tag font-normal', u.verdict === 'correct' ? 'border-ink text-ink' : 'border-dashed border-rx text-rx-strong']}>{u.verdict}</span>{u.title}</p>
+          <CodeBlock lang="css" label={u.label} code={u.code} explain={false} class="!mb-2" />
+          <p class="m-0 max-w-(--container-prose) text-base leading-[1.6] text-pretty text-ink-body"><InlineMarkdown text={u.note} /></p>
+        </div>
+      ))}
+    </>
+  )}
+  {[['Behavior', entry.behavior], ['Supported contexts', entry.contexts], ['Limitations', entry.limits]].map(([h, items]) => (
+    <>
+      <Heading level={2} id={slug(h as string)}>{h}</Heading>
+      <ul class="mb-[22px] flex max-w-(--container-prose) list-none flex-col gap-2 p-0">
+        {list(items as string[]).map((t) => <li class="prose-li flex gap-3 text-[16.5px] leading-[1.65] text-ink-body"><span class="min-w-0 text-pretty"><InlineMarkdown text={t} /></span></li>)}
+      </ul>
+    </>
+  ))}
+  {feature?.nativeEquivalent && (
+    <p class="mb-[18px] max-w-(--container-prose) text-base leading-[1.6] text-ink-2"><span class="font-mono text-label text-mute">native equivalent · </span>{feature.nativeEquivalent}</p>
+  )}
+  {demos.length > 0 && (
+    <>
+      <Heading level={2} id="examples">Examples</Heading>
+      <ul class="mb-[22px] flex max-w-(--container-prose) list-none flex-col gap-2 p-0">
+        {demos.map((d) => <li class="text-[16.5px] leading-[1.65]"><a href={d.href}>{d.title}</a> <span class="text-ink-2">· {EXAMPLE_CATEGORIES.find((c) => c.id === d.category)?.name}, runs the real runtime</span></li>)}
+      </ul>
+    </>
+  )}
+  <Heading level={2} id="related">Related</Heading>
+  <Related ids={entry.related} />
+</DocsLayout>

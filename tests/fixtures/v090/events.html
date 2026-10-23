@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Nested events and modifiers · 0.9 fixture</title>
+<script src="/dist/reactive-css.js" defer></script>
+<style>
+  body { font: 16px/1.4 system-ui, sans-serif; margin: 24px; }
+  .outer { --outer: state(0); --inner: state(0); padding: 16px; border: 1px solid; }
+  .outer:on(click) { --outer: increment(1); }
+  .outer .inner:on(click) { --inner: increment(1); }
+  /* stop(): the outer rule (and outer listeners) do not see this click. */
+  .outer .stopper:on(click, stop()) { --inner: increment(100); }
+  /* prevent(): the link does not navigate; a state records the attempt. */
+  .outer a.confirm:on(click, prevent()) { --asked: set(true); }
+  .outer { --asked: state(false); }
+  .outer .o { content: var(--outer); } .outer .i { content: var(--inner); } .outer .q { content: var(--asked); }
+  /* Conditional rules: :hover-free, media-free cascade, :when() decides which mutation applies. */
+  .mode { --locked: state(false); --n: state(0); }
+  .mode .lock:on(click) { --locked: toggle(); }
+  .mode .add:on(click) { --n: increment(1); }
+  .mode:when(--locked) .add:on(click) { --n: increment(0); }
+  .mode .v { content: var(--n); }
+  form.f { --sent: state(0); }
+  form.f:on(submit, prevent()) { --sent: increment(1); }
+  form.f .s { content: var(--sent); }
+</style>
+</head>
+<body>
+  <div class="outer" id="outer">
+    <button class="inner">inner</button> <button class="stopper">stop</button> <button class="plain">plain</button>
+    <a class="confirm" href="#navigated">link</a>
+    <p>outer <span class="o">0</span> inner <span class="i">0</span> asked <span class="q">0</span></p>
+  </div>
+  <div class="mode" id="mode"><button class="lock">lock</button> <button class="add">add</button> <span class="v">0</span></div>
+  <form class="f" action="/nowhere"><input name="q"> <button>Send</button> <span class="s">0</span></form>
+</body>
+</html>

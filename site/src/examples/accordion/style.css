@@ -1,0 +1,19 @@
+.item {
+  --open: state(false);
+}
+
+.item > button:on(click) {
+  --open: toggle();
+}
+
+.item .body {
+  display: none;
+}
+
+.item .body:when(--open) {
+  display: block;
+}
+
+.item .chevron {
+  rotate: when(--open, 180deg, 0deg);
+}

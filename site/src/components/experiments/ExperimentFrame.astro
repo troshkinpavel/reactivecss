@@ -1,0 +1,17 @@
+---
+// The experiment's own page in a frame: its stylesheet, state and runtime stay apart from the
+// site's. It is the site's own static file (generated from site/experiments/), so the frame is
+// same-origin and needs no sandbox. The page has no background, so the host's stage shows
+// through. `card` shows the card alone (previews); `stage` adds its caption (the experiment page).
+import { embedSrc, type Experiment } from '~/lib/content/experiments';
+
+interface Props { experiment: Experiment; mode: 'stage' | 'card'; title: string; class?: string; lazy?: boolean }
+const { experiment, mode, title, class: cls = '', lazy = false } = Astro.props;
+---
+<iframe
+  src={embedSrc(experiment, mode)}
+  title={title}
+  loading={lazy ? 'lazy' : undefined}
+  data-experiment-frame={experiment.slug}
+  class={`block border-0 bg-transparent [color-scheme:normal] ${cls}`}
+></iframe>

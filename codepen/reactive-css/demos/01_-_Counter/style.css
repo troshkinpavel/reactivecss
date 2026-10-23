@@ -1,0 +1,66 @@
+/* 01 · Counter. Shared theme and layer order: lib/theme.css */
+
+/* ---- Reactive CSS ------------------------------------------------------- */
+
+@layer reactive {
+  .counter {
+    --count: state(0);                               /* the state lives on .counter, so every button inside can reach it */
+
+    &:changed(--count) .value { animation: pop 300ms ease-out; }
+    &:when(--count >= 10) .value { color: var(--accent); }
+
+    .inc {
+      --attr-disabled: when(--count >= 10);          /* real disabled attribute at the limits */
+      &:on(click) { --count: increment(1); }
+    }
+    .dec {
+      --attr-disabled: when(--count <= 0);
+      &:on(click) { --count: decrement(1); }
+    }
+    .reset {
+      --attr-disabled: when(--count == 0);
+      &:on(click) { --count: set(0); }
+    }
+
+    .value { content: var(--count); }                /* the number as real DOM text */
+  }
+}
+
+/* ---- Plain CSS ---------------------------------------------------------- */
+
+@layer components {
+  .counter {
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+    }
+
+    .value {
+      display: inline-block;                         /* animations need a box, <output> is inline */
+      min-inline-size: 3ch;
+      font-size: 4.5rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      transition: color 200ms;
+    }
+
+    .row button {
+      inline-size: 56px;
+      aspect-ratio: 1;
+      font-size: 1.625rem;
+    }
+
+    .reset {
+      margin-block-start: 32px;
+      padding: 8px 20px;
+      font-size: .875rem;
+      color: var(--muted);
+    }
+  }
+
+  @keyframes pop {
+    from { scale: 1.25; }
+  }
+}

@@ -1,0 +1,402 @@
+[
+  {
+    "id": "d-theme",
+    "kind": "Declaration",
+    "fn": "state",
+    "expr": "--theme: state(\"light\")",
+    "own": "theme",
+    "what": "Declares the color mode on the form: light, dark or system. It lives in memory and resets on reload; the theme radios are what gets submitted.",
+    "aff": [
+      "app",
+      "themeSeg"
+    ],
+    "re": "--theme: state"
+  },
+  {
+    "id": "d-accent",
+    "kind": "Declaration",
+    "fn": "state",
+    "expr": "--accent: state(\"ember\")",
+    "own": "accent",
+    "what": "A string naming the accent. Two :when() rules turn it into the --tint color.",
+    "aff": [
+      "swatches",
+      "avatar",
+      "pBadge",
+      "alert",
+      "notifySw"
+    ],
+    "re": "--accent: state"
+  },
+  {
+    "id": "d-notify",
+    "kind": "Declaration",
+    "fn": "state",
+    "expr": "--notify: state(true)",
+    "own": "notify",
+    "what": "A boolean mirrored from the notifications checkbox. The checkbox stays the source of truth for submission and for assistive technology.",
+    "aff": [
+      "notifySw",
+      "status",
+      "pBell",
+      "pBadge",
+      "alert"
+    ],
+    "re": "--notify: state"
+  },
+  {
+    "id": "d-name",
+    "kind": "Declaration",
+    "fn": "state",
+    "expr": "--name: state(\"Alex Rivera\")",
+    "own": "name",
+    "what": "A quoted string kept in sync with the displayName field. Matches the field’s HTML value, so a form reset lands on the same text.",
+    "aff": [
+      "nameIn",
+      "pName"
+    ],
+    "re": "--name: state"
+  },
+  {
+    "id": "b-theme",
+    "kind": "Action",
+    "fn": "set",
+    "expr": "--theme: set(event(value))",
+    "w": "theme",
+    "trig": "change on input[name=theme]",
+    "what": "When a theme radio changes, copies its value into --theme. The radios keep their native group, keyboard and form behavior.",
+    "aff": [
+      "themeSeg",
+      "app"
+    ],
+    "re": "\\.theme input:on\\(change\\)"
+  },
+  {
+    "id": "b-accent",
+    "kind": "Action",
+    "fn": "set",
+    "expr": "--accent: set(event(value))",
+    "w": "accent",
+    "trig": "change on input[name=accent]",
+    "what": "Copies the chosen accent radio into --accent.",
+    "aff": [
+      "swatches",
+      "avatar",
+      "pBadge",
+      "alert"
+    ],
+    "re": "\\.accent input:on\\(change\\)"
+  },
+  {
+    "id": "b-notify",
+    "kind": "Action",
+    "fn": "set",
+    "expr": "--notify: set(event(checked))",
+    "w": "notify",
+    "trig": "change on input[name=notifications]",
+    "what": "Copies the checkbox into the boolean --notify. Clicks, label clicks and Space all fire change.",
+    "aff": [
+      "notifySw",
+      "status",
+      "pBell",
+      "pBadge",
+      "alert"
+    ],
+    "re": "\\.notify input:on\\(change\\)"
+  },
+  {
+    "id": "b-name",
+    "kind": "Action",
+    "fn": "set",
+    "expr": "--name: set(event(value))",
+    "w": "name",
+    "trig": "input on input[name=displayName]",
+    "what": "Writes --name on every input event. The field keeps its own text and caret; the state only follows it.",
+    "aff": [
+      "nameIn",
+      "pName"
+    ],
+    "re": "\\.profile input:on\\(input\\)"
+  },
+  {
+    "id": "c-dark",
+    "kind": "Condition",
+    "fn": ":when",
+    "expr": ":when(--theme == \"dark\")",
+    "r": [
+      "theme"
+    ],
+    "what": "Matches while --theme is dark and overrides the color tokens.",
+    "aff": [
+      "app"
+    ],
+    "re": "center:when\\(--theme == \"dark\"\\)",
+    "observes": true
+  },
+  {
+    "id": "c-system",
+    "kind": "Condition",
+    "fn": ":when",
+    "expr": ":when(--theme == \"system\")",
+    "r": [
+      "theme"
+    ],
+    "what": "Matches while --theme is system. The surrounding @media query stays native, so the OS setting decides whether the dark tokens apply.",
+    "aff": [
+      "app"
+    ],
+    "re": "center:when\\(--theme == \"system\"\\)",
+    "observes": true
+  },
+  {
+    "id": "c-moss",
+    "kind": "Condition",
+    "fn": ":when",
+    "expr": ":when(--accent == \"moss\")",
+    "r": [
+      "accent"
+    ],
+    "what": "Sets --tint to the moss color while that accent is chosen.",
+    "aff": [
+      "avatar",
+      "pBadge",
+      "alert",
+      "swatches",
+      "notifySw"
+    ],
+    "re": ":when\\(--accent == \"moss\"\\)",
+    "observes": true
+  },
+  {
+    "id": "c-slate",
+    "kind": "Condition",
+    "fn": ":when",
+    "expr": ":when(--accent == \"slate\")",
+    "r": [
+      "accent"
+    ],
+    "what": "Sets --tint to the slate color while that accent is chosen.",
+    "aff": [
+      "avatar",
+      "pBadge",
+      "alert",
+      "swatches",
+      "notifySw"
+    ],
+    "re": ":when\\(--accent == \"slate\"\\)",
+    "observes": true
+  },
+  {
+    "id": "c-status",
+    "kind": "Condition",
+    "fn": "when",
+    "expr": "when(--notify, \"On\", \"Muted\")",
+    "r": [
+      "notify"
+    ],
+    "what": "Generated status text next to the notifications label.",
+    "aff": [
+      "status"
+    ],
+    "re": "\"On\", \"Muted\"",
+    "observes": true
+  },
+  {
+    "id": "v-name",
+    "kind": "Read",
+    "fn": "state",
+    "expr": "var(--name)",
+    "r": [
+      "name"
+    ],
+    "what": "Prints the bound string in the preview as generated content. Plain CSS cannot read what someone types; this is where the vanilla version needs script.",
+    "aff": [
+      "pName"
+    ],
+    "re": "\\.name::after",
+    "observes": true
+  },
+  {
+    "id": "c-bell",
+    "kind": "Condition",
+    "fn": "when",
+    "expr": "when(--notify, 1, 0.4)",
+    "r": [
+      "notify"
+    ],
+    "what": "Dims the inbox while notifications are muted.",
+    "aff": [
+      "pBell"
+    ],
+    "re": "opacity: when\\(--notify, 1, 0\\.4\\)",
+    "observes": true
+  },
+  {
+    "id": "c-badge",
+    "kind": "Condition",
+    "fn": ":when",
+    "expr": ":when(--notify)",
+    "r": [
+      "notify"
+    ],
+    "what": "Shows the unread badge only while notifications are on.",
+    "aff": [
+      "pBadge"
+    ],
+    "re": "badge:when\\(--notify\\)",
+    "observes": true
+  },
+  {
+    "id": "c-alertBorder",
+    "kind": "Condition",
+    "fn": "when",
+    "expr": "when(--notify, var(--tint), var(--muted))",
+    "r": [
+      "notify"
+    ],
+    "what": "The alert takes the accent while notifications are on and turns neutral when muted.",
+    "aff": [
+      "alert"
+    ],
+    "re": "border-color: when\\(--notify",
+    "observes": true
+  },
+  {
+    "id": "c-alertOp",
+    "kind": "Condition",
+    "fn": "when",
+    "expr": "when(--notify, 1, 0.6)",
+    "r": [
+      "notify"
+    ],
+    "what": "Fades the alert while muted.",
+    "aff": [
+      "alert"
+    ],
+    "re": "opacity: when\\(--notify, 1, 0\\.6\\)",
+    "observes": true
+  },
+  {
+    "id": "c-alertText",
+    "kind": "Condition",
+    "fn": "when",
+    "expr": "when(--notify, \"Sam replied…\", \"Notifications are muted\")",
+    "r": [
+      "notify"
+    ],
+    "what": "Swaps the alert message.",
+    "aff": [
+      "alert"
+    ],
+    "re": "\"Sam replied",
+    "observes": true
+  },
+  {
+    "id": "n-submit",
+    "kind": "Native form",
+    "fn": "form",
+    "expr": "<form action=\"/settings\" method=\"POST\">",
+    "where": "index.html",
+    "what": "Save settings is a submit button. The browser validates the fields, then sends every named control to the action. Reactive CSS takes no part in this, and nothing here is saved by it.",
+    "facts": [
+      [
+        "method",
+        "POST"
+      ],
+      [
+        "action",
+        "/settings"
+      ],
+      [
+        "fields",
+        "theme · accent · notifications · displayName"
+      ]
+    ],
+    "aff": [
+      "saveBtn"
+    ],
+    "href": "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form",
+    "ref": "<form>",
+    "re": null
+  },
+  {
+    "id": "n-reset",
+    "kind": "Native form",
+    "fn": "form",
+    "expr": "<button type=\"reset\">",
+    "where": "index.html",
+    "what": "Resets every control to its HTML default. The :on(reset) rule then sets each state back to its CSS initial value, so the preview follows. Keep the HTML defaults and the state() values in agreement.",
+    "facts": [
+      [
+        "restores",
+        "checked · value attributes"
+      ],
+      [
+        "then",
+        "bind: → state initial values"
+      ]
+    ],
+    "aff": [
+      "resetBtn",
+      "themeSeg",
+      "swatches",
+      "notifySw",
+      "nameIn"
+    ],
+    "href": "Docs.dc.html#binding--initialization",
+    "ref": "bind: initialization",
+    "re": null
+  },
+  {
+    "id": "n-invalid",
+    "kind": "Native validation",
+    "fn": "form",
+    "expr": "required maxlength=\"40\"",
+    "where": "index.html",
+    "what": "The browser stopped the submit because Display name is empty. The message and focus come from the browser; no script runs and no submit event fires.",
+    "facts": [
+      [
+        "field",
+        "displayName"
+      ],
+      [
+        "reason",
+        "valueMissing"
+      ]
+    ],
+    "aff": [
+      "nameIn"
+    ],
+    "href": "https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/required",
+    "ref": "required",
+    "re": null
+  },
+  {
+    "id": "p-inspect",
+    "kind": "Prototype only",
+    "fn": "form",
+    "expr": "Submission preview",
+    "where": "this documentation page only",
+    "what": "This documentation page has no server, so the prototype stops the submit and shows the form data instead of sending it. A real page needs none of this: the form posts on its own.",
+    "facts": [
+      [
+        "reads",
+        "FormData from the form"
+      ],
+      [
+        "sends",
+        "nothing"
+      ],
+      [
+        "part of",
+        "the docs prototype, not the example"
+      ]
+    ],
+    "aff": [
+      "submission"
+    ],
+    "href": "https://developer.mozilla.org/en-US/docs/Web/API/FormData",
+    "ref": "FormData",
+    "re": null
+  }
+]

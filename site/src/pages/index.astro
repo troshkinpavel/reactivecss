@@ -1,0 +1,475 @@
+---
+// Homepage, Home v2 (Claude Design: Home v2.dc.html). Every demo on the page is Reactive CSS 0.9.0
+// running in this document: the rules are in public/home/home.css, read by one runtime
+// (/runtime/reactive-css.min.js). Site JavaScript only handles the header, search and Copy.
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import HomeCode from '~/components/home/HomeCode.astro';
+import { SearchDialog } from '~/components/navigation/SearchDialog';
+import { SiteFooter } from '~/components/navigation/SiteFooter';
+import Announcement from '~/components/navigation/Announcement.astro';
+import { SiteHeader, SiteMenu } from '~/components/navigation/SiteHeader';
+import { LIBRARY_VERSION } from '~/lib/content/reference';
+import { INSTALL_TAG } from '~/lib/content/home';
+import { FOOTER_GROUPS, HOME_LINKS, SUGGESTED } from '~/lib/content/site';
+import { COMPACT, STANDARD } from '~/lib/bundles/catalog';
+import { highlightCss } from '~/lib/code/css';
+import ExperimentFrame from '~/components/experiments/ExperimentFrame.astro';
+import Orbits from '~/components/experiments/Orbits.astro';
+import { FEATURED, experimentHref } from '~/lib/content/experiments';
+
+const v = LIBRARY_VERSION;
+const container = 'mx-auto max-w-(--container-marketing) px-(--gutter)';
+const kB = (b: number) => (b / 1000).toFixed(1);
+const word = 'reacts.'.split('');
+
+// The panel teaches the drag pattern from the design; the field's real rules (tap, keys, clamping)
+// live in public/home/home.css.
+const HERO = `.marker {
+  --x: state(0px);
+  --y: state(0px);
+  translate: var(--x) var(--y);
+}
+.marker:on(drag(move)) {
+  --x: set(event(x));
+  --y: set(event(y));
+}`;
+const NAV = `.home {
+  --open: state(false);
+}
+.nav button {
+  --attr-aria-expanded: var(--open);
+}
+.nav button:on(click) {
+  --open: toggle();
+}
+.home:when(--open) .menu {
+  display: block;
+}`;
+const COUNTER = `.home {
+  --count: state(3);
+}
+.plus:on(click)  { --count: increment(1); }
+.minus:on(click) { --count: decrement(1); }
+.value { content: var(--count); }`;
+const CANVAS = `.canvas:on(click) {
+  --x: set(event(local-x));
+  --y: set(event(local-y));
+}
+.dot { left: var(--x); top: var(--y); }`;
+const PREFS = `.preferences {
+  --theme: state("light", persist("home-theme"));
+}
+.dark:on(click)  { --theme: set("dark"); }
+.light:on(click) { --theme: set("light"); }
+.preferences:when(--theme == "dark") .sample {
+  background: #1c1b19;
+  color: #f4f2ee;
+}`;
+// The translation table: [label, JavaScript, Reactive CSS, replay step (the order a click runs them)].
+const ROWS: [string, string, string, number][] = [
+  ['State', 'let open = false;', '.home { --open: state(false); }', 1],
+  ['Event', "button.addEventListener('click', () => {", '.nav button:on(click) {', 0],
+  ['Update', 'open = !open;', '--open: toggle();', 1],
+  ['Attribute', "button.setAttribute('aria-expanded', open);", '--attr-aria-expanded: var(--open);', 2],
+  ['Style', "menu.classList.toggle('is-open', open);", '.home:when(--open) .menu { display: block; }', 3],
+];
+// 04: the library's 15 catalog features, in the design's nine groups.
+const MODS: [string, string, string, string][] = [
+  ['core', 'Core', 'state() attr() pick() in state()', 'core'],
+  ['events', 'Events', ':on() set() toggle() increment() event() prevent() stop()', 'events'],
+  ['conditions', 'Conditions', 'when() :when() :nth-var()', 'conditions, nth-var'],
+  ['dom', 'DOM output', 'content --attr-* bind(<attribute>)', 'text, attributes'],
+  ['forms', 'Forms & focus', 'bind(value) focus: :blur :just-checked', 'forms, focus, blur'],
+  ['persist', 'Persistence', 'persist()', 'persist'],
+  ['history', 'History', 'previous() direction() :changed()', 'history'],
+  ['sources', 'Values & sources', 'random() pick() live() mouse() viewport() visible() element()', 'values, dynamic, geometry'],
+  ['gestures', 'Gestures', ':on(drag) event(x) event(y)', 'gestures'],
+];
+const NODES: [string, string, string, string, string][] = [
+  ['Event', ':on(click)', 'Something happens to an element. The selector names the trigger.', 'event', ''],
+  ['State', '--open: toggle()', 'The declaration updates a state owned by the nearest matching element.', 'state', '--open: false'],
+  ['DOM', '--attr-aria-expanded', 'Bound properties write attributes and text, so assistive tech sees the change.', 'dom', 'aria-expanded="false"'],
+  ['Style', ':when(--open)', 'Plain CSS takes over. Selectors match, transitions run.', 'style', '.menu → display: none'],
+];
+// 06: the needle field behind the heading, laid out once here; CSS turns each needle.
+const G = 44;
+const needles = Array.from({ length: 9 * 36 }, (_, i) => [22 + (i % 36) * G, 22 + Math.floor(i / 36) * G] as const);
+const needleSpans = needles.map(([x, y]) => `<span style="--nx:${x}px;--ny:${y}px"></span>`).join('');
+const tok = (code: string) => highlightCss(code)[0] ?? [];
+---
+<BaseLayout title="Reactive CSS" description="CSS that reacts. Add state, events and DOM binding to the stylesheet you already write. One small runtime reads your CSS and wires it up.">
+  <Fragment slot="head">
+    <link rel="stylesheet" href={`/home/home.css?v=${v}`} />
+    <script is:inline src="/runtime/reactive-css.min.js" defer></script>
+  </Fragment>
+  <Announcement placement="home" variant="bar" class={container} />
+  <SiteHeader variant="home" links={HOME_LINKS} menuTarget="site-menu" />
+  <SiteMenu id="site-menu" links={HOME_LINKS} />
+  <main class="home">
+    <!-- Hero -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hv-hero">
+        <div class="hv-hero-copy">
+          <div>
+            <div class="hv-kicker" style="margin:0"><span>/*</span><b>v{v}</b><span>Declarative behavior for CSS</span><span>*/</span></div>
+            <h1 id="hero-title" aria-label="CSS that reacts.">
+              <span aria-hidden="true">CSS that</span>
+              <span aria-hidden="true">{word.map((ch, i) => <span class="hv-g" style={`--t:${((i + 0.5) / word.length).toFixed(4)}`}>{ch}</span>)}</span>
+            </h1>
+            <p class="hv-hero-p">Add state, events and DOM binding to the stylesheet you already write. One small runtime reads your CSS and wires it up.</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:22px">
+            <div class="hv-ctas">
+              <a href="/docs/getting-started/" class="hv-btn ink">Get started</a>
+              <a href="/playground/" class="hv-btn">Open Playground</a>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button type="button" class="hv-install" data-copy={INSTALL_TAG}>
+                <span>{INSTALL_TAG}</span><span data-copy-label>Copy</span>
+              </button>
+              <span class="hv-meta">v{v} · one script · no build step</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hv-stage">
+          <div class="hv-frame">
+            <div class="hv-ruler" aria-hidden="true">{Array.from({ length: 19 }, (_, i) => <span style={`left:${(i + 1) * 100 + 2}px`}>{(i + 1) * 100}</span>)}</div>
+            <div class="field">
+              <span class="hv-cross-v" aria-hidden="true"></span>
+              <span class="hv-cross-h" aria-hidden="true"></span>
+              <span class="hv-tag x" aria-hidden="true">426px</span>
+              <span class="hv-tag y" aria-hidden="true">192px</span>
+              <span class="hv-ghost" aria-hidden="true"></span>
+              <span class="hv-ghost-label" aria-hidden="true">previous()</span>
+              <span class="hv-field-note" aria-hidden="true">.field · drag(move)</span>
+              <button type="button" class="marker" aria-label="Draggable marker. Use the arrow keys to move it, Shift for bigger steps."></button>
+              <span class="hv-readout" aria-hidden="true"><i>--x</i> <span class="rdx">426px</span><br /><i>--y</i> <span class="rdy">192px</span></span>
+            </div>
+          </div>
+          <div class="hv-panel">
+            <div class="hv-panel-head"><span>marker.css</span><span class="hv-live"><span>idle</span></span></div>
+            <HomeCode code={HERO} class="hv-hero-code" label="marker.css" chips={{ 6: ['chip-x', '426px'], 7: ['chip-y', '192px'] }} />
+          </div>
+          <span class="hv-hint">Drag the dot, tap anywhere in the field, or focus the dot and use the arrow keys.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 01 Syntax -->
+    <section id="syntax" class="hv-band" aria-labelledby="syntax-title">
+      <div class="hv-wrap">
+        <div class="hv-kicker"><span>/*</span><b>01</b><span>New in v{v}</span><span>*/</span></div>
+        <div class="hv-head">
+          <h2 id="syntax-title" class="hv-h2 syntax">Events, expressed as CSS.</h2>
+          <p class="hv-lede">Events are selectors. State, attributes and text are custom properties. Here is one disclosure menu, translated line by line.</p>
+        </div>
+        <div class="hv-syntax">
+          <div class="hv-table">
+            <div role="table" aria-label="JavaScript and Reactive CSS, line by line">
+            <div role="row" class="hv-tr head"><span role="columnheader"></span><span role="columnheader">JavaScript</span><span aria-hidden="true"></span><span role="columnheader">Reactive CSS</span></div>
+            {ROWS.map(([label, js, css, step]) => (
+              <div role="row" class="hv-tr" {...(step === 3 ? { 'data-last': '' } : { 'data-step': '' })} style={`--step:${step}`}>
+                <span role="cell" class="lbl">{label}</span>
+                <span role="cell" class="js">{js}</span>
+                <span aria-hidden="true" class="arrow">→</span>
+                <span role="cell" class="rcss">{tok(css).map((t) => <span class={`t-${t.k}`}>{t.t}</span>)}</span>
+              </div>
+            ))}
+            </div>
+            <details class="hv-details">
+              <summary>Show the assembled stylesheet</summary>
+              <HomeCode code={NAV} label="The menu's stylesheet" />
+            </details>
+          </div>
+          <aside aria-label="Live result" class="hv-aside">
+            <div class="hv-result-head">Result</div>
+            <div class="nav">
+              <button type="button" aria-expanded="false">Menu<span aria-hidden="true" class="caret">▾</span></button>
+              <ul class="menu"><li>Docs</li><li>Examples</li><li>Playground</li></ul>
+              <div class="hv-watch" aria-hidden="true">
+                <span><span>--open</span><span class="open-v">false</span></span>
+                <span><span>aria-expanded</span><span>"<span class="aria-v">false</span>"</span></span>
+              </div>
+              <span class="hv-note">Click Menu. Rows light up in order, slowed down so you can follow.</span>
+              <span class="hv-clock c1" aria-hidden="true"></span><span class="hv-clock c2" aria-hidden="true"></span><span class="hv-clock c3" aria-hidden="true"></span>
+            </div>
+          </aside>
+        </div>
+        <p class="hv-closing">JavaScript is still the right tool for data, routing and application logic. Reactive CSS covers the interactions in between.</p>
+      </div>
+    </section>
+
+    <!-- 02 Gallery -->
+    <section id="gallery" class="hv-band alt" aria-labelledby="gallery-title">
+      <div class="hv-wrap">
+        <div class="hv-kicker"><span>/*</span><b>02</b><span>Interaction gallery</span><span>*/</span></div>
+        <div class="hv-head">
+          <h2 id="gallery-title" class="hv-h2 gallery">Small rules. Visible results.</h2>
+          <div class="hv-gallery-lede">
+            <p>Three demos, each a handful of lines. The Examples catalog has the rest.</p>
+            <a href="/examples/">All examples →</a>
+          </div>
+        </div>
+        <div class="hv-tiles">
+          <article class="hv-tile counter-tile" aria-labelledby="t21">
+            <div class="hv-tile-head"><span><b>2.1</b> State and events</span><span>counter.css</span></div>
+            <div class="counter">
+              <div class="hv-big"><output class="value" aria-live="polite">3</output></div>
+              <div class="hv-ctl">
+                <h3 id="t21">A number that lives in CSS</h3>
+                <div>
+                  <button type="button" class="minus" aria-label="Decrement">−</button>
+                  <button type="button" class="plus" aria-label="Increment">+</button>
+                </div>
+                <p>Each click runs one declaration. The text on screen is the state.</p>
+              </div>
+            </div>
+            <div class="hv-tile-code"><HomeCode code={COUNTER} class="counter-code" label="counter.css" chips={{ 1: ['chip-count', '3'] }} /></div>
+          </article>
+
+          <article class="hv-tile canvas-tile" aria-labelledby="t22">
+            <div class="hv-tile-head"><span id="t22"><b>2.2</b> Event-time values</span><span>canvas.css</span></div>
+            <button type="button" class="canvas"><span class="sr-only">Canvas: click to capture the pointer position; Enter or Space captures the centre. </span>
+              <span class="hv-xy"><span><i>--x </i><span class="cx">—</span></span><span><i>--y </i><span class="cy">—</span></span></span>
+              <span class="dot" aria-hidden="true"></span>
+              <span class="ring" aria-hidden="true"></span>
+              <span class="hv-canvas-hint"><span class="first">Click anywhere</span><span class="again">Click again</span></span>
+            </button>
+            <div class="hv-tile-text"><strong>Captured, not tracked.</strong> <span class="hv-mono" style="font-size:13px">event()</span> reads the pointer once, at the moment of the click.</div>
+            <HomeCode code={CANVAS} class="canvas-code" label="canvas.css" chips={{ 1: ['chip-cx', ''], 2: ['chip-cy', ''] }} />
+          </article>
+
+          <article class="hv-tile preferences" aria-labelledby="t23">
+            <div class="hv-pref-text">
+              <div class="hv-tile-head"><span><b>2.3</b> Persistent state</span><span>preferences.css</span></div>
+              <div>
+                <h3 id="t23">Remembered across reloads</h3>
+                <p>Pick a theme, then reload the page. <span class="hv-mono" style="font-size:13px">persist()</span> stores the value and restores it before the first paint.</p>
+              </div>
+              <div class="hv-tile-code"><HomeCode code={PREFS} class="pref-code" label="preferences.css" chips={{ 1: ['chip-theme', 'light'] }} /></div>
+            </div>
+            <div class="hv-pref-demo">
+              <div role="group" aria-label="Theme" class="hv-seg">
+                <button type="button" class="light" aria-pressed="true">Light</button>
+                <button type="button" class="dark" aria-pressed="false">Dark</button>
+              </div>
+              <div class="sample">
+                <span class="hv-mono">--theme: "<span class="theme-v">light</span>"</span>
+                <strong>The preference outlives the page.</strong>
+                <span>Saved under the key "home-theme". Reload to check.</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 Model -->
+    <section id="model" class="hv-model" aria-labelledby="model-title">
+      <span aria-hidden="true" class="hv-model-glyph">{'{ }'}</span>
+      <div class="hv-wrap">
+        <div class="hv-kicker"><span>/*</span><b>03</b><span>How it works</span><span>*/</span></div>
+        <div class="hv-head">
+          <h2 id="model-title" class="hv-h2 model">State belongs in your styles.</h2>
+          <p class="hv-lede">Every rule follows the same path. An event updates a state, the state reaches the DOM, and ordinary CSS styles the result.</p>
+        </div>
+        <div class="hv-flow">
+          <span aria-hidden="true" class="hv-track"></span>
+          <span aria-hidden="true" class="hv-pulse"></span>
+          <ol class="hv-nodes">
+            {NODES.map(([name, frag, desc, kind, live], i) => (
+              <li>
+                <span class="hv-circle" aria-hidden="true">0{i + 1}</span>
+                <span class="name">{name}</span>
+                <span class="frag">{frag}</span>
+                <span class="desc">{desc}</span>
+                {kind === 'event'
+                  ? <span class={`live ${kind}`}><span class="idle">waiting for click</span><span class="busy">click on button</span></span>
+                  : <span class={`live ${kind}`}>{live}</span>}
+              </li>
+            ))}
+          </ol>
+        </div>
+        <div class="hv-send-row">
+          <button type="button" class="hv-btn ink hv-send">Send a click</button>
+          <span>Same menu as section <a href="#syntax">01</a>. Both stay in sync.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 Runtime -->
+    <section id="runtime" class="hv-band alt runtime" aria-labelledby="runtime-title">
+      <div class="hv-wrap">
+        <div class="hv-kicker"><span>/*</span><b>04</b><span>Runtime</span><span>*/</span></div>
+        <div class="hv-runtime">
+          <div class="hv-runtime-copy">
+            <h2 id="runtime-title" class="hv-h2">Take only what you use.</h2>
+            <p>Three builds of one runtime. Full and Compact have every module; Compact keeps a shorter feature registry. Custom is yours to choose.</p>
+            <div role="radiogroup" aria-label="Bundle" class="hv-seg">
+              <button type="button" role="radio" class="full" aria-checked="true">Full</button>
+              <button type="button" role="radio" class="compact" aria-checked="false">Compact</button>
+              <button type="button" role="radio" class="custom" aria-checked="false">Custom</button>
+            </div>
+            <div class="hv-size">
+              <span>
+                <span class="num"><span data-for="full">{kB(STANDARD.gzip)}</span><span data-for="compact">{kB(COMPACT.gzip)}</span><span data-for="custom"><span class="mods-v">9</span>/9</span></span>
+                <span class="unit"><span data-for="full">kB gzip</span><span data-for="compact">kB gzip</span><span data-for="custom">modules</span></span>
+              </span>
+              <span class="note"><span data-for="full">reactive-css.min.js, measured from the local v{v} build</span><span data-for="compact">reactive-css.compact.min.js, measured from the local v{v} build</span><span data-for="custom">Size is measured when the Bundle Builder builds it.</span></span>
+            </div>
+            <a href="/bundle-builder/" style="align-self:flex-start;font-size:15px;font-weight:500">Open the Bundle Builder →</a>
+          </div>
+          <div class="hv-runtime-grid">
+            <div class="hv-mods">
+              {MODS.map(([id, name, fns, features]) => (
+                <button type="button" class={`mod ${id}`} aria-pressed="true" disabled title={`Catalog features: ${features}`}>
+                  <span>{name}</span>
+                  <span class="fns">{fns}</span>
+                </button>
+              ))}
+            </div>
+            <span class="hv-mod-note"><span data-for="fixed">The library's 15 catalog features, in nine groups. Full and Compact include every one.</span><span data-for="custom">Click modules to add or remove them. Core is always included; the Bundle Builder adds what a feature requires.</span></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 Native first -->
+    <section id="native" class="hv-native" aria-labelledby="native-title">
+      <div class="hv-wrap">
+        <div class="hv-kicker"><span>/*</span><b>05</b><span>Native first</span><span>*/</span></div>
+        <h2 id="native-title">Use CSS where CSS is enough. Extend it only when it isn't.</h2>
+        <div class="hv-sides">
+          <div class="hv-side">
+            <span>Native CSS · no runtime involved</span>
+            <div><span>:hover</span><span>:focus-visible</span><span>:checked</span><span>:has()</span><span>@keyframes</span><span>transition</span><span>@container</span><span>&lt;details&gt;</span><span>popover</span></div>
+          </div>
+          <div class="hv-side">
+            <span>Reactive CSS · added by the runtime</span>
+            <div><span>state()</span><span>:on()</span><span>event()</span><span>persist()</span><span>bind()</span><span>:when()</span><span>--attr-*</span></div>
+          </div>
+        </div>
+        <div class="hv-native-foot">
+          <p>If <span>:has()</span> or <span>:checked</span> already does the job, use it. The runtime only handles what the browser doesn't understand, and without it the page falls back to plain CSS.</p>
+          <a href="/docs/simplify-css/">Read Simplify CSS →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 What comes next -->
+    <section id="next" class="next" aria-labelledby="next-title">
+      <div class="hv-next-band">
+        <div class="hv-needles" aria-hidden="true" set:html={needleSpans} />
+        <div class="hv-needles near" aria-hidden="true" set:html={needleSpans} />
+        <div class="hv-wrap">
+          <div class="hv-kicker"><span>/*</span><b>06</b><span>What comes next</span><span>*/</span></div>
+          <div class="hv-head">
+            <h2 id="next-title" class="hv-h2 next-h">CSS is evolving. We're exploring what comes next.</h2>
+            <p class="hv-lede">Browsers keep adding state-like features. Reactive CSS tries the ones that aren't there yet, in syntax that should feel familiar if they arrive. Below, a live specimen sheet: every value is reading this page right now.</p>
+          </div>
+        </div>
+      </div>
+      <div class="hv-wrap hv-sheet">
+        <div class="hv-spec">
+          <div class="cell c-mouse"><span><span>source</span><span></span></span><span>mouse()</span><span><span data-when="out">move over this section</span><span data-when="over">x <span class="n px x"></span> · y <span class="n px y"></span></span></span><span>Pointer position, read live.</span></div>
+          <div class="cell c-element"><span><span>source</span><span></span></span><span>element()</span><span><span class="n w"></span> × <span class="n h"></span> (this cell)</span><span>Size of an element, kept up to date as it resizes.</span></div>
+          <div class="cell c-viewport"><span><span>source</span><span></span></span><span>viewport()</span><span><span class="n w"></span> × <span class="n h"></span></span><span>Size of the viewport.</span></div>
+          <div class="cell c-visible"><span><span>source</span><span></span></span><span>visible()</span><span class="v"><span class="yes">true</span><span class="no">false</span></span><span>Whether an element is on screen.</span></div>
+          <div class="cell c-live"><span><span>source</span><span></span></span><span>live()</span><span class="n t"></span><span>Keeps a value updating over time: a new random() every second.</span></div>
+          <button type="button" class="cell c-random"><span><span>value</span><span>click</span></span><span>random()</span><span class="r">0.42</span><span>A random number, drawn when the rule runs.</span><span class="sr-only"> Draw a new number.</span></button>
+          <button type="button" class="cell c-pick"><span><span>value</span><span>click</span></span><span>pick()</span><span>"<span class="p">Hello!</span>"</span><span>One value from a list.</span><span class="sr-only"> Choose another greeting.</span></button>
+          <div class="cell c-previous"><span><span>history</span><span></span></span><span>previous()</span><span>previous(--count) → <span class="v">3</span></span><span>The value before the last change. Uses the counter in 2.1.</span></div>
+          <div class="cell c-direction"><span><span>history</span><span></span></span><span>direction()</span><span class="v">0  no change yet</span><span>Whether the last change went up or down.</span></div>
+          <div class="cell c-when"><span><span>condition</span><span></span></span><span>when()</span><span>when(--count &gt; 5, "many", "few") → "<span class="v">few</span>"</span><span>Picks one of two values from a condition.</span></div>
+          <div class="cell c-whensel"><span><span>selector</span><span></span></span><span>:when()</span><span>.home:when(--count &gt; 5) → <span data-when="yes">true</span><span data-when="no">false</span></span><span>Matches while a condition holds.</span></div>
+          <div class="cell c-changed"><span><span>selector</span><span></span></span><span>:changed()</span><span><span data-when="idle">waiting for --count</span><span data-when="now">matching now</span></span><span>Matches right after a value changes.</span></div>
+        </div>
+        <div class="hv-next-links">
+          <a href="/docs/reference/">API reference →</a>
+          <a href="/vision/">Read the Vision</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07 Experiments: the featured experiment runs live, in its own frame and runtime. -->
+    <section id="experiments" aria-labelledby="experiments-title" class="relative overflow-hidden bg-[oklch(0.16_0.01_70)] text-[oklch(0.95_0.004_85)]">
+      <div class={`${container} flex flex-wrap items-center gap-[clamp(48px,6vw,96px)] py-[clamp(56px,8vw,112px)]`}>
+        <div class="flex max-w-[540px] flex-[1_1_380px] flex-col gap-[clamp(32px,4vw,48px)]">
+          <div class="flex flex-col gap-5">
+            <div class="flex gap-3 font-mono text-meta text-[oklch(0.7_0.006_80)]"><span>/*</span><span class="text-[oklch(0.95_0.004_85)]">07</span><span>Experiments</span><span>*/</span></div>
+            <h2 id="experiments-title" class="m-0 text-[clamp(48px,7.4vw,108px)] leading-[0.88] font-semibold tracking-[-0.055em]">Experi&shy;ments<span class="text-[oklch(0.62_0.2_35)]">.</span></h2>
+            <p class="m-0 max-w-[44ch] text-body leading-[1.6] text-pretty text-[oklch(0.78_0.006_80)]">Curated demos from our lab, where Reactive CSS drives light, depth and motion instead of menus and counters. Each one is a stylesheet and the runtime.</p>
+          </div>
+          <div class="flex flex-col gap-4 border-t border-[oklch(1_0_0/0.16)] pt-[22px]">
+            <div class="flex justify-between gap-3 font-mono text-label text-[oklch(0.7_0.006_80)]"><span><span class="text-[oklch(0.68_0.19_35)]">{FEATURED.no}</span> · featured</span><span>{FEATURED.browsers.tested.join(' · ')}</span></div>
+            <h3 class="m-0 text-[clamp(24px,2.6vw,32px)] leading-[1.1] font-semibold tracking-[-0.03em]">{FEATURED.title}</h3>
+            <p class="m-0 text-note leading-[1.6] text-pretty text-[oklch(0.78_0.006_80)]">{FEATURED.description}</p>
+            <ul class="m-0 flex list-none flex-wrap gap-1.5 p-0" aria-label="Capabilities">{FEATURED.tags.map((t) => <li class="rounded-tag border border-[oklch(1_0_0/0.18)] px-2 py-1 font-mono text-label text-[oklch(0.88_0.006_85)]">{t}</li>)}</ul>
+            <div class="mt-2.5 flex flex-wrap items-center gap-x-6 gap-y-3.5">
+              <a href="/experiments/" class="inline-flex h-[46px] items-center rounded-block bg-[oklch(0.97_0.004_85)] px-5 text-base font-medium text-ink no-underline transition-colors hover:bg-white">Explore experiments</a>
+              <a href={experimentHref(FEATURED)} class="text-base font-medium text-[oklch(0.95_0.004_85)] decoration-[oklch(0.55_0.01_80)] hover:decoration-[oklch(0.95_0.004_85)]">View Motion Card →</a>
+            </div>
+          </div>
+        </div>
+        <div class="relative flex min-w-0 flex-[1_1_400px] flex-col items-center gap-[22px] py-[clamp(16px,4vw,48px)]">
+          <Orbits top="46%" rings={[{ size: 460, alpha: 0.08 }, { size: 680, dashed: true, alpha: 0.08 }, { size: 940, alpha: 0.05 }]} body={340} label="q · perihelion" />
+          <ExperimentFrame experiment={FEATURED} mode="card" title={`${FEATURED.title}, live preview`} lazy class="relative h-[clamp(440px,44vw,540px)] w-full" />
+          <span class="relative font-mono text-label text-[oklch(0.7_0.006_80)]">move over the card · click to change edition</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 08 Tooling: the MCP server. The session is illustrative, but its lines are what the server's
+         validate_css, migrate_css and suggest_bundle return for this stylesheet. -->
+    <section id="mcp" aria-labelledby="mcp-title" class="border-t border-line">
+      <div class={`${container} flex flex-wrap items-center gap-x-[clamp(40px,6vw,96px)] gap-y-9 py-[clamp(48px,6vw,88px)]`}>
+        <div class="flex max-w-[520px] flex-[1_1_360px] flex-col items-start gap-[18px]">
+          <div class="flex gap-3 font-mono text-meta text-mute"><span>/*</span><span class="text-ink">08</span><span>Tooling</span><span>*/</span></div>
+          <h2 id="mcp-title" class="m-0 text-[clamp(32px,4.2vw,56px)] leading-[0.98] font-semibold tracking-[-0.045em] text-balance">Your AI agent speaks Reactive CSS.</h2>
+          <p class="m-0 text-body leading-[1.6] text-pretty text-ink-2">Claude Code, Cursor and other MCP-compatible coding agents can use the official <span class="font-mono text-[15px] text-ink">@reactivecss/mcp</span> server: current 0.9.0 docs, API lookup, validation and migration help, so generated CSS uses the syntax that actually runs.</p>
+          <ul class="m-0 flex list-none flex-wrap gap-1.5 p-0" aria-label="Clients">{['Claude Code', 'Cursor', 'any MCP client'].map((c) => <li class="rounded-tag border border-line px-2 py-1 font-mono text-label text-ink-body">{c}</li>)}</ul>
+          <a href="/docs/mcp/" class="mt-1.5 text-base font-medium">Explore MCP integration →</a>
+        </div>
+        <figure class="m-0 max-w-[600px] min-w-0 flex-[1_1_420px] rounded-block border border-line bg-paper-band">
+          <figcaption class="flex h-[38px] items-center justify-between gap-3 border-b border-line px-3.5 font-mono text-label text-ink-2"><span class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-rx" aria-hidden="true"></span>agent session</span><span>illustrative</span></figcaption>
+          <div class="flex flex-col gap-0.5 overflow-x-auto p-4 font-mono text-[13px] leading-[23px]">
+            <div class="whitespace-pre text-ink">› validate menu.css</div>
+            <div class="whitespace-pre text-ink-2">  <span class="font-semibold text-rx" aria-label="warning">!</span> on: click(toggle(--open))     <span class="text-mute">legacy 0.8</span></div>
+            <div class="whitespace-pre text-ink-2">  <span class="font-semibold text-rx" aria-label="warning">!</span> attr: aria-expanded …        <span class="text-mute">legacy 0.8</span></div>
+            <div class="mt-2 whitespace-pre text-ink-2">  rewrite</div>
+            <div class="whitespace-pre text-ink">  .nav button:<span class="text-rx">on</span>(click) {'{'} --open: <span class="text-rx">toggle</span>(); {'}'}</div>
+            <div class="whitespace-pre text-ink">  .nav button {'{'} --attr-aria-expanded: var(--open); {'}'}</div>
+            <div class="mt-2 whitespace-pre text-ink-2">  <span class="font-semibold text-ink">✓</span> valid · custom bundle: core, events, attributes</div>
+          </div>
+          <div class="flex flex-wrap gap-x-[18px] gap-y-1 border-t border-line px-3.5 py-2.5 font-mono text-tag text-mute"><span>7 tools</span><span>8 resources</span><span>4 prompts</span><span class="ml-auto">npm release pending</span></div>
+        </figure>
+      </div>
+    </section>
+
+    <!-- Start -->
+    <section id="start" class="hv-start" aria-labelledby="start-title">
+      <div class="hv-wrap">
+        <div class="hv-start-top">
+          <div>
+            <span class="hv-mono" style="font-size:12.5px;color:var(--color-mute)">/* end of stylesheet */</span>
+            <h2 id="start-title">Start with one <span>script.</span></h2>
+          </div>
+          <div class="hv-snippet">
+            <div><span>index.html</span><button type="button" data-copy={INSTALL_TAG} aria-label="Copy script tag"><span data-copy-label>Copy</span></button></div>
+            <pre><b>&lt;script</b> src="reactive-css.min.js" defer<b>&gt;&lt;/script&gt;</b>
+<b>&lt;link</b> rel="stylesheet" href="styles.css"<b>&gt;</b></pre>
+          </div>
+        </div>
+        <nav aria-label="Next steps" class="hv-steps">
+          <a href="/docs/getting-started/"><span>5 min</span><span>Getting started →</span><span>Install, write one rule, click it.</span></a>
+          <a href="/playground/"><span>try</span><span>Playground →</span><span>Edit a rule and inspect its state.</span></a>
+          <a href="/examples/"><span>browse</span><span>Examples →</span><span>Patterns with code and notes.</span></a>
+          <a href="/docs/introduction/"><span>reference</span><span>Documentation →</span><span>Every function, its syntax and limits.</span></a>
+        </nav>
+      </div>
+    </section>
+  </main>
+  <SiteFooter groups={FOOTER_GROUPS} installTag={INSTALL_TAG} version={LIBRARY_VERSION} start={false} />
+  <SearchDialog client:idle suggested={SUGGESTED} />
+</BaseLayout>

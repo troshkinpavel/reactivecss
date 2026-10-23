@@ -1,0 +1,131 @@
+/* base.css, shared by both versions: layout and typography only. Colors and spacing come
+   from the --bg, --fg, --tint, --gap and --row tokens that style.css sets on .control-center. */
+body { place-items: start center; height: auto; min-height: 100%; background: oklch(0.968 0.005 85); }
+
+.control-center {
+  --line: color-mix(in srgb, var(--fg) 12%, transparent);
+  --muted: color-mix(in srgb, var(--fg) 60%, transparent);
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  padding-bottom: calc(var(--gap) + 4px);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgb(28 25 23 / 0.05);
+  font-size: 14px;
+}
+.control-center > .panel { margin-inline: calc(var(--gap) + 4px); }
+
+/* Live preview */
+.preview {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 1px;
+  padding: calc(var(--gap) + 2px) calc(var(--gap) + 4px) 0;
+  transition: padding 200ms;
+}
+.avatar { grid-row: 1 / 3; width: 34px; height: 34px; transition: border-radius 200ms, background 200ms; }
+.preview .name { min-height: 20px; overflow: hidden; font-size: 15px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.schedule { grid-column: 2; font-size: 12.5px; color: var(--muted); }
+.schedule::before { content: "Digest · "; }
+.bell {
+  grid-column: 3;
+  grid-row: 1 / 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 6px 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  font-size: 13px;
+  transition: opacity 200ms;
+}
+.badge { display: none; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--tint); color: #fff; font-size: 11px; font-weight: 600; }
+/* The meter and its track share the last row. */
+.preview::after { content: ''; grid-column: 1 / -1; grid-row: 3; height: 3px; margin-top: calc(var(--gap) + 2px); border-radius: 2px; background: var(--line); }
+.meter { grid-column: 1 / -1; grid-row: 3; z-index: 1; justify-self: start; height: 3px; margin-top: calc(var(--gap) + 2px); border-radius: 2px; transition: width 240ms cubic-bezier(0.2, 0, 0, 1), background 200ms; }
+
+/* Panels and rows */
+.panel {
+  display: flex;
+  flex-direction: column;
+  padding-block: 4px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--bg) 94%, white);
+  transition: background 200ms, padding 200ms;
+}
+.panel h2 { margin: 0; padding: 10px 0 8px; font-family: 'Red Hat Mono', monospace; font-size: 11.5px; font-weight: 500; color: var(--muted); }
+.setting {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-top: 1px solid var(--line);
+  transition: min-height 200ms;
+}
+.theme-option.light, .swatch.ember, .density-button, .notify-switch, .profile .setting input, .goal .history { margin-left: auto; }
+
+/* Appearance */
+.theme-option { height: 30px; margin: 0; padding: 0 10px; border: 1px solid var(--line); background: transparent; font-size: 13px; transition: background 200ms, color 200ms; }
+.theme-option + .theme-option { margin-left: -8px; border-left: none; }
+.theme-option.light { border-radius: 4px 0 0 4px; }
+.theme-option.system { border-radius: 0 4px 4px 0; }
+.swatch { width: 22px; height: 22px; padding: 0; border: none; border-radius: 50%; outline-offset: 2px; }
+.swatch + .swatch { margin-left: 2px; }
+.swatch.ember { background: #c8462c; }
+.swatch.moss { background: #3f7a5a; }
+.swatch.slate { background: #4d6284; }
+.density-button { height: 30px; padding: 0 12px; border: 1px solid var(--line); border-radius: 4px; background: transparent; font-size: 13px; }
+
+/* Notifications */
+.status { font-size: 12.5px; color: var(--muted); }
+.notify-switch { position: relative; flex: none; width: 42px; height: 24px; padding: 0; border: none; border-radius: 12px; transition: background 200ms; }
+.notify-switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+  transition: translate 200ms cubic-bezier(0.2, 0, 0, 1);
+}
+.digest { min-width: 0; gap: 12px; transition: opacity 200ms; }
+/* A fieldset does not stretch its flex content to min-height, so pad it to the row height. */
+.panel .digest { min-height: 0; padding-block: calc((var(--row) - 28px) / 2); }
+.digest legend { float: left; margin-right: auto; padding: 0; }
+.digest label { display: inline-flex; align-items: center; gap: 5px; min-height: 28px; font-size: 13px; cursor: pointer; }
+.digest input { margin: 0; accent-color: var(--tint); }
+
+/* Profile */
+.profile .setting { cursor: pointer; }
+.profile input[type="text"] {
+  width: min(200px, 56%);
+  min-width: 0;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--bg) 92%, white);
+  color: var(--fg);
+  font-size: 14px;
+}
+.profile input[type="checkbox"] { width: 18px; height: 18px; margin-right: 0; accent-color: var(--tint); }
+
+/* Focus goal */
+.goal button { width: 32px; height: 32px; padding: 0; border: 1px solid var(--line); border-radius: 4px; background: transparent; font-size: 16px; }
+.goal output { display: inline-block; min-width: 2.4ch; font-size: 20px; font-weight: 600; text-align: center; font-variant-numeric: tabular-nums; }
+.goal .history { font-family: 'Red Hat Mono', monospace; font-size: 12px; color: var(--muted); }
+@keyframes rise { from { translate: 0 12px; opacity: 0; } }
+@keyframes fall { from { translate: 0 -12px; opacity: 0; } }

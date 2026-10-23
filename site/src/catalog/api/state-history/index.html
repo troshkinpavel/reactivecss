@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>State history — Reactive CSS example</title>
+</head>
+<body>
+  <main>
+    <p class="kicker">API example 13 · <code>previous()</code> <code>direction()</code> <code>:changed()</code></p>
+    <h1>State history</h1>
+    <p class="lede">A score that remembers its last value and which way it moved.</p>
+    <section class="demo history" aria-label="State history">
+      <div class="row">
+        <button type="button" class="down" aria-label="Decrease">−</button>
+        <output class="now" aria-live="polite">0</output>
+        <button type="button" class="up" aria-label="Increase">+</button>
+      </div>
+      <p class="readout">before: <output class="prev">0</output> · moved <span class="arrow" aria-hidden="true">▲</span> <output class="word">nowhere yet</output></p>
+    </section>
+  </main>
+</body>
+</html>

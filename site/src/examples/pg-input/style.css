@@ -1,0 +1,27 @@
+/* bind(value): the field and its own state stay equal, both ways. */
+form input {
+  --name: state("", bind(value));
+}
+
+/* Only the field, the state's owner, can read --name. */
+form input:when(--name != "") {
+  border-color: #15803d;
+}
+
+/* The greeting is outside the field, so the form keeps a copy. */
+form {
+  --greeting: state("");
+}
+
+form input:on(input) {
+  --greeting: set(event(value));
+}
+
+/* Clear resets the form: bind(value) restores --name, this rule --greeting. */
+form:on(reset) {
+  --greeting: set("");
+}
+
+form:when(--greeting != "") .name {
+  content: var(--greeting);
+}

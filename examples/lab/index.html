@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demo lab — Reactive CSS examples</title>
+  <link rel="stylesheet" href="lab.css">
+  <!-- Lab tooling only: the viewer, source panel and diagnostics. The examples never load this. -->
+  <script src="lab.js" defer></script>
+</head>
+<body>
+  <header>
+    <h1>Reactive CSS demo lab <span class="ver">0.8.1</span></h1>
+    <p><a href="checklist.html">Cross-browser checklist (Chrome, Safari, Firefox)</a> · <a href="../../docs/browser-validation-0.7.1.md">validation guide</a></p>
+    <p>Every example is a standalone page with its own HTML and CSS and no JavaScript of its own (two lifecycle labs add a clearly marked JavaScript test harness). This lab shows them side by side with their source, README (explanation, limitations, manual test checklist) and optional runtime diagnostics.</p>
+  </header>
+  <div class="lab">
+    <nav aria-label="Examples">
+      <h2 class="group">Application demos and the cross-browser lab</h2>
+      <ol class="examples">
+        <li data-name="product-configurator" data-since="0.5.0"><a href="../product-configurator/">Product configurator</a><span><code>aria-disabled</code> + clamp at bounds (focus kept), totals</span></li>
+        <li data-name="multi-step-wizard" data-since="0.5.0"><a href="../multi-step-wizard/">Multi-step wizard</a><span><code>focus:</code> on the step heading, <code>aria-current</code></span></li>
+        <li data-name="interactive-quiz" data-since="0.5.0"><a href="../interactive-quiz/">Interactive quiz</a><span><code>focus:</code> to Next and headings, disabled options</span></li>
+        <li data-name="live-form-preview" data-since="0.5.0"><a href="../live-form-preview/">Live form preview</a><span><code>bind:</code>, <code>text:</code>, derived <code>data-*</code></span></li>
+        <li data-name="score-history" data-since="0.5.0"><a href="../score-history/">Score history</a><span><code>previous()</code>, <code>direction()</code>, <code>data-direction</code></span></li>
+        <li data-name="settings-panel" data-since="0.5.3"><a href="../settings-panel/">Settings panel</a><span>disabled fieldset, disclosure, <code>data-theme</code></span></li>
+        <li data-name="accessible-tabs" data-since="0.5.3"><a href="../accessible-tabs/">Accessible tabs</a><span>arrow keys, roving <code>tabindex</code>, <code>focus:</code></span></li>
+        <li data-name="shopping-cart" data-since="0.5.3"><a href="../shopping-cart/">Shopping cart</a><span>quantities, bounds, native-math totals</span></li>
+        <li data-name="notification-center" data-since="0.5.3"><a href="../notification-center/">Notification center</a><span>disclosure, dismiss, one-step undo</span></li>
+        <li data-name="form-validation" data-since="0.5.3"><a href="../form-validation/">Form validation</a><span>derived <code>required</code>, disabled submit</span></li>
+        <li data-name="keyboard-playground" data-since="0.5.3"><a href="../keyboard-playground/">Keyboard playground</a><span><code>key()</code>, <code>focusin</code>/<code>focusout</code></span></li>
+        <li data-name="focus-transitions" data-since="0.7.1"><a href="../focus-transitions/">Focus transitions</a><span><code>focus:</code>, hidden/disabled targets, popover</span></li>
+        <li data-name="keyboard-navigation" data-since="0.7.1"><a href="../keyboard-navigation/">Keyboard navigation</a><span><code>key()</code> + <code>prevent()</code> on a scrollable page</span></li>
+        <li data-name="attribute-playground" data-since="0.7.1"><a href="../attribute-playground/">Attribute playground</a><span>every <code>attr:</code> kind, live attribute table</span></li>
+        <li data-name="dynamic-components" data-since="0.7.1"><a href="../dynamic-components/">Dynamic components</a><span>lifecycle (JS test harness)</span></li>
+        <li data-name="nested-cascade" data-since="0.7.1"><a href="../nested-cascade/">Nested state &amp; cascade</a><span>ownership vs cascade, <code>@layer</code>, <code>!important</code></span></li>
+        <li data-name="form-interactions" data-since="0.7.1"><a href="../form-interactions/">Form interactions</a><span><code>bind:</code>, conditional <code>required</code>, reset</span></li>
+        <li data-name="history-motion" data-since="0.7.1"><a href="../history-motion/">History &amp; motion</a><span><code>previous()</code>, <code>direction()</code>, <code>:changed()</code></span></li>
+        <li data-name="stylesheet-lab" data-since="0.7.1"><a href="../stylesheet-lab/">Stylesheet lifecycle lab</a><span>layers, media, disabled sheets (JS test harness)</span></li>
+        <li data-name="accessible-toggle" data-since="0.5.2"><a href="../accessible-toggle/">Accessible toggle</a><span><code>state(…, bind())</code> on the owner</span></li>
+      </ol>
+      <h2 class="group">API examples — small interactions</h2>
+      <!-- A separate list: the cross-browser checklist (checklist.js) reads .examples only. -->
+      <ol class="api-list">
+        <li data-name="api/counter" data-since="0.8.0"><a href="../api/counter/">01 · Counter</a><span><code>state()</code> <code>increment()</code> <code>decrement()</code></span></li>
+        <li data-name="api/state-history" data-since="0.8.0"><a href="../api/state-history/">02 · State history</a><span><code>previous()</code> <code>direction()</code></span></li>
+        <li data-name="api/random-colors" data-since="0.8.0"><a href="../api/random-colors/">03 · Random colors</a><span><code>random()</code> <code>on()</code></span></li>
+        <li data-name="api/pick-value" data-since="0.8.0"><a href="../api/pick-value/">04 · Pick a value</a><span><code>pick()</code> <code>set()</code></span></li>
+        <li data-name="api/live-values" data-since="0.8.0"><a href="../api/live-values/">05 · Live values</a><span><code>live()</code> <code>random()</code></span></li>
+        <li data-name="api/mouse-tracker" data-since="0.8.0"><a href="../api/mouse-tracker/">06 · Mouse tracker</a><span><code>mouse()</code></span></li>
+        <li data-name="api/element-size" data-since="0.8.0"><a href="../api/element-size/">07 · Element size</a><span><code>element()</code> <code>bind:</code></span></li>
+        <li data-name="api/input-binding" data-since="0.8.0"><a href="../api/input-binding/">08 · Input binding</a><span><code>bind:</code> <code>text:</code></span></li>
+        <li data-name="api/conditional-styles" data-since="0.8.0"><a href="../api/conditional-styles/">09 · Conditional styles</a><span><code>when()</code> <code>:when()</code></span></li>
+        <li data-name="api/dynamic-attributes" data-since="0.8.0"><a href="../api/dynamic-attributes/">10 · Dynamic attributes</a><span><code>attr:</code></span></li>
+        <li data-name="api/keyboard-controls" data-since="0.8.0"><a href="../api/keyboard-controls/">11 · Keyboard controls</a><span><code>key()</code> <code>prevent()</code></span></li>
+        <li data-name="api/focus-management" data-since="0.8.0"><a href="../api/focus-management/">12 · Focus management</a><span><code>focus:</code></span></li>
+        <li data-name="api/state-selection" data-since="0.8.0"><a href="../api/state-selection/">13 · State selection</a><span><code>:nth-var()</code></span></li>
+        <li data-name="api/change-animation" data-since="0.8.0"><a href="../api/change-animation/">14 · Change animation</a><span><code>:changed()</code></span></li>
+        <li data-name="api/viewport" data-since="0.8.0"><a href="../api/viewport/">15 · Viewport tracking</a><span><code>viewport()</code></span></li>
+        <li data-name="api/visibility" data-since="0.8.0"><a href="../api/visibility/">16 · Visibility detection</a><span><code>visible()</code></span></li>
+      </ol>
+    </nav>
+    <main class="viewer" hidden>
+      <div class="bar">
+        <h2 class="title"></h2>
+        <a class="open" href="#">Open standalone</a>
+        <label><input type="checkbox" class="diag-toggle"> Diagnostics</label>
+        <label>Width <select class="width"><option value="">Full</option><option value="375">375 px</option><option value="320">320 px</option></select></label>
+      </div>
+      <iframe class="frame" title="Example"></iframe>
+      <section class="diagnostics" hidden aria-label="Diagnostics">
+        <h3>Runtime</h3>
+        <dl class="stats"></dl>
+        <h3>Attribute writes <button type="button" class="clear-log">Clear</button></h3>
+        <ol class="log"></ol>
+        <h3>Diagnostics</h3>
+        <ol class="diag"></ol>
+      </section>
+      <div class="sources">
+        <div class="tabs" role="tablist" aria-label="Source files">
+          <button type="button" role="tab" data-file="README.md" aria-selected="true">README</button>
+          <button type="button" role="tab" data-file="index.html" aria-selected="false">index.html</button>
+          <button type="button" role="tab" data-file="style.css" aria-selected="false">style.css</button>
+          <button type="button" role="tab" data-file="harness.js" aria-selected="false">harness.js</button>
+        </div>
+        <pre class="source" role="tabpanel" tabindex="0"></pre>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

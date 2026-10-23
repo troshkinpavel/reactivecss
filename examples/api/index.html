@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>API examples — Reactive CSS</title>
+  <link rel="stylesheet" href="api.css">
+  <style>
+    .list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+    .list li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+    .list a { color: var(--ink); font-weight: 600; text-decoration-color: var(--line); }
+    .list .n { font: 12.5px ui-monospace, Menlo, monospace; color: var(--ink-2); margin-right: 6px; }
+    .list .apis { font-size: 14px; }
+    .list .apis code { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="kicker">Reactive CSS 0.8.1 · examples/api/</p>
+    <h1>API examples — small interactions</h1>
+    <p class="lede">One capability per page, with the real runtime and no JavaScript of its own. Each folder has <code>index.html</code>, <code>style.css</code> (layout first, then the Reactive CSS) and a short README with the native alternative. The larger application demos are one level up, in the <a href="../lab/">demo lab</a>.</p>
+    <ol class="list">
+      <li><a href="counter/"><span class="n">01</span> Counter</a><span class="apis"><code>state()</code> <code>increment()</code> <code>decrement()</code></span></li>
+      <li><a href="state-history/"><span class="n">02</span> State history</a><span class="apis"><code>previous()</code> <code>direction()</code></span></li>
+      <li><a href="random-colors/"><span class="n">03</span> Random colors</a><span class="apis"><code>random()</code> <code>on()</code></span></li>
+      <li><a href="pick-value/"><span class="n">04</span> Pick a value</a><span class="apis"><code>pick()</code> <code>set()</code></span></li>
+      <li><a href="live-values/"><span class="n">05</span> Live values</a><span class="apis"><code>live()</code> <code>random()</code></span></li>
+      <li><a href="mouse-tracker/"><span class="n">06</span> Mouse tracker</a><span class="apis"><code>mouse()</code></span></li>
+      <li><a href="element-size/"><span class="n">07</span> Element size</a><span class="apis"><code>element()</code> <code>bind:</code></span></li>
+      <li><a href="input-binding/"><span class="n">08</span> Input binding</a><span class="apis"><code>bind:</code> <code>text:</code></span></li>
+      <li><a href="conditional-styles/"><span class="n">09</span> Conditional styles</a><span class="apis"><code>when()</code> <code>:when()</code></span></li>
+      <li><a href="dynamic-attributes/"><span class="n">10</span> Dynamic attributes</a><span class="apis"><code>attr:</code></span></li>
+      <li><a href="keyboard-controls/"><span class="n">11</span> Keyboard controls</a><span class="apis"><code>key()</code> <code>prevent()</code></span></li>
+      <li><a href="focus-management/"><span class="n">12</span> Focus management</a><span class="apis"><code>focus:</code></span></li>
+      <li><a href="state-selection/"><span class="n">13</span> State selection</a><span class="apis"><code>:nth-var()</code></span></li>
+      <li><a href="change-animation/"><span class="n">14</span> Change animation</a><span class="apis"><code>:changed()</code></span></li>
+      <li><a href="viewport/"><span class="n">15</span> Viewport tracking</a><span class="apis"><code>viewport()</code></span></li>
+      <li><a href="visibility/"><span class="n">16</span> Visibility detection</a><span class="apis"><code>visible()</code></span></li>
+    </ol>
+  </main>
+</body>
+</html>

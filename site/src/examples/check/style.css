@@ -1,0 +1,20 @@
+.task {
+  --done: state(false);
+}
+
+/* The span next to the checkbox reads the state, so it lives on .task. */
+.task input:on(change) {
+  --done: set(event(checked));
+}
+
+.task input:just-checked + span {
+  animation: pop 300ms;
+}
+
+.task input:just-unchecked + span {
+  animation: settle 300ms;
+}
+
+.task span {
+  opacity: when(--done, 0.55, 1);
+}

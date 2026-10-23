@@ -1,0 +1,77 @@
+---
+title: "Geometry & Animation"
+description: "element() reads an element’s own size into CSS. It is experimental. wave() was removed in 0.5.0 in favor of native animation. Everything else geometric stays native."
+group: Concepts
+type: Concept
+order: 17
+status: experimental
+---
+<Callout kind="experimental">
+
+`element()` shipped in 0.4.0 as experimental. Its syntax and behavior may still change.
+
+</Callout>
+
+## element(width | height)
+CSS has no way to read an element's own size into a value. Container units measure a container for its descendants, and `anchor-size()` measures an anchor. `element(width)` and `element(height)` return the element's **border-box** size in px.
+
+<Example id="geometry" />
+
+### How it works
+- One shared `ResizeObserver` for the page, with no layout reads of its own.
+- Values are written in the next frame, so there is one frame of lag.
+- No value (`unset`) until the first measurement, so a `var()` fallback applies. The browser measures before the element's first paint, and the value is written in the next frame: one frame shows the fallback. `display: none` measures `0px`.
+- Only these two forms are Reactive CSS. `element(#id)` stays the native CSS Images 4 image function.
+
+### Feedback loops
+`width: calc(element(width) + 10px)` would grow forever. When a size keeps changing in the same direction right after its own writes, writes pause for two frames. If it keeps changing anyway, something else drives it (a transition, a drag) and updates resume. If it stops, it was a loop: the value is frozen and a warning names the element.
+
+## wave() was removed
+0.4.0 shipped an experimental `wave(min, max, duration)` for periodic motion. 0.5.0 removed it: it was a convenience over native `@property` and `@keyframes`, at a measured style cost of 171–181 ms per second for 1,000 animated elements, where a composited `@keyframes` animation of `translate` costs almost nothing. A `wave()` declaration is now left to the browser, which drops it as invalid.
+
+```css floating.css
+@property --y {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@keyframes y {
+  from { --y: -8px; }
+  to { --y: 8px; }
+}
+
+.floating {
+  translate: 0 var(--y);
+  animation: y 1.5s ease-in-out infinite alternate;
+}
+```
+
+Or animate `translate` directly, which the browser can composite. Add a `prefers-reduced-motion` rule either way.
+
+## Use native CSS for these
+Several proposed functions were rejected because native CSS already does the job in Chromium and WebKit.
+
+| Instead of | Use | Example |
+| --- | --- | --- |
+| `map()` | `progress()` | `opacity: progress(var(--mx), 0px, 600px)` |
+| `distance()` | `hypot()` | `hypot(var(--dx), var(--dy))` |
+| `smooth()` | `transition` | `transition: translate 300ms` |
+| value `cycle()` | `@keyframes` with `steps()` | `animation: spin 1s steps(4) infinite` |
+| cross-element `element()` | container units, `anchor-size()` | `width: 50cqw` |
+
+```css spotlight.css
+/* What map() would have done, with native progress() */
+.stage { --mx: mouse(x, local); }
+.stage .spot { opacity: progress(var(--mx), 0px, 600px); }
+```
+
+## Not shipped
+<Callout kind="caution" title="Planned, not available">
+
+`history(--x, n)`, `spring()`, `throttle()`, `debounce()` and `element(selector, width)` are recorded as planned or deferred. They are not part of 0.9.0. For a spring on discrete changes, a `transition` with a `linear()` easing curve already works natively.
+
+</Callout>
+
+## Related
+<Related ids={["reference/element","reference/mouse","reference/typed","history"]} />

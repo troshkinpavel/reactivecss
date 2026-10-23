@@ -1,0 +1,16 @@
+/* Change animation */
+.likes { text-align: center; }
+.likes .n { display: inline-block; margin: 0 0 16px; font-size: 56px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.likes .row { justify-content: center; }
+@keyframes pop   { 30% { scale: 1.45; color: var(--accent); } }
+@keyframes flash { 30% { color: var(--accent); } }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+.likes        { --likes: state(0); }
+.likes .like  { on: click(increment(--likes)); }
+.likes .reset { on: click(set(--likes, 0)); }
+.likes .n     { text: var(--likes); }
+.likes:changed(--likes) .n { animation: pop 450ms ease-out; }          /* restarts on every change */
+@media (prefers-reduced-motion: reduce) {
+  .likes:changed(--likes) .n { animation-name: flash; }                /* color only, no scaling */
+}

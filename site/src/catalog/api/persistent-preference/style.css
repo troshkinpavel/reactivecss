@@ -1,0 +1,19 @@
+/* Persistent preference */
+.prefs { display: grid; gap: 14px; }
+.prefs .list { margin: 0; padding: 0; list-style: none; border: 1px solid var(--line); border-radius: 4px; }
+.prefs .list li { padding: 14px 14px; border-bottom: 1px solid var(--line); transition: padding 150ms; }
+.prefs .list li:last-child { border-bottom: 0; }
+.prefs .readout { margin: 0; }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+/* Stored in localStorage under rcss:examples.density. */
+.prefs { --density: state(comfortable, persist("examples.density")); }
+
+.prefs .comfortable:on(click) { --density: set(comfortable); }
+.prefs .compact:on(click) { --density: set(compact); }
+
+.prefs .comfortable { --attr-aria-pressed: when(--density == comfortable); }
+.prefs .compact { --attr-aria-pressed: when(--density == compact); }
+
+.prefs:when(--density == compact) .list li { padding: 6px 14px; font-size: 14px; }
+.prefs .current { content: var(--density); }

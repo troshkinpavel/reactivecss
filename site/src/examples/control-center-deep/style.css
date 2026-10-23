@@ -1,0 +1,161 @@
+/* Layout and typography live in base.css, shared by both versions. */
+
+/* ── State ───────────────────────────────── */
+.control-center {
+  --theme: state(light);
+  --accent: state(ember);
+  --density: state(comfortable);
+  --notify: state(true);
+  --digest: state("Daily");
+  --name: state("Alex Rivera");
+  --round: state(true);
+  --goal: state(4);
+  --goal-was: previous(--goal);
+}
+
+/* ── Appearance controls ─────────────────── */
+.theme-option.light:on(click)  { --theme: set(light); }
+.theme-option.dark:on(click)   { --theme: set(dark); }
+.theme-option.system:on(click) { --theme: set(system); }
+
+.swatch.ember:on(click) { --accent: set(ember); }
+.swatch.moss:on(click)  { --accent: set(moss); }
+.swatch.slate:on(click) { --accent: set(slate); }
+
+.density-button:on(click) {
+  --density: cycle(comfortable, compact);
+}
+
+/* ── Theme and accent ────────────────────── */
+.control-center {
+  --bg: #fbfaf7;
+  --fg: #1c1917;
+  --tint: #c8462c;
+  background: var(--bg);
+  color: var(--fg);
+  transition: background 200ms, color 200ms;
+}
+
+.control-center:when(--theme == dark) {
+  --bg: #1c1917;
+  --fg: #f5f5f4;
+}
+
+@media (prefers-color-scheme: dark) {
+  .control-center:when(--theme == system) {
+    --bg: #1c1917;
+    --fg: #f5f5f4;
+  }
+}
+
+.control-center:when(--accent == moss)  { --tint: #3f7a5a; }
+.control-center:when(--accent == slate) { --tint: #4d6284; }
+
+.theme-option.light:when(--theme == light),
+.theme-option.dark:when(--theme == dark),
+.theme-option.system:when(--theme == system) {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.swatch.ember:when(--accent == ember),
+.swatch.moss:when(--accent == moss),
+.swatch.slate:when(--accent == slate) {
+  outline: 2px solid var(--fg);
+}
+
+/* ── Density ─────────────────────────────── */
+.control-center {
+  --gap: when(--density == compact, 8px, 16px);
+  --row: when(--density == compact, 36px, 48px);
+}
+
+.panel   { padding: var(--gap); }
+.setting { min-height: var(--row); }
+
+.density-button::after {
+  content: when(--density == compact, "Compact", "Comfortable");
+}
+
+/* ── Notifications ───────────────────────── */
+.notify-switch:on(click) {
+  --notify: toggle();
+}
+
+.notify-switch {
+  background: when(--notify, var(--tint), #d9d5cf);
+}
+
+.notify-switch::after {
+  translate: when(--notify, 18px, 0);
+}
+
+.status::after {
+  content: when(--notify, "On", "Muted");
+}
+
+.digest input:on(change) { --digest: set(event(value)); }
+
+.digest {
+  opacity: when(--notify, 1, 0.4);
+  pointer-events: when(--notify, auto, none);
+}
+
+/* ── Profile fields ──────────────────────── */
+/* Each field copies its value into the panel's state when it changes. */
+.profile input[type="text"]:on(input)      { --name: set(event(value)); }
+.profile input[type="checkbox"]:on(change) { --round: set(event(checked)); }
+
+.avatar {
+  background: var(--tint);
+  border-radius: when(--round, 50%, 6px);
+}
+
+/* ── Focus goal and history ──────────────── */
+.goal .plus:on(click)  { --goal: increment(1); }
+.goal .minus:on(click) { --goal: decrement(1); }
+
+.goal .minus:when(--goal <= 1),
+.goal .plus:when(--goal >= 10) {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.goal output::before {
+  counter-reset: n var(--goal);
+  content: counter(n);
+}
+
+.goal .was::before {
+  counter-reset: w var(--goal-was);
+  content: "was " counter(w);
+}
+
+.goal:changed(--goal) output {
+  animation: when(direction(--goal) > 0, rise, fall) 240ms;
+}
+
+.goal .trend::after {
+  content: when(direction(--goal) > 0, "↑ up", "↓ down");
+}
+
+.goal:when(direction(--goal) == 0) .history {
+  visibility: hidden;
+}
+
+/* ── Live preview ────────────────────────── */
+.preview .name::after     { content: var(--name); }
+.preview .schedule::after { content: var(--digest); }
+
+.preview .bell {
+  opacity: when(--notify, 1, 0.35);
+}
+
+.preview .badge:when(--notify) {
+  display: inline-grid;
+}
+
+.preview .meter {
+  width: calc(var(--goal) * 10%);
+  background: var(--tint);
+}

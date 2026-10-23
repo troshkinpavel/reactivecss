@@ -1,0 +1,21 @@
+.like {
+  --liked: state(false);
+}
+
+.like button:on(click) {
+  --liked: toggle();
+}
+
+.like button {
+  --attr-aria-pressed: var(--liked);
+}
+
+.like:when(--liked) .heart {
+  color: #d4380d;
+  scale: 1.2;
+}
+
+.count {
+  counter-reset: n calc(41 + var(--liked));
+}
+.count::after { content: counter(n) " likes"; }

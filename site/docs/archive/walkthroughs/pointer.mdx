@@ -1,0 +1,25 @@
+---
+title: "Reactive pointer"
+description: "A dot that follows the pointer, using mouse() in local mode."
+group: Examples
+type: Example
+order: 29
+uses: ["reference/mouse"]
+---
+<Example id="pointer" size="expanded" />
+
+## How it works
+`mouse(x, local)` and `mouse(y, local)` return the pointer position in px from the element's top-left corner. `translate` places the dot; no `calc()` needed.
+
+## Compared with JavaScript
+Just as short. The script writes the same two properties from `pointermove`, which is the better choice if you need to smooth or throttle the values.
+
+## Accessibility
+<Callout kind="warning" title="Pointer only">
+
+The arrow keys in this preview are part of the prototype, not the CSS. Make sure nothing important depends on pointer position.
+
+</Callout>
+
+## APIs used
+<Related ids={["reference/mouse"]} />

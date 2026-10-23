@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Forms · 0.9 fixture</title>
+<script src="/dist/reactive-css.js" defer></script>
+<style>
+  body { font: 16px/1.4 system-ui, sans-serif; margin: 24px; }
+  form { --name: state(""); --size: state("m"); --level: state(5); --subscribed: state(false); display: grid; gap: 8px; max-width: 360px; }
+
+  /* Control → shared state through events: event(value), event(checked), event(value-as-number). */
+  input[name=name]:on(input) { --name: set(event(value)); }
+  form .preview { content: when(--name == "", "(empty)", "") ; }
+  form:when(--name != "") .preview { content: var(--name); }
+  input[name=volume]:on(input) { --level: set(event(value-as-number)); }
+  form .level { content: var(--level); }
+  input[name=news]:on(change) { --subscribed: set(event(checked)); }
+  form .news { content: when(--subscribed, "subscribed", "not subscribed"); }
+
+  /* Own state, two-way (0.9: bind() in state()): the control and its state stay equal. */
+  input[name=news] { --news: state(false, bind(checked)); }
+  label:has(input[name=news]:when(--news)) { font-weight: 700; }
+  select[name=color] { --color: state(blue, bind(value)); }
+  select[name=color]:when(--color == red) { outline: 2px solid red; }
+  input[name=volume] { --volume: state(5, bind(value)); }
+  input[name=nick] { --nick: state("guest", bind(value), persist("fixture-nick")); }
+
+  /* A radio group binds to an ancestor's state: bind: stays the way to do that. */
+  input[name=size] { bind: --size; }
+  form .size { content: var(--size); }
+
+  /* Validation stays native; the state only mirrors it. */
+  input[name=name]:blur:invalid { outline: 2px solid orange; }
+</style>
+</head>
+<body>
+  <form id="form">
+    <div><input name="name" required placeholder="Name"> <span class="preview">(empty)</span></div>
+    <div><label><input type="checkbox" name="news"> News</label> <span class="news">not subscribed</span></div>
+    <div><select name="color"><option>red</option><option selected>blue</option><option>green</option></select></div>
+    <div><input type="range" name="volume" min="0" max="10" value="5"> <span class="level">5</span></div>
+    <div><input name="nick" value="guest"></div>
+    <fieldset><legend>Size</legend>
+      <label><input type="radio" name="size" value="s"> S</label>
+      <label><input type="radio" name="size" value="m" checked> M</label>
+      <label><input type="radio" name="size" value="l"> L</label>
+    </fieldset>
+    <p>Size: <span class="size">m</span></p>
+    <button type="reset">Reset</button>
+  </form>
+</body>
+</html>

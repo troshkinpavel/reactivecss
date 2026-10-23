@@ -1,0 +1,384 @@
+{
+  "date": "2026-10-22T19:51:15.086Z",
+  "engine": "Chromium 156.0.8078.4 (headless, Playwright)",
+  "pages": [
+    {
+      "path": "/",
+      "jsRequests": 6,
+      "jsKB": 367.9,
+      "jsGzKB": 118.6,
+      "loadMs": 1103,
+      "dclMs": 530,
+      "islands": 1,
+      "hydratedAtLoad": 1,
+      "hydratedAfterScroll": 1,
+      "previews": 0,
+      "cls": 0.0052,
+      "longTasks": 0,
+      "longestTaskMs": 0
+    },
+    {
+      "path": "/docs/introduction/",
+      "jsRequests": 15,
+      "jsKB": 306.9,
+      "jsGzKB": 98.5,
+      "loadMs": 1678,
+      "dclMs": 1107,
+      "islands": 3,
+      "hydratedAtLoad": 2,
+      "hydratedAfterScroll": 3,
+      "previews": 1,
+      "cls": 0.0035,
+      "longTasks": 0,
+      "longestTaskMs": 0
+    },
+    {
+      "path": "/docs/troubleshooting/",
+      "jsRequests": 8,
+      "jsKB": 241.2,
+      "jsGzKB": 76.4,
+      "loadMs": 1117,
+      "dclMs": 532,
+      "islands": 2,
+      "hydratedAtLoad": 1,
+      "hydratedAfterScroll": 2,
+      "previews": 0,
+      "cls": 0.0044,
+      "longTasks": 0,
+      "longestTaskMs": 0
+    },
+    {
+      "path": "/docs/reference/state/",
+      "jsRequests": 15,
+      "jsKB": 306.9,
+      "jsGzKB": 98.5,
+      "loadMs": 1130,
+      "dclMs": 553,
+      "islands": 2,
+      "hydratedAtLoad": 1,
+      "hydratedAfterScroll": 2,
+      "previews": 1,
+      "cls": 0.0165,
+      "longTasks": 0,
+      "longestTaskMs": 0
+    },
+    {
+      "path": "/examples/",
+      "jsRequests": 8,
+      "jsKB": 274.5,
+      "jsGzKB": 87.1,
+      "loadMs": 1847,
+      "dclMs": 817,
+      "islands": 24,
+      "hydratedAtLoad": 4,
+      "hydratedAfterScroll": 19,
+      "previews": 0,
+      "cls": 0.0026,
+      "longTasks": 0,
+      "longestTaskMs": 0
+    },
+    {
+      "path": "/examples/tabs/",
+      "jsRequests": 14,
+      "jsKB": 306,
+      "jsGzKB": 97.8,
+      "loadMs": 1062,
+      "dclMs": 526,
+      "islands": 2,
+      "hydratedAtLoad": 2,
+      "hydratedAfterScroll": 2,
+      "previews": 1,
+      "cls": 0.002,
+      "longTasks": 0,
+      "longestTaskMs": 0
+    },
+    {
+      "path": "/examples/control-center/",
+      "jsRequests": 15,
+      "jsKB": 331.3,
+      "jsGzKB": 105.3,
+      "loadMs": 1097,
+      "dclMs": 546,
+      "islands": 2,
+      "hydratedAtLoad": 2,
+      "hydratedAfterScroll": 2,
+      "previews": 1,
+      "cls": 0.028,
+      "longTasks": 0,
+      "longestTaskMs": 0
+    },
+    {
+      "path": "/playground/",
+      "jsRequests": 17,
+      "jsKB": 316.3,
+      "jsGzKB": 102.3,
+      "loadMs": 1079,
+      "dclMs": 518,
+      "islands": 2,
+      "hydratedAtLoad": 2,
+      "hydratedAfterScroll": 2,
+      "previews": 1,
+      "cls": 0.0012,
+      "longTasks": 0,
+      "longestTaskMs": 0
+    },
+    {
+      "path": "/design-system/",
+      "jsRequests": 9,
+      "jsKB": 278.2,
+      "jsGzKB": 86.3,
+      "loadMs": 3051,
+      "dclMs": 1744,
+      "islands": 1,
+      "hydratedAtLoad": 1,
+      "hydratedAfterScroll": 1,
+      "previews": 0,
+      "cls": 0.0017,
+      "longTasks": 0,
+      "longestTaskMs": 0
+    },
+    {
+      "path": "/vision/",
+      "jsRequests": 8,
+      "jsKB": 286.4,
+      "jsGzKB": 90.8,
+      "loadMs": 1106,
+      "dclMs": 539,
+      "islands": 3,
+      "hydratedAtLoad": 1,
+      "hydratedAfterScroll": 3,
+      "previews": 2,
+      "cls": 0.0011,
+      "longTasks": 0,
+      "longestTaskMs": 0
+    },
+    {
+      "path": "/examples/score-history/",
+      "jsRequests": 16,
+      "jsKB": 327.6,
+      "jsGzKB": 104.1,
+      "loadMs": 1116,
+      "dclMs": 588,
+      "islands": 3,
+      "hydratedAtLoad": 2,
+      "hydratedAfterScroll": 3,
+      "previews": 3,
+      "cls": 0.023,
+      "longTasks": 0,
+      "longestTaskMs": 0
+    },
+    {
+      "path": "/docs/performance/",
+      "jsRequests": 5,
+      "jsKB": 222.3,
+      "jsGzKB": 70.4,
+      "loadMs": 1119,
+      "dclMs": 542,
+      "islands": 1,
+      "hydratedAtLoad": 1,
+      "hydratedAfterScroll": 1,
+      "previews": 0,
+      "cls": 0.0046,
+      "longTasks": 0,
+      "longestTaskMs": 0
+    },
+    {
+      "path": "/bundle-builder/",
+      "jsRequests": 10,
+      "jsKB": 258.2,
+      "jsGzKB": 82.1,
+      "loadMs": 1078,
+      "dclMs": 514,
+      "islands": 2,
+      "hydratedAtLoad": 2,
+      "hydratedAfterScroll": 2,
+      "previews": 0,
+      "cls": 0.0112,
+      "longTasks": 0,
+      "longestTaskMs": 0
+    },
+    {
+      "path": "/docs/custom-bundles/",
+      "jsRequests": 11,
+      "jsKB": 271.7,
+      "jsGzKB": 85.5,
+      "loadMs": 1102,
+      "dclMs": 548,
+      "islands": 4,
+      "hydratedAtLoad": 1,
+      "hydratedAfterScroll": 4,
+      "previews": 0,
+      "cls": 0.0787,
+      "longTasks": 0,
+      "longestTaskMs": 0
+    }
+  ],
+  "bundles": [
+    {
+      "file": "client.C7WjD2Pw.js",
+      "kB": 207.9,
+      "gzKB": 64.3
+    },
+    {
+      "file": "reactive-css.esm.CtV7xSRl.js",
+      "kB": 155.7,
+      "gzKB": 51.4
+    },
+    {
+      "file": "CodeComparison.jzv7Cjn3.js",
+      "kB": 113.3,
+      "gzKB": 32.5
+    },
+    {
+      "file": "css.BSX2zT6B.js",
+      "kB": 41.2,
+      "gzKB": 11.5
+    },
+    {
+      "file": "ControlCenterWorkspace.BkMFa25-.js",
+      "kB": 32.4,
+      "gzKB": 9.6
+    },
+    {
+      "file": "BundleBuilder.Va2FCpS1.js",
+      "kB": 17.3,
+      "gzKB": 5.5
+    },
+    {
+      "file": "CustomBundles.OCTXHDXG.js",
+      "kB": 13.9,
+      "gzKB": 4
+    },
+    {
+      "file": "Playground.DsFJQv5h.js",
+      "kB": 13.8,
+      "gzKB": 5.2
+    },
+    {
+      "file": "bundles.DEgqml05.js",
+      "kB": 13.2,
+      "gzKB": 3.3
+    },
+    {
+      "file": "VisionV2.BMoR1396.js",
+      "kB": 13.1,
+      "gzKB": 4.4
+    },
+    {
+      "file": "glossary.up1Vcz_I.js",
+      "kB": 12.8,
+      "gzKB": 3.2
+    },
+    {
+      "file": "PreviewFrame.DZvGF6kP.js",
+      "kB": 9.8,
+      "gzKB": 4.5
+    },
+    {
+      "file": "ScoreComparison.oFarQdsa.js",
+      "kB": 8.4,
+      "gzKB": 2.9
+    },
+    {
+      "file": "react.CvnImTBr.js",
+      "kB": 7.7,
+      "gzKB": 3
+    },
+    {
+      "file": "InteractiveExample.B3fqgWcr.js",
+      "kB": 6.2,
+      "gzKB": 2.6
+    },
+    {
+      "file": "ExampleDetail.UgkBfwML.js",
+      "kB": 5.7,
+      "gzKB": 2.1
+    },
+    {
+      "file": "CodePanel.Bvn4peRg.js",
+      "kB": 5.1,
+      "gzKB": 2.2
+    },
+    {
+      "file": "SearchDialog.BYs5E7eA.js",
+      "kB": 4.7,
+      "gzKB": 2.1
+    },
+    {
+      "file": "usePreviewSession.D79sEg3C.js",
+      "kB": 4,
+      "gzKB": 1.7
+    },
+    {
+      "file": "command.C9qx0Vqk.js",
+      "kB": 3.5,
+      "gzKB": 1.7
+    },
+    {
+      "file": "Inspector.C_8o9qVo.js",
+      "kB": 3.4,
+      "gzKB": 1.1
+    },
+    {
+      "file": "preload-helper.DHhhL8Zf.js",
+      "kB": 1.6,
+      "gzKB": 0.8
+    },
+    {
+      "file": "TraceSpecimen.CiCNBO5k.js",
+      "kB": 1.4,
+      "gzKB": 0.8
+    },
+    {
+      "file": "CardPreview.Do6swQYL.js",
+      "kB": 1.2,
+      "gzKB": 0.7
+    },
+    {
+      "file": "CopyButton.DROESE_E.js",
+      "kB": 1,
+      "gzKB": 0.6
+    },
+    {
+      "file": "SegmentedControl.nOwzjIFD.js",
+      "kB": 1,
+      "gzKB": 0.6
+    },
+    {
+      "file": "Button.Bvi3v3w0.js",
+      "kB": 0.9,
+      "gzKB": 0.5
+    },
+    {
+      "file": "TabList.BKanYotv.js",
+      "kB": 0.7,
+      "gzKB": 0.5
+    },
+    {
+      "file": "branches.CJoAfCIg.js",
+      "kB": 0.4,
+      "gzKB": 0.3
+    },
+    {
+      "file": "jsx-runtime.Cr1s1OSH.js",
+      "kB": 0.4,
+      "gzKB": 0.3
+    },
+    {
+      "file": "runtime/reactive-css.min.js (inlined into each preview document)",
+      "kB": 145.5,
+      "gzKB": 48.2
+    },
+    {
+      "file": "preview/bridge.js (inlined into each preview document)",
+      "kB": 7.8,
+      "gzKB": 3.1
+    }
+  ],
+  "memory": {
+    "note": "JS heap of the top-level page after GC. Sandboxed previews may run in their own process and are not included.",
+    "baselineMB": 1.2,
+    "controlCenterMB": 3.5,
+    "afterNavigatingAwayMB": 1.2
+  }
+}

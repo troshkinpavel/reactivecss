@@ -1,0 +1,16 @@
+---
+// Build-time wrapper: highlights HTML and JS with Shiki, then hydrates the interactive
+// example when it scrolls into view. Pages and MDX use this, never the React island directly.
+import { getExample } from '~/examples/manifest';
+import { highlight } from '~/lib/code/highlight';
+import { COMPARISON_NOTE, InteractiveExample, type ExampleSize } from './InteractiveExample';
+
+interface Props { id: string; size?: ExampleSize; controls?: boolean }
+const { id, size = 'standard', controls = false } = Astro.props;
+const example = getExample(id);
+const highlighted = {
+  html: await highlight(example.files.html, 'html'),
+  js: example.files.js ? await highlight(COMPARISON_NOTE + example.files.js, 'js') : null,
+};
+---
+<InteractiveExample client:visible example={example} size={size} controls={controls} highlighted={highlighted} />

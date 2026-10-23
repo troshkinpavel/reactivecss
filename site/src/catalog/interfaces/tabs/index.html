@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tabs — Reactive CSS example</title>
+</head>
+<body>
+  <main>
+    <p class="kicker">Interface 01 · <code>state()</code> <code>:on()</code> <code>cycle()</code> <code>:nth-var()</code> <code>--attr-*</code> <code>focus:</code></p>
+    <h1>Tabs</h1>
+    <p class="lede">Tabs selected by click or arrow keys, with the ARIA tab pattern written from one state.</p>
+    <section class="demo tabs" aria-label="Tabs">
+      <div role="tablist" aria-label="Release notes">
+        <button class="tab" role="tab" id="tab-1" aria-controls="panel-1">Overview</button>
+        <button class="tab" role="tab" id="tab-2" aria-controls="panel-2">Syntax</button>
+        <button class="tab" role="tab" id="tab-3" aria-controls="panel-3">Support</button>
+      </div>
+      <div class="panels">
+        <div class="panel" role="tabpanel" id="panel-1" aria-labelledby="tab-1">One state on the tab set, --active, picks the tab and the panel.</div>
+        <div class="panel" role="tabpanel" id="panel-2" aria-labelledby="tab-2">:nth-var(--active) matches the tab and the panel at that position.</div>
+        <div class="panel" role="tabpanel" id="panel-3" aria-labelledby="tab-3">Arrow keys move the selection and the focus, as the ARIA tab pattern expects.</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

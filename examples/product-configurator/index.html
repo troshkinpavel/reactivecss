@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Product configurator — Reactive CSS example</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Product configurator</h1>
+    <p class="note">A local UI example: no checkout, no network requests, nothing is stored. Prices are in USD.</p>
+
+    <div class="products">
+      <!-- Each <form class="product"> owns its own state: the two cards are independent. -->
+      <form class="product" id="lamp" aria-labelledby="lamp-name">
+        <div class="swatch" aria-hidden="true"></div>
+        <h2 id="lamp-name">Desk lamp</h2>
+        <p class="base">Base price: $49.00 · Silver finish: +$10.00 · Gift wrapping: +$5.00 per order</p>
+
+        <fieldset class="qty">
+          <legend>Quantity (1–10)</legend>
+          <button type="button" class="minus" aria-label="Decrease quantity">−</button>
+          <input class="count" type="number" name="quantity" value="1" min="1" max="10" step="1" inputmode="numeric" aria-label="Quantity">
+          <button type="button" class="plus" aria-label="Increase quantity">+</button>
+        </fieldset>
+
+        <fieldset class="color">
+          <legend>Color</legend>
+          <label><input type="radio" name="color" value="black" checked> Black</label>
+          <label><input type="radio" name="color" value="silver"> Silver (+$10.00)</label>
+          <label><input type="radio" name="color" value="white"> White</label>
+        </fieldset>
+
+        <label class="gift"><input type="checkbox" name="gift"> Gift wrapping (+$5.00)</label>
+
+        <p class="summary">Total: <span class="total" aria-live="polite">$<span class="dollars">49</span>.00</span></p>
+        <button type="reset">Reset</button>
+      </form>
+
+      <form class="product" id="mug" aria-labelledby="mug-name">
+        <div class="swatch" aria-hidden="true"></div>
+        <h2 id="mug-name">Travel mug</h2>
+        <p class="base">Base price: $49.00 · Silver finish: +$10.00 · Gift wrapping: +$5.00 per order</p>
+        <fieldset class="qty">
+          <legend>Quantity (1–10)</legend>
+          <button type="button" class="minus" aria-label="Decrease quantity">−</button>
+          <input class="count" type="number" name="quantity" value="1" min="1" max="10" step="1" inputmode="numeric" aria-label="Quantity">
+          <button type="button" class="plus" aria-label="Increase quantity">+</button>
+        </fieldset>
+        <fieldset class="color">
+          <legend>Color</legend>
+          <label><input type="radio" name="color" value="black" checked> Black</label>
+          <label><input type="radio" name="color" value="silver"> Silver (+$10.00)</label>
+          <label><input type="radio" name="color" value="white"> White</label>
+        </fieldset>
+        <label class="gift"><input type="checkbox" name="gift"> Gift wrapping (+$5.00)</label>
+        <p class="summary">Total: <span class="total" aria-live="polite">$<span class="dollars">49</span>.00</span></p>
+        <button type="reset">Reset</button>
+      </form>
+    </div>
+  </main>
+</body>
+</html>

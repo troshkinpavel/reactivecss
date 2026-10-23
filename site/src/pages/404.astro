@@ -1,0 +1,28 @@
+---
+// Served by static hosts for unknown paths. noindex, and kept out of the sitemap by @astrojs/sitemap.
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { SearchDialog } from '~/components/navigation/SearchDialog';
+import { SiteFooter } from '~/components/navigation/SiteFooter';
+import { SiteHeader, SiteMenu } from '~/components/navigation/SiteHeader';
+import { SectionKicker } from '~/components/ui/SectionKicker';
+import { buttonClass } from '~/components/ui/Button';
+import { FOOTER_GROUPS, HOME_LINKS, SUGGESTED } from '~/lib/content/site';
+import { INSTALL_TAG } from '~/lib/content/home';
+import { LIBRARY_VERSION } from '~/lib/content/reference';
+---
+<BaseLayout title="Page not found" description="This page does not exist. Start from the documentation or the examples." robots="noindex, follow">
+  <SiteHeader variant="home" links={HOME_LINKS} menuTarget="site-menu" />
+  <SiteMenu id="site-menu" links={HOME_LINKS} />
+  <main id="main" class="mx-auto max-w-(--container-marketing) px-(--gutter) pt-[clamp(56px,10vw,144px)] pb-[clamp(64px,9vw,128px)]">
+    <SectionKicker comment n="404" label="Not found" />
+    <h1 class="m-0 max-w-[16ch] text-[clamp(44px,8vw,96px)] leading-[0.95] font-semibold tracking-[-0.05em] text-balance">This page doesn’t exist.</h1>
+    <p class="mt-6 mb-8 max-w-[56ch] text-[clamp(17px,1.6vw,20px)] leading-[1.55] text-pretty text-ink-body">The link may be old, or the page may have moved. Search the documentation, or start from one of these.</p>
+    <div class="flex flex-wrap gap-2.5">
+      <a href="/docs/getting-started/" class={buttonClass('primary', 'lg')}>Get started</a>
+      <a href="/examples/" class={buttonClass('secondary', 'lg')}>Examples</a>
+      <a href="/docs/reference/" class={buttonClass('secondary', 'lg')}>API reference</a>
+    </div>
+  </main>
+  <SiteFooter groups={FOOTER_GROUPS} installTag={INSTALL_TAG} version={LIBRARY_VERSION} />
+  <SearchDialog client:idle suggested={SUGGESTED} />
+</BaseLayout>

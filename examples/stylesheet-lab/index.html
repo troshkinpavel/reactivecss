@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stylesheet lifecycle lab — Reactive CSS example</title>
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="state-v1.css" id="decl">
+  <link rel="stylesheet" href="layers.css">
+  <link rel="stylesheet" href="extra.css" id="extra">
+  <link rel="stylesheet" href="labels-v1.css" id="labels">
+  <script src="../../dist/reactive-css.min.js" defer></script>
+  <!-- Test harness only: toggles, inserts and swaps <link> stylesheets. Not a Reactive CSS API. -->
+  <script src="harness.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Stylesheet lifecycle lab</h1>
+    <p class="note">The behavior is spread over several stylesheets. The <strong>test harness</strong> (plain JavaScript, <code>harness.js</code>) disables, re-media-queries, inserts, removes and swaps them, so you can watch Reactive CSS follow. The harness is not a Reactive CSS API.</p>
+
+    <section class="lab" id="lab" aria-label="Lab">
+      <p class="count">n = <span class="n">0</span> <button type="button" class="inc">+1</button></p>
+      <table class="out">
+        <tr><th scope="row">Layer winner (layers.css)</th><td class="layer">(no runtime)</td></tr>
+        <tr><th scope="row">Media query (layers.css)</th><td class="media">(no runtime)</td></tr>
+        <tr><th scope="row">extra.css</th><td class="flag">extra.css is off</td></tr>
+        <tr><th scope="row">Inserted sheet</th><td class="ins">no inserted sheet</td></tr>
+        <tr><th scope="row">labels-v1/v2.css</th><td class="label">(no runtime)</td></tr>
+        <tr><th scope="row">Step of +1 button</th><td class="step">1</td></tr>
+      </table>
+    </section>
+
+    <section class="harness" aria-label="Test harness (JavaScript)">
+      <h2>Test harness <small>(JavaScript, not Reactive CSS)</small></h2>
+      <div class="buttons">
+        <button type="button" data-h="extra">Toggle extra.css (disabled)</button>
+        <button type="button" data-h="media">Toggle the media attribute of extra.css</button>
+        <button type="button" data-h="insert">Insert / remove inserted.css</button>
+        <button type="button" data-h="labels">Swap labels-v1.css ↔ labels-v2.css (recompile)</button>
+        <button type="button" data-h="decl">Swap state-v1.css ↔ state-v2.css (the state's own sheet)</button>
+        <button type="button" data-h="refresh">ReactiveCSS.refresh()</button>
+      </div>
+      <pre class="log" aria-live="polite">ready</pre>
+    </section>
+  </main>
+</body>
+</html>

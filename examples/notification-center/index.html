@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Notification center — Reactive CSS example</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Notification center</h1>
+    <p class="note">Static sample notifications. Nothing is fetched or stored.</p>
+
+    <section class="center" aria-labelledby="center-title">
+      <div class="head">
+        <h2 id="center-title">Notifications</h2>
+        <p class="count" aria-live="polite"><span class="n">3</span> unread</p>
+        <button type="button" class="toggle" aria-controls="center-list">Show notifications</button>
+      </div>
+      <div class="body" id="center-list">
+        <ul class="list">
+          <li class="note-item n1"><p><strong>Build passed</strong> on main.</p>
+            <button type="button" class="read">Mark as read</button> <button type="button" class="dismiss">Dismiss</button></li>
+          <li class="note-item n2"><p><strong>New comment</strong> on your pull request.</p>
+            <button type="button" class="read">Mark as read</button> <button type="button" class="dismiss">Dismiss</button></li>
+          <li class="note-item n3"><p><strong>Invoice</strong> for October is ready.</p>
+            <button type="button" class="read">Mark as read</button> <button type="button" class="dismiss">Dismiss</button></li>
+        </ul>
+        <p class="empty">No notifications.</p>
+        <div class="actions">
+          <button type="button" class="undo">Undo dismiss</button>
+          <button type="button" class="dismiss-all">Dismiss all</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

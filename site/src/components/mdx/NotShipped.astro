@@ -1,0 +1,17 @@
+---
+// Planned, deferred, rejected and removed features, straight from the library's registry
+// (describe()), so the list cannot drift from the library.
+import { DataTable } from '~/components/docs/Tables';
+import { InlineCode } from '~/components/docs/InlineCode';
+import registry from '~/generated/registry.json';
+type F = (typeof registry.features)[number] & { reason?: string; removedIn?: string };
+const rows = (registry.features as F[]).filter((f) => f.status !== 'stable' && f.status !== 'experimental');
+const order = { removed: 0, planned: 1, rejected: 2 } as Record<string, number>;
+rows.sort((a, b) => (order[a.status] ?? 3) - (order[b.status] ?? 3));
+const label = (f: F) => (f.kind === 'function' && !f.name.includes(' ') ? `${f.name}()` : f.name);
+const status = (f: F) => (f.status === 'removed' ? `Removed in ${f.removedIn ?? '?'}` : f.status === 'planned' ? 'Planned or deferred' : 'Rejected');
+---
+<DataTable>
+  <thead><tr><th>Proposal</th><th>Kind</th><th>Status</th><th>Why, and what to use instead</th></tr></thead>
+  <tbody>{rows.map((f) => <tr><td>{label(f).includes(' ') ? label(f) : <InlineCode>{label(f)}</InlineCode>}</td><td>{f.kind}</td><td>{status(f)}</td><td>{f.reason ?? '—'}</td></tr>)}</tbody>
+</DataTable>

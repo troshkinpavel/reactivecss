@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Persisted state · 0.9 fixture</title>
+<script src="/dist/reactive-css.js" defer></script>
+<style>
+  body { font: 16px/1.4 system-ui, sans-serif; margin: 24px; }
+  /* Persisted theme, reflected to data-theme: storage first, then the attribute, then "light". */
+  html { --theme: state(light, bind(data-theme), persist("fixture-theme")); }
+  html:when(--theme == dark) body { background: #111; color: #eee; }
+  .theme:on(click) { --theme: cycle(light, dark); }
+  .theme .name { content: var(--theme); }
+  /* Persisted counter (sessionStorage), shared by two widgets with the same key. */
+  .pc { --n: state(0, persist("fixture-count", session)); }
+  .pc .inc:on(click) { --n: increment(1); }
+  .pc .v { content: var(--n); }
+</style>
+</head>
+<body>
+  <button class="theme">Theme: <span class="name">light</span></button>
+  <div class="pc" id="pc1"><button class="inc">+</button> <span class="v">0</span></div>
+  <div class="pc" id="pc2"><button class="inc">+</button> <span class="v">0</span></div>
+</body>
+</html>

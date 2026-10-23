@@ -1,0 +1,8 @@
+.pad {
+  --x: mouse(x, local);
+  --y: mouse(y, local);
+}
+
+.dot {
+  translate: var(--x) var(--y);
+}

@@ -1,0 +1,44 @@
+/* Live form preview: all behavior is in this file (Reactive CSS + native CSS). */
+
+body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #1c1c1e; background: #f6f6f4; }
+main { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+.note { color: #555; }
+.profile { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); align-items: start; }
+.fields { display: grid; gap: 12px; background: #fff; padding: 20px; border-radius: 14px; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
+.fields label { display: grid; gap: 4px; }
+.fields fieldset label, .fields > label:has(input[type=checkbox]) { display: block; }
+input, select, button { font: inherit; }
+fieldset { border: 1px solid #ddd; border-radius: 10px; }
+.buttons { display: flex; gap: 8px; }
+:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+
+/* ---- state ------------------------------------------------------------------------------
+   Initial values repeat the HTML defaults: bind: starts from the state, and form reset returns
+   every control and its state to the HTML default. */
+.profile { --name: state("Ada"); --role: state("Developer"); --notify: state(true); }
+/* 0.5.2: the accent is also mirrored to the form's data-accent attribute, so plain attribute
+   selectors style the preview (and other scripts or tests can read it). */
+.profile { --accent: state("teal", bind(data-accent)); }
+.profile input[name=display_name] { bind: --name; }
+.profile select[name=role] { bind: --role; }
+.profile input[name=accent] { bind: --accent; }
+.profile input[name=notifications] { bind: --notify; }
+
+/* ---- preview: real DOM text (text:, 0.5.1) ----------------------------------------------------
+   The HTML holds the initial preview, shown before the script runs. */
+.preview { --c: #0f766e; }
+.profile[data-accent="violet"] .preview { --c: #6d28d9; }
+.profile[data-accent="amber"] .preview { --c: #b45309; }
+.card { background: #fff; border-radius: 14px; padding: 20px; border-top: 6px solid var(--c); box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
+.card p { margin: 4px 0; }
+.avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--c); }
+.card .name { font-size: 22px; font-weight: 700; text: var(--name); }
+.profile:when(--name == "") .card .name { color: #888; text: "(no name yet)"; }
+.card .role { text: var(--role); }
+.card .accent { color: var(--c); }
+.card .accent-value { text: var(--accent); }
+.card .notify-value { text: when(--notify, "on", "off"); }
+/* attr: (0.5.3): the preview card carries the form's values as data attributes, derived from the
+   form's states (the card owns none). An empty name gives data-name="" (present, empty). */
+.card { attr: data-name var(--name); attr: data-role var(--role); attr: data-notify when(--notify, "on", "off"); }
+.card[data-notify="off"] .notify-value { color: #888; }

@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reactive CSS Playground</title>
+  <link rel="stylesheet" href="site.css">
+  <link rel="stylesheet" href="demo.css">
+  <link rel="stylesheet" href="state.css">
+  <link rel="stylesheet" href="v03.css">
+  <link rel="stylesheet" href="v04.css">
+  <link rel="stylesheet" href="v05.css">
+  <style>
+    /* ---- B. Checkbox transitions (an inline <style>, also processed) ---------- */
+    .toggles { display: flex; flex-direction: column; gap: 10px; }
+    .toggle { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
+    .toggle input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+    .toggle .icon {
+      width: 28px; height: 28px; border-radius: 8px; flex: none;
+      border: 2px solid var(--line); display: grid; place-items: center;
+      color: transparent; font-size: 16px; font-weight: 700;
+    }
+    .toggle input[type=radio] + .icon { border-radius: 50%; }
+    .toggle input:checked + .icon { background: var(--accent); border-color: var(--accent); color: white; }
+    .toggle input:focus-visible + .icon { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .toggle input:just-checked + .icon { animation: check-in 420ms cubic-bezier(.2, .9, .3, 1.5); }
+    .toggle input:just-unchecked + .icon { animation: check-out 300ms ease-out; }
+
+    @keyframes check-in {
+      0% { scale: 0.6; rotate: -25deg; }
+      100% { scale: 1; rotate: 0deg; }
+    }
+    @keyframes check-out {
+      0% { scale: 1; }
+      40% { scale: 0.75; }
+      100% { scale: 1; }
+    }
+  </style>
+  <script src="../dist/reactive-css.js" defer></script>
+</head>
+<body>
+  <header>
+    <h1>Reactive <span>CSS</span></h1>
+    <p class="lede">Reactive functions and state-transition selectors for plain CSS. Every effect below is written in CSS and run by the library: the page script only adds elements and changes variables.</p>
+    <pre class="install"><code>&lt;script src="reactive-css.min.js" defer&gt;&lt;/script&gt;</code></pre>
+  </header>
+
+  <main>
+    <section id="demo-a">
+      <h2>A. Random particles <small>random() · pick() · live()</small></h2>
+      <pre><code>.particle {
+  background: pick(#ff5d73, #ffb84d, #4dd4ac, …);
+  translate:
+    live(random(0px, calc(100cqw - 14px)), 2s)
+    live(random(0px, calc(100cqh - 14px)), 2s);
+  transition: translate 1.6s;
+}</code></pre>
+      <div class="stage" id="stage"></div>
+      <div class="controls">
+        <button data-add="10">Add 10</button>
+        <button data-add="100">Add 100</button>
+        <button data-remove="10">Remove 10</button>
+        <button data-clear>Clear</button>
+        <span class="stat" id="particle-count"></span>
+      </div>
+    </section>
+
+    <section id="demo-b">
+      <h2>B. Checkbox transitions <small>:just-checked · :just-unchecked</small></h2>
+      <pre><code>input:just-checked + .icon { animation: check-in 420ms; }
+input:just-unchecked + .icon { animation: check-out 300ms; }</code></pre>
+      <div class="toggles">
+        <label class="toggle"><input type="checkbox" checked><span class="icon">✓</span> Starts checked: no animation on load</label>
+        <label class="toggle"><input type="checkbox"><span class="icon">✓</span> Starts unchecked</label>
+        <label class="toggle"><input type="radio" name="size" checked><span class="icon">•</span> Small</label>
+        <label class="toggle"><input type="radio" name="size"><span class="icon">•</span> Medium</label>
+        <label class="toggle"><input type="radio" name="size"><span class="icon">•</span> Large</label>
+      </div>
+      <p class="stat" id="anim-count">Animations started: 0</p>
+    </section>
+
+    <section id="demo-c">
+      <h2>C. Dynamic sibling selection <small>:nth-var()</small></h2>
+      <pre><code>.carousel { --active: 3; }
+.carousel.autoplay { --active: live(random(1, 5, by 1), 1.2s); }
+.slide:nth-var(--active) { opacity: 1; scale: 1.1; }</code></pre>
+      <div class="carousel" id="carousel">
+        <div class="slide">1</div><div class="slide">2</div><div class="slide">3</div><div class="slide">4</div><div class="slide">5</div>
+      </div>
+      <div class="controls">
+        <button id="prev">← Prev</button>
+        <button id="next">Next →</button>
+        <button id="autoplay">Toggle .autoplay</button>
+        <span class="stat">Buttons call <code>style.setProperty('--active', n)</code> or toggle a class.</span>
+      </div>
+    </section>
+
+    <section id="demo-d">
+      <h2>D. Mouse tracking <small>mouse()</small></h2>
+      <pre><code>.pad { --mx: mouse(x, local); --my: mouse(y, local); }
+.pad .dot { translate: var(--mx) var(--my); }</code></pre>
+      <p><code>local</code> = CSS pixels from the top-left corner of the element that declares it (border box, here the pad). The default, <code>viewport</code>, is <code>clientX</code>/<code>clientY</code>.</p>
+      <div class="pad"><span class="trail"></span><span class="dot"></span></div>
+    </section>
+
+    <section id="demo-e">
+      <h2>E. Visibility <small>visible()</small></h2>
+      <pre><code>.reveal {
+  opacity: visible(0.6);
+  translate: 0 calc((1 - visible(0.6)) * 28px);
+}</code></pre>
+      <div class="scroller" id="scroller"></div>
+      <div class="controls">
+        <button id="add-card">Add card</button>
+        <button id="remove-card">Remove card</button>
+      </div>
+    </section>
+
+    <section id="demo-f">
+      <h2>F. Event-driven values <small>on()</small></h2>
+      <pre><code>.tile {
+  rotate: on(pointerenter, random(-14deg, 14deg));
+  background-color: on(click, pick(#ff5d73, #ffb84d, …));
+}</code></pre>
+      <div class="tiles"><button class="tile" aria-label="Tile 1"></button><button class="tile" aria-label="Tile 2"></button><button class="tile" aria-label="Tile 3"></button><button class="tile" aria-label="Tile 4"></button></div>
+      <p>Hover a tile to re-roll its rotation, click it to re-pick its color.</p>
+    </section>
+
+    <h2 class="group">State, actions and conditions <small>Phase 5: HTML and CSS only</small></h2>
+
+    <section id="demo-g">
+      <h2>G. Tabs <small>state() · on: · set() · :nth-var()</small></h2>
+      <pre><code>.tabs { --active: state(1); }
+.tab { on: click(set(--active, sibling-index())); }   /* buttons */
+.choice input { bind: --active; }                    /* or radios */
+.tab:nth-var(--active) { color: var(--accent); }
+.panel { display: none; }
+.panel:nth-var(--active) { display: block; }</code></pre>
+      <div class="tabs">
+          <div class="tab-list"><button class="tab">Overview</button><button class="tab">Settings</button><button class="tab">Activity</button></div>
+          <div class="panels">
+            <div class="panel">Overview: each component owns its own <code>--active</code>.</div>
+            <div class="panel">Settings: the buttons and the panels are two sibling groups that share the nearest state.</div>
+            <div class="panel">Activity: no script on this page handles these clicks.</div>
+          </div>
+        </div>
+      <div class="tabs choice">
+          <fieldset class="tab-list"><legend class="sr-only">Section</legend>
+            <label><input type="radio" name="tabs-choice" value="1">Overview</label><label><input type="radio" name="tabs-choice" value="2">Settings</label><label><input type="radio" name="tabs-choice" value="3">Activity</label>
+          </fieldset>
+          <div class="panels">
+            <div class="panel">Overview: a native radio group bound with <code>bind: --active</code>.</div>
+            <div class="panel">Settings: arrow keys move between the options; the checked state is announced.</div>
+            <div class="panel">Activity: the panels follow the same state through <code>:nth-var()</code>.</div>
+          </div>
+        </div>
+      <p class="stat"><strong>Accessibility.</strong> The first instance is visual switching only: plain buttons, not an ARIA tabs widget (no arrow-key navigation, no <code>aria-selected</code>, no panel association), because CSS cannot update ARIA attributes or move focus. The second instance uses a native radio group with <code>bind: --active</code>: keyboard navigation and the selected state come from HTML. It is a radio group, not a tabs widget. A full tabs pattern needs JavaScript.</p>
+    </section>
+
+    <section id="demo-h">
+      <h2>H. Accordion <small>toggle() · when()</small></h2>
+      <pre><code>.accordion { --open: state(false); }
+.trigger { on: click(toggle(--open)); }
+.content {
+  grid-template-rows: when(--open, 1fr, 0fr);
+  opacity: when(--open, 1, 0);
+  transition: grid-template-rows 250ms, opacity 250ms;
+}</code></pre>
+      <div class="accordion">
+          <button class="trigger">What is state()?</button>
+          <div class="content"><div><p>A value owned by each element that matches the rule. Every accordion here has its own.</p></div></div>
+        </div>
+      <div class="accordion">
+          <button class="trigger">Does this replace &lt;details&gt;?</button>
+          <div class="content"><div><p>No. Native &lt;details&gt;/&lt;summary&gt; has built-in accessibility semantics; prefer it when it fits. This shows animated state with plain CSS.</p></div></div>
+        </div>
+      <p class="stat"><strong>Accessibility.</strong> CSS cannot set <code>aria-expanded</code>, so screen readers are not told whether a panel is open. Native <code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code> provides that; prefer it for disclosures.</p>
+    </section>
+
+    <section id="demo-i">
+      <h2>I. Counters <small>increment() · decrement() · :when()</small></h2>
+      <pre><code>.counter { --count: state(0); }
+.inc { on: click(increment(--count)); }
+.dec { on: click(decrement(--count)); }
+.reset { on: click(set(--count, 0)); }
+output { counter-reset: n var(--count); }
+output::before { content: counter(n); }
+.counter:when(--count >= 10) output { color: green; }</code></pre>
+      <div class="counters"><div class="counter"><button class="dec" aria-label="Decrease">−</button><output></output><button class="inc" aria-label="Increase">+</button><button class="reset" aria-label="Reset to 0">0</button></div><div class="counter"><button class="dec" aria-label="Decrease">−</button><output></output><button class="inc" aria-label="Increase">+</button><button class="reset" aria-label="Reset to 0">0</button></div><div class="counter"><button class="dec" aria-label="Decrease">−</button><output></output><button class="inc" aria-label="Increase">+</button><button class="reset" aria-label="Reset to 0">0</button></div></div>
+      <p class="stat"><code>content: var(--count)</code> cannot print a number in CSS; a CSS counter can. <strong>Accessibility.</strong> Generated content is read inconsistently by screen readers, and changes are not announced (no live region). Show values that matter in real text.</p>
+    </section>
+
+    <section id="demo-j">
+      <h2>J. Toggle switch <small>when() for values and strings</small></h2>
+      <pre><code>.switch-row { --on: state(false); }
+.switch { bind: --on; appearance: none;   /* &lt;input type="checkbox" role="switch"&gt; */
+  background: … when(--on, 21px, 3px) …, when(--on, var(--accent), var(--line)); }
+.switch-label::after { content: when(--on, "On", "Off"); }</code></pre>
+      <div class="switch-row"><label><input type="checkbox" role="switch" class="switch"> Notifications</label><span class="switch-label" aria-hidden="true"></span></div>
+      <p class="stat"><strong>Accessibility.</strong> A native checkbox with <code>role="switch"</code>: focus, Space and the on/off state come from HTML. The state is bound with <code>bind:</code>, so the rest of the page can react to it.</p>
+    </section>
+
+    <section id="demo-k">
+      <h2>K. Conditional styles <small>comparisons · and / or · nested when()</small></h2>
+      <pre><code>.meter { --value: state(40); --level: state(normal); }
+.bar::before { width: calc(var(--value) * 1%);
+  background: when(--value >= 80, green,
+                when(--value &lt; 30, red, orange)); }
+.meter:when(--value >= 100 or --level == critical) {
+  border-color: red; }</code></pre>
+      <div class="meter">
+        <div class="controls"><button class="down">−10</button><button class="up">+10</button><button class="alert">Critical</button><button class="calm">Normal</button><span class="readout stat"></span></div>
+        <div class="bar"></div>
+      </div>
+    </section>
+
+    <h2 class="group">History, binding and actions <small>0.3: still HTML and CSS only</small></h2>
+
+    <section id="demo-l">
+      <h2>L. Live form preview <small>bind: · string state · :when()</small></h2>
+      <pre><code>.form-demo { --name: state(""); --role: state("Designer"); }
+input[name=name] { bind: --name; }
+select { bind: --role; }
+.who::before { content: var(--name); }
+.form-demo:when(--name == "") .who::before { content: "Your name"; }</code></pre>
+      <div class="form-demo">
+        <label>Name <input type="text" name="name" autocomplete="name"></label>
+        <label>Role <select><option>Designer</option><option>Engineer</option><option>Writer</option></select></label>
+        <label><span><input type="checkbox"> Remote</span></label>
+        <div class="badge"><span class="avatar"></span><div><div class="who"></div><div class="what"></div></div></div>
+      </div>
+    </section>
+
+    <section id="demo-m">
+      <h2>M. Counter history <small>previous() · direction() · :changed()</small></h2>
+      <pre><code>.history { --count: state(0); --last: previous(--count); }
+.history:changed(--count):when(direction(--count) > 0) .num {
+  animation: rise 300ms; }
+.history:changed(--count):when(direction(--count) &lt; 0) .num {
+  animation: fall 300ms; }</code></pre>
+      <div class="history"><button class="down" aria-label="Decrease">−</button><span class="num"></span><button class="up" aria-label="Increase">+</button><span class="was"></span></div>
+      <p class="stat">Repeated clicks restart the animation: :changed() follows each real change and clears when the animation ends.</p>
+    </section>
+
+    <section id="demo-n">
+      <h2>N. Checkbox binding <small>bind: on a checkbox</small></h2>
+      <pre><code>.settings { --enabled: state(false); }
+input[type=checkbox] { bind: --enabled; }
+.status { opacity: when(--enabled, 1, 0.4); }</code></pre>
+      <div class="settings"><label><input type="checkbox"> Enable sync</label><div class="status"></div></div>
+      <p class="stat">when(--enabled, …) with a boolean state and static values compiles to native CSS if() where supported.</p>
+    </section>
+
+    <section id="demo-o">
+      <h2>O. Keyboard <small>key(Escape, …)</small></h2>
+      <pre><code>.dialog-state { --open: state(false);
+  on: key(Escape, set(--open, false)); }
+.opener { on: click(toggle(--open)); }
+.sheet { display: when(--open, block, none); }</code></pre>
+      <div class="dialog-state"><button class="opener">Open panel</button>
+        <div class="sheet">Press Escape while focus is inside this panel. <button class="close">Close</button></div></div>
+      <p class="stat"><strong>Accessibility.</strong> Not a modal dialog: no focus trap, no focus return, no ARIA. For real dialogs use the native <code>&lt;dialog&gt;</code> element (Escape closes it natively).</p>
+    </section>
+
+    <section id="demo-p">
+      <h2>P. Cycle <small>cycle()</small></h2>
+      <pre><code>.theme-switcher { --theme: state("light"); }
+button { on: click(cycle(--theme, "light", "dark", "system")); }
+button::after { content: " " var(--theme); }
+.theme-switcher:when(--theme == "dark") .swatch { … }</code></pre>
+      <div class="theme-switcher"><button>Theme:</button><span class="swatch"></span></div>
+    </section>
+
+    <section id="demo-q">
+      <h2>Q. Typed property <small>typed() (experimental)</small></h2>
+      <pre><code>:root { --angle: typed(0deg); }   /* registers &lt;angle&gt; */
+.face { --angle: calc(var(--turn) * 90deg);
+  background: conic-gradient(from var(--angle), …);
+  transition: --angle 600ms; }</code></pre>
+      <div class="dial"><span class="face"></span><button>Rotate</button></div>
+      <p class="stat">Without the registration, a custom property cannot be transitioned: the gradient would jump.</p>
+    </section>
+
+    <section id="demo-r">
+      <h2>R. Outside click <small>outside(click, …)</small></h2>
+      <pre><code>.dropdown { --open: state(false);
+  on: outside(click, set(--open, false)); }
+.dropdown > button { on: click(toggle(--open)); }</code></pre>
+      <div class="dropdown"><button>Menu ▾</button><div class="menu"><span>Profile</span><span>Settings</span><span>Sign out</span></div></div>
+      <p class="stat"><strong>Accessibility.</strong> <code>aria-expanded</code> is not updated, and focus does not move into the menu. For popups, the native <code>popover</code> attribute gives light dismiss, top-layer rendering and accessibility for free; prefer it when it fits.</p>
+    </section>
+
+    <h2 class="group">Geometry and motion <small>0.4 (experimental)</small></h2>
+
+    <section id="demo-s">
+      <h2>S. Element geometry <small>element(width)</small></h2>
+      <pre><code>.geo { --w: element(width); width: var(--size); }
+.geo .label { font-size: clamp(12px, calc(var(--w) / 18), 28px); }
+.geo .bar { width: calc(var(--w) / 2); }
+.geo .px { counter-reset: w calc(var(--w) / 1px); }</code></pre>
+      <div class="geo-wrap">
+        <div class="controls"><button class="narrower">Narrower</button><button class="wider">Wider</button></div>
+        <div class="geo"><span class="label">Measured</span><span class="bar"></span><span class="px"></span></div>
+      </div>
+      <p class="stat"><strong>Runtime.</strong> One shared <code>ResizeObserver</code>, border-box size, written in the next frame. Drag the corner (mouse) or use the buttons (keyboard). Reading the width into the element's own width would loop; that is detected and frozen with a warning. To size children by a container natively, prefer container query units (<code>cqw</code>).</p>
+    </section>
+    <section id="demo-t">
+      <h2>T. Greetings <small>attr(), pick(split())</small></h2>
+      <pre><code>.greeting { --message: state(attr(data-message, "Hello!")); }
+.greeting output::after { content: var(--message); }
+.greeting .choice  { on: click(set(--message, attr(data-message))); }
+.greeting .shuffle { on: click(set(--message, pick(split(attr(data-greetings), "|")))); }</code></pre>
+      <div class="greeting" data-message="Hello!">
+        <output aria-live="polite"></output>
+        <div class="controls">
+          <button class="choice" data-message="Bonjour !">French</button>
+          <button class="choice" data-message="¡Hola!">Spanish</button>
+          <button class="shuffle" data-greetings="Hej!|Ciao!|Olá!|Merhaba!|こんにちは">Surprise me</button>
+        </div>
+      </div>
+      <p class="stat"><strong>Runtime, at event time.</strong> Each value comes from an attribute of the clicked button, or of the state owner at start. Attribute values are only ever text: they are escaped into one CSS string. Plain <code>content: attr(…)</code> elsewhere stays the browser's own.</p>
+    </section>
+  </main>
+
+  <footer>Reactive CSS demo. The CSS on this page lives in <code>demo.css</code>, <code>state.css</code>, <code>v03.css</code> and an inline <code>&lt;style&gt;</code>. The page script only adds elements and sets variables for demos A–F.</footer>
+  <div id="stats" class="stat"></div>
+
+  <script>
+    // Demo controls only: they add/remove elements and set variables. All visual
+    // behavior comes from the CSS above, through the library.
+    const $ = (s) => document.querySelector(s);
+
+    const stage = $('#stage');
+    const countParticles = () => ($('#particle-count').textContent = `${stage.children.length} particles`);
+    const addParticles = (n) => {
+      for (let i = 0; i < n; i++) stage.append(Object.assign(document.createElement('i'), { className: 'particle' }));
+      countParticles();
+    };
+    document.querySelectorAll('[data-add]').forEach((b) => (b.onclick = () => addParticles(+b.dataset.add)));
+    document.querySelectorAll('[data-remove]').forEach((b) => (b.onclick = () => {
+      for (let i = 0; i < +b.dataset.remove && stage.lastChild; i++) stage.lastChild.remove();
+      countParticles();
+    }));
+    $('[data-clear]').onclick = () => { stage.replaceChildren(); countParticles(); };
+    addParticles(40);
+
+    let started = 0;
+    $('#demo-b').addEventListener('animationstart', () => ($('#anim-count').textContent = `Animations started: ${++started}`));
+
+    const carousel = $('#carousel');
+    const active = () => parseInt(getComputedStyle(carousel).getPropertyValue('--active')) || 1;
+    const go = (d) => {
+      const n = carousel.children.length;
+      const next = ((active() - 1 + d + n) % n) + 1;
+      carousel.classList.remove('autoplay');
+      carousel.style.setProperty('--active', next);
+    };
+    $('#prev').onclick = () => go(-1);
+    $('#next').onclick = () => go(1);
+    $('#autoplay').onclick = () => {
+      carousel.style.removeProperty('--active'); // inline values would win over the class rule
+      carousel.classList.toggle('autoplay');
+    };
+
+    const scroller = $('#scroller');
+    let cards = 0;
+    const addCard = () => {
+      const c = document.createElement('div');
+      c.className = 'reveal';
+      c.textContent = `Card ${++cards}: fades in when 60% visible`;
+      scroller.append(c);
+    };
+    for (let i = 0; i < 8; i++) addCard();
+    $('#add-card').onclick = addCard;
+    $('#remove-card').onclick = () => scroller.lastElementChild?.remove();
+
+    const stats = $('#stats');
+    setInterval(() => {
+      if (!window.ReactiveCSS) return;
+      const s = ReactiveCSS.stats();
+      stats.textContent = `states ${s.states} (${s.stateChanges} changes) · bindings ${s.bindings} · scheduled ${s.scheduled} in ${s.intervals} interval group(s) · event/observer subscriptions ${s.sources} · last flush ${s.lastFlushMs.toFixed(2)} ms · parse ${s.parseMs.toFixed(1)} ms · diagnostics ${ReactiveCSS.diagnostics.length}`;
+    }, 500);
+  </script>
+</body>
+</html>

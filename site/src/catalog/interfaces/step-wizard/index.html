@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Step wizard — Reactive CSS example</title>
+</head>
+<body>
+  <main>
+    <p class="kicker">Interface 06 · <code>state()</code> <code>:on()</code> <code>set()</code> <code>:nth-var()</code> <code>--attr-*</code></p>
+    <h1>Step wizard</h1>
+    <p class="lede">Three steps with Back and Next buttons, a step list you can click, and aria-current on the current step.</p>
+    <section class="demo wizard" aria-label="Step wizard">
+      <ol class="steps">
+        <li><button class="step">1 · Account</button></li>
+        <li><button class="step">2 · Plan</button></li>
+        <li><button class="step">3 · Confirm</button></li>
+      </ol>
+      <div class="panels" aria-live="polite">
+        <div class="panel"><strong>Account</strong> Choose an email address and a password.</div>
+        <div class="panel"><strong>Plan</strong> Pick a plan. You can change it later.</div>
+        <div class="panel"><strong>Confirm</strong> Review your details and create the account.</div>
+      </div>
+      <div class="row"><button class="back">← Back</button><button class="next">Next →</button></div>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,9 @@
+.counter { display: flex; align-items: center; gap: 18px; }
+.counter output {
+  min-width: 2ch;
+  font-size: 56px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,7 @@
+---
+// Retired 0.8 API example (see src/lib/content/redirects.json).
+import Redirect from '~/layouts/Redirect.astro';
+import r from '~/lib/content/redirects.json';
+const [to, title] = r.examples['pick-value'] as [string, string];
+---
+<Redirect to={to} title={title} />

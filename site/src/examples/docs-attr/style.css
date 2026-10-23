@@ -1,0 +1,24 @@
+.item {
+  --open: state(false);
+}
+
+.item > button:on(click) {
+  --open: toggle();
+}
+
+/* Writes aria-expanded="true" or "false" on the button. */
+.item > button {
+  --attr-aria-expanded: var(--open);
+}
+
+.item .body {
+  display: none;
+}
+
+.item:when(--open) .body {
+  display: block;
+}
+
+.item .chevron {
+  rotate: when(--open, 180deg, 0deg);
+}

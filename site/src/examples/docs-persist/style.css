@@ -1,0 +1,16 @@
+.prefs {
+  --theme: state(light, persist("docs-theme"));
+}
+
+.prefs .theme:on(click) {
+  --theme: cycle(light, dark);
+}
+
+.prefs .name {
+  content: var(--theme);
+}
+
+.prefs:when(--theme == dark) {
+  background: #1c1c1e;
+  color: #f2f2f2;
+}

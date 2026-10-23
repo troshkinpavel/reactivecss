@@ -1,0 +1,62 @@
+<!-- Root: owns every state -->
+<section class="control-center">
+
+  <!-- Live preview -->
+  <header class="preview">
+    <span class="avatar"></span>
+    <span class="name"></span>
+    <span class="schedule"></span>
+    <span class="bell">Inbox <span class="badge">3</span></span>
+    <div class="meter"></div>
+  </header>
+
+  <!-- Appearance -->
+  <div class="panel appearance">
+    <h2>Appearance</h2>
+    <div class="setting">Theme
+      <button class="theme-option light">Light</button>
+      <button class="theme-option dark">Dark</button>
+      <button class="theme-option system">System</button>
+    </div>
+    <div class="setting">Accent
+      <button class="swatch ember" aria-label="Ember"></button>
+      <button class="swatch moss" aria-label="Moss"></button>
+      <button class="swatch slate" aria-label="Slate"></button>
+    </div>
+    <div class="setting">Density
+      <button class="density-button"></button>
+    </div>
+  </div>
+
+  <!-- Notifications -->
+  <div class="panel notifications">
+    <h2>Notifications</h2>
+    <div class="setting">Notifications <span class="status"></span>
+      <button class="notify-switch" aria-label="Notifications"></button>
+    </div>
+    <fieldset class="digest setting">
+      <legend>Digest</legend>
+      <label><input type="radio" name="digest" value="Instant"> Instant</label>
+      <label><input type="radio" name="digest" value="Hourly"> Hourly</label>
+      <label><input type="radio" name="digest" value="Daily" checked> Daily</label>
+    </fieldset>
+  </div>
+
+  <!-- Profile -->
+  <div class="panel profile">
+    <h2>Profile</h2>
+    <label class="setting">Display name <input type="text" value="Alex Rivera"></label>
+    <label class="setting">Round avatar <input type="checkbox" checked></label>
+  </div>
+
+  <!-- Focus goal -->
+  <div class="panel goal">
+    <h2>Daily focus goal</h2>
+    <div class="setting">
+      <button class="minus" aria-label="Fewer sessions">−</button>
+      <output aria-live="polite"></output>
+      <button class="plus" aria-label="More sessions">+</button>
+      <span class="history"><span class="trend"></span> <span class="was"></span></span>
+    </div>
+  </div>
+</section>

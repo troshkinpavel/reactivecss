@@ -1,0 +1,103 @@
+/* 05 · Context Menu. Shared theme and layer order: lib/theme.css */
+
+/* ---- Reactive CSS ------------------------------------------------------- */
+
+@layer reactive {
+  .ctx {
+    --open: state(false);
+    --x: state(0px);
+    --y: state(0px);
+    --action: state("none");
+    --restore: state(false);
+
+    /* Right-click or the Menu key. prevent() keeps the browser's own menu closed.
+       The position is read once, at the event, and kept inside the desk (the menu is 164 × 158 px). */
+    .desk:on(contextmenu, prevent()) {
+      --open: set(true);
+      --restore: set(false);
+      --x: set(clamp(0px, event(local-x), calc(element(width) - 164px)));
+      --y: set(clamp(0px, event(local-y), calc(element(height) - 158px)));
+    }
+    .desk:on(click) { --open: set(false); }
+
+    /* An item records its action, closes the menu and sends focus back to the desk. */
+    .menu button:on(click) {
+      --action: set(attr(data-action));
+      --open: set(false);
+      --restore: set(true);
+    }
+
+    .stage:on(keydown(Escape)) { --open: set(false); --restore: set(true); }
+    &:on(outside(pointerdown)) { --open: set(false); }  /* a press anywhere else on the page */
+
+    &:when(not --open) .menu { display: none; }
+    .menu { translate: var(--x) var(--y); }
+    .desk { focus: when(--restore); }
+
+    .last { content: var(--action); }
+    &:changed(--action) .last { animation: flash 600ms ease-out; }
+  }
+}
+
+/* ---- Plain CSS ---------------------------------------------------------- */
+
+@layer components {
+  .ctx {
+    text-align: start;
+
+    .stage {
+      position: relative;
+      block-size: 240px;
+    }
+
+    .desk {
+      display: grid;
+      place-items: center;
+      block-size: 100%;
+      border: 1px dashed var(--line);
+      border-radius: var(--radius-box);
+      background:
+        radial-gradient(circle, var(--line) 1px, transparent 1.5px) 0 0 / 16px 16px,
+        var(--surface);
+      user-select: none;
+    }
+
+    .hint { color: var(--muted); font-size: .875rem; }
+
+    .menu {
+      position: absolute;
+      inset-block-start: 0;
+      inset-inline-start: 0;
+      display: grid;
+      inline-size: 164px;
+      padding: 6px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+      box-shadow: 0 12px 32px oklch(0% 0 0 / .25);
+
+      @starting-style { opacity: 0; scale: .96; }    /* a fade-in each time display: none ends */
+      transition: opacity 120ms, scale 120ms var(--ease);
+      transform-origin: 0 0;
+
+      button {
+        block-size: 36px;
+        padding-inline: 10px;
+        border: 0;
+        border-radius: 6px;
+        text-align: start;
+        font-size: .9375rem;
+
+        &:hover, &:focus-visible { background: color-mix(in oklch, var(--accent) 16%, transparent); outline: none; }
+        &:active { scale: 1; }
+      }
+    }
+
+    .readout { margin-block-start: 12px; color: var(--muted); text-align: center; }
+    .last { display: inline-block; color: var(--fg); font-weight: 600; }
+  }
+
+  @keyframes flash {
+    from { color: var(--accent); scale: 1.1; }
+  }
+}

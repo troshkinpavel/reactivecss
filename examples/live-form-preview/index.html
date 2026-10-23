@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Live form preview — Reactive CSS example</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Profile settings</h1>
+    <p class="note">There is no backend: submitting is disabled in this example and nothing is saved. Reload to start over.</p>
+
+    <!-- The form owns the states; the preview is inside it so it can read them. -->
+    <form class="profile" id="profile">
+      <div class="fields">
+        <label>Display name
+          <input name="display_name" value="Ada" maxlength="40" autocomplete="nickname">
+        </label>
+        <label>Role
+          <select name="role">
+            <option>Designer</option>
+            <option selected>Developer</option>
+            <option>Product manager</option>
+          </select>
+        </label>
+        <fieldset>
+          <legend>Accent</legend>
+          <label><input type="radio" name="accent" value="teal" checked> Teal</label>
+          <label><input type="radio" name="accent" value="violet"> Violet</label>
+          <label><input type="radio" name="accent" value="amber"> Amber</label>
+        </fieldset>
+        <label><input type="checkbox" name="notifications" checked> Email notifications</label>
+        <div class="buttons">
+          <button type="reset">Reset</button>
+          <button type="submit" disabled title="No backend in this example">Save</button>
+        </div>
+      </div>
+
+      <section class="preview" aria-label="Preview">
+        <h2>Preview</h2>
+        <div class="card">
+          <div class="avatar" aria-hidden="true"></div>
+          <p class="name">Ada</p>
+          <p class="role">Developer</p>
+          <p class="accent">Accent: <span class="accent-value">teal</span></p>
+          <p class="notify">Notifications: <span class="notify-value">on</span></p>
+        </div>
+      </section>
+    </form>
+  </main>
+</body>
+</html>

@@ -1,0 +1,406 @@
+{
+ "date": "2026-10-22T00:08:56.624Z",
+ "total": {
+  "min": 148994,
+  "gzip": 49203,
+  "brotli": 43295,
+  "messageBytes": 25905
+ },
+ "areas": [
+  {
+   "area": "parser / compiler",
+   "modules": 2,
+   "min": 21404,
+   "messageBytes": 3511
+  },
+  {
+   "area": "API registry (describe())",
+   "modules": 1,
+   "min": 29001,
+   "messageBytes": 18275
+  },
+  {
+   "area": "engine, elements, scheduler, registry, log",
+   "modules": 8,
+   "min": 14422,
+   "messageBytes": 332
+  },
+  {
+   "area": "state engine and values",
+   "modules": 5,
+   "min": 12338,
+   "messageBytes": 1211
+  },
+  {
+   "area": "events: legacy on: and dispatcher",
+   "modules": 1,
+   "min": 7092,
+   "messageBytes": 333
+  },
+  {
+   "area": "events: :on() runtime",
+   "modules": 1,
+   "min": 8162,
+   "messageBytes": 310
+  },
+  {
+   "area": "events: event-time evaluator",
+   "modules": 1,
+   "min": 11145,
+   "messageBytes": 324
+  },
+  {
+   "area": "gestures",
+   "modules": 1,
+   "min": 2137,
+   "messageBytes": 75
+  },
+  {
+   "area": "persistence",
+   "modules": 1,
+   "min": 3034,
+   "messageBytes": 0
+  },
+  {
+   "area": "forms binding",
+   "modules": 2,
+   "min": 5713,
+   "messageBytes": 205
+  },
+  {
+   "area": "attributes",
+   "modules": 3,
+   "min": 9481,
+   "messageBytes": 646
+  },
+  {
+   "area": "text",
+   "modules": 1,
+   "min": 1962,
+   "messageBytes": 0
+  },
+  {
+   "area": "focus and blur",
+   "modules": 2,
+   "min": 3461,
+   "messageBytes": 70
+  },
+  {
+   "area": "conditions, history, nth-var",
+   "modules": 4,
+   "min": 8127,
+   "messageBytes": 273
+  },
+  {
+   "area": "values, sources, live, geometry",
+   "modules": 5,
+   "min": 10897,
+   "messageBytes": 340
+  },
+  {
+   "area": "entry points",
+   "modules": 3,
+   "min": 349,
+   "messageBytes": 0
+  }
+ ],
+ "modules": [
+  {
+   "module": "src/core/features.ts",
+   "min": 29001,
+   "gzipAlone": 8825,
+   "brotliAlone": 7544,
+   "messageBytes": 18275
+  },
+  {
+   "module": "src/core/parser.ts",
+   "min": 19701,
+   "gzipAlone": 7866,
+   "brotliAlone": 7136,
+   "messageBytes": 3511
+  },
+  {
+   "module": "src/state/actexpr.ts",
+   "min": 11145,
+   "gzipAlone": 4229,
+   "brotliAlone": 3871,
+   "messageBytes": 324
+  },
+  {
+   "module": "src/state/on.ts",
+   "min": 8162,
+   "gzipAlone": 3574,
+   "brotliAlone": 3302,
+   "messageBytes": 310
+  },
+  {
+   "module": "src/state/actions.ts",
+   "min": 7092,
+   "gzipAlone": 3110,
+   "brotliAlone": 2779,
+   "messageBytes": 333
+  },
+  {
+   "module": "src/core/engine.ts",
+   "min": 7045,
+   "gzipAlone": 3201,
+   "brotliAlone": 2880,
+   "messageBytes": 127
+  },
+  {
+   "module": "src/state/attrdecl.ts",
+   "min": 4867,
+   "gzipAlone": 2218,
+   "brotliAlone": 1997,
+   "messageBytes": 422
+  },
+  {
+   "module": "src/state/values.ts",
+   "min": 4741,
+   "gzipAlone": 2044,
+   "brotliAlone": 1895,
+   "messageBytes": 1188
+  },
+  {
+   "module": "src/state/bind.ts",
+   "min": 4371,
+   "gzipAlone": 1966,
+   "brotliAlone": 1781,
+   "messageBytes": 156
+  },
+  {
+   "module": "src/state/state.ts",
+   "min": 4034,
+   "gzipAlone": 1997,
+   "brotliAlone": 1791,
+   "messageBytes": 0
+  },
+  {
+   "module": "src/functions/sources.ts",
+   "min": 3410,
+   "gzipAlone": 1554,
+   "brotliAlone": 1411,
+   "messageBytes": 67
+  },
+  {
+   "module": "src/functions/values.ts",
+   "min": 3153,
+   "gzipAlone": 1560,
+   "brotliAlone": 1417,
+   "messageBytes": 102
+  },
+  {
+   "module": "src/state/bindattr-runtime.ts",
+   "min": 3088,
+   "gzipAlone": 1252,
+   "brotliAlone": 1097,
+   "messageBytes": 0
+  },
+  {
+   "module": "src/state/persist.ts",
+   "min": 3034,
+   "gzipAlone": 1525,
+   "brotliAlone": 1364,
+   "messageBytes": 0
+  },
+  {
+   "module": "src/core/elements.ts",
+   "min": 2914,
+   "gzipAlone": 1373,
+   "brotliAlone": 1252,
+   "messageBytes": 0
+  },
+  {
+   "module": "src/core/scheduler.ts",
+   "min": 2706,
+   "gzipAlone": 1450,
+   "brotliAlone": 1313,
+   "messageBytes": 0
+  },
+  {
+   "module": "src/state/expr.ts",
+   "min": 2652,
+   "gzipAlone": 1259,
+   "brotliAlone": 1126,
+   "messageBytes": 23
+  },
+  {
+   "module": "src/state/changed.ts",
+   "min": 2595,
+   "gzipAlone": 1485,
+   "brotliAlone": 1340,
+   "messageBytes": 0
+  },
+  {
+   "module": "src/selectors/nth-var.ts",
+   "min": 2580,
+   "gzipAlone": 1397,
+   "brotliAlone": 1271,
+   "messageBytes": 0
+  },
+  {
+   "module": "src/state/focusdecl.ts",
+   "min": 2574,
+   "gzipAlone": 1535,
+   "brotliAlone": 1348,
+   "messageBytes": 70
+  },
+  {
+   "module": "src/state/conditions.ts",
+   "min": 2297,
+   "gzipAlone": 1301,
+   "brotliAlone": 1217,
+   "messageBytes": 249
+  },
+  {
+   "module": "src/state/gesture.ts",
+   "min": 2137,
+   "gzipAlone": 1234,
+   "brotliAlone": 1116,
+   "messageBytes": 75
+  },
+  {
+   "module": "src/state/text.ts",
+   "min": 1962,
+   "gzipAlone": 1081,
+   "brotliAlone": 948,
+   "messageBytes": 0
+  },
+  {
+   "module": "src/functions/geometry.ts",
+   "min": 1838,
+   "gzipAlone": 1028,
+   "brotliAlone": 922,
+   "messageBytes": 25
+  },
+  {
+   "module": "src/state/typed.ts",
+   "min": 1772,
+   "gzipAlone": 1008,
+   "brotliAlone": 904,
+   "messageBytes": 146
+  },
+  {
+   "module": "src/core/tokenizer.ts",
+   "min": 1703,
+   "gzipAlone": 858,
+   "brotliAlone": 784,
+   "messageBytes": 0
+  },
+  {
+   "module": "src/state/bindattr.ts",
+   "min": 1526,
+   "gzipAlone": 711,
+   "brotliAlone": 620,
+   "messageBytes": 224
+  },
+  {
+   "module": "src/selectors/just-checked.ts",
+   "min": 1342,
+   "gzipAlone": 725,
+   "brotliAlone": 620,
+   "messageBytes": 49
+  },
+  {
+   "module": "src/core/registry.ts",
+   "min": 1191,
+   "gzipAlone": 763,
+   "brotliAlone": 639,
+   "messageBytes": 0
+  },
+  {
+   "module": "src/selectors/blur.ts",
+   "min": 887,
+   "gzipAlone": 526,
+   "brotliAlone": 448,
+   "messageBytes": 0
+  },
+  {
+   "module": "src/functions/live.ts",
+   "min": 724,
+   "gzipAlone": 539,
+   "brotliAlone": 476,
+   "messageBytes": 0
+  },
+  {
+   "module": "src/state/keys.ts",
+   "min": 671,
+   "gzipAlone": 424,
+   "brotliAlone": 378,
+   "messageBytes": 0
+  },
+  {
+   "module": "src/state/history.ts",
+   "min": 655,
+   "gzipAlone": 459,
+   "brotliAlone": 392,
+   "messageBytes": 24
+  },
+  {
+   "module": "src/core/log.ts",
+   "min": 451,
+   "gzipAlone": 358,
+   "brotliAlone": 309,
+   "messageBytes": 205
+  },
+  {
+   "module": "src/state/textof.ts",
+   "min": 240,
+   "gzipAlone": 204,
+   "brotliAlone": 175,
+   "messageBytes": 0
+  },
+  {
+   "module": "src/index.ts",
+   "min": 235,
+   "gzipAlone": 147,
+   "brotliAlone": 118,
+   "messageBytes": 0
+  },
+  {
+   "module": "<define:__RCSS_BUNDLE__>",
+   "min": 151,
+   "gzipAlone": 0,
+   "brotliAlone": 0,
+   "messageBytes": 0
+  },
+  {
+   "module": "src/auto.ts",
+   "min": 114,
+   "gzipAlone": 143,
+   "brotliAlone": 91,
+   "messageBytes": 0
+  },
+  {
+   "module": "src/core/config.ts",
+   "min": 59,
+   "gzipAlone": 93,
+   "brotliAlone": 79,
+   "messageBytes": 0
+  },
+  {
+   "module": "src/core/format.ts",
+   "min": 41,
+   "gzipAlone": 79,
+   "brotliAlone": 65,
+   "messageBytes": 0
+  },
+  {
+   "module": "src/core/version.ts",
+   "min": 15,
+   "gzipAlone": 58,
+   "brotliAlone": 42,
+   "messageBytes": 0
+  },
+  {
+   "module": "src/api.ts",
+   "min": 0,
+   "gzipAlone": 286,
+   "brotliAlone": 249,
+   "messageBytes": 0
+  }
+ ],
+ "unassigned": [
+  "<define:__RCSS_BUNDLE__>"
+ ]
+}

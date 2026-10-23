@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Score history — Reactive CSS example</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Score history</h1>
+    <div class="boards">
+      <section class="score" id="home" aria-label="Home team">
+        <h2>Home</h2>
+        <p class="current" aria-live="polite">0</p>
+        <p class="history">Previous: <span class="prev">0</span> · Last change: <span class="delta">0</span></p>
+        <p class="nochange">No changes yet</p>
+        <p class="direction">—</p>
+        <div class="buttons">
+          <button type="button" class="down" aria-label="Decrease home score">−1</button>
+          <button type="button" class="up" aria-label="Increase home score">+1</button>
+          <button type="button" class="reset">Reset</button>
+        </div>
+      </section>
+      <section class="score" id="away" aria-label="Away team">
+        <h2>Away</h2>
+        <p class="current" aria-live="polite">0</p>
+        <p class="history">Previous: <span class="prev">0</span> · Last change: <span class="delta">0</span></p>
+        <p class="nochange">No changes yet</p>
+        <p class="direction">—</p>
+        <div class="buttons">
+          <button type="button" class="down" aria-label="Decrease away score">−1</button>
+          <button type="button" class="up" aria-label="Increase away score">+1</button>
+          <button type="button" class="reset">Reset</button>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

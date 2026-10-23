@@ -1,0 +1,19 @@
+{
+  "title": "Conditional values",
+  "relation": "overlap",
+  "features": ["function:when"],
+  "nativeNote": "if()",
+  "reactiveNote": "when()",
+  "example": "compare-when",
+  "native": [{ "file": "card.css", "lang": "css" }],
+  "simpler": "The value that the condition reads is also owned and changed in CSS. There is no class to toggle from a script, and when() accepts comparisons such as --count > 3.",
+  "differences": [
+    "Native if() tests style(), media() and supports() queries. when() tests Reactive CSS state, comparisons and logical operators.",
+    "With native if(), something still has to change --theme: a class, an attribute or a script.",
+    "Conditions made only of boolean states compile to native if() where the browser supports it. This one compares a keyword, so it runs in the runtime.",
+    "An unknown when() condition gives no value. A native if() with no matching branch and no else is invalid at computed-value time.",
+    "If a condition depends only on a media query, keep it native: if(media(…)) or @media.",
+    "Native if() is not available in every browser yet. Check support before relying on it."
+  ],
+  "links": [["when() reference", "/docs/reference/when/"], ["Conditions guide", "/docs/conditions/"], ["MDN: if()", "https://developer.mozilla.org/en-US/docs/Web/CSS/if"]]
+}

@@ -1,0 +1,36 @@
+.counter {
+  --count: state(0);
+  --last: previous(--count);
+  /* --count as a position in the strip */
+  --pos: state(6);
+}
+
+.plus:on(click) {
+  --count: increment(1);
+  --pos: increment(1);
+}
+
+.minus:on(click) {
+  --count: decrement(1);
+  --pos: decrement(1);
+}
+
+output {
+  animation-duration: 240ms;
+}
+
+.counter:changed(--count) output {
+  animation-name: when(
+    direction(--count) > 0,
+    slide-up,
+    slide-down
+  );
+}
+
+.trail span:nth-var(--pos) {
+  border-color: oklch(0.55 0.2 35);
+  color: oklch(0.55 0.2 35);
+}
+.trail span:nth-var(--pos) ~ span {
+  display: none;
+}

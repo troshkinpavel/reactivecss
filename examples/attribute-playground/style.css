@@ -1,0 +1,64 @@
+/* Attribute playground: all behavior is in this file (Reactive CSS + native CSS). */
+
+body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #1c1c1e; background: #f6f6f4; }
+main { max-width: 860px; margin: 0 auto; padding: 24px 16px; }
+.note { color: #555; }
+.p { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.controls, .targets, .diag { background: #fff; border-radius: 14px; padding: 12px 16px; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
+.controls { border: 0; display: grid; gap: 8px; align-content: start; }
+.targets h2 { margin: 0; font-size: 18px; }
+button { font: inherit; padding: 6px 12px; border-radius: 8px; border: 1px solid #888; background: #fafafa; cursor: pointer; }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+button[aria-disabled="true"] { opacity: 0.6; cursor: not-allowed; border-style: dashed; }
+.region { padding: 8px; border-radius: 8px; background: #eef2ff; }
+.card { padding: 8px; border-radius: 8px; border: 2px solid #999; }
+.card[data-state="loading"] { border-color: #f59e0b; } .card[data-state="done"] { border-color: #16a34a; }
+.item { padding: 2px 6px; border: 1px solid #ccc; border-radius: 6px; }
+.diag { border-collapse: separate; font: 13px/1.6 ui-monospace, monospace; }
+.diag caption { font: 600 14px system-ui, sans-serif; text-align: left; padding-bottom: 4px; }
+.diag th { text-align: left; font-weight: 400; color: #555; padding-right: 12px; }
+:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+
+/* ---- states ------------------------------------------------------------------------------------ */
+.p { --open: state(false); --locked: state(false); --busy: state(false); --status: state(idle); --selected: state(false);
+  --submits: state(0); --saves: state(0); }
+.p .t-open { on: click(toggle(--open)); }
+.p .c-locked { bind: --locked; }
+.p .c-busy { bind: --busy; }
+.p .c-status { bind: --status; }
+.p .c-selected { bind: --selected; }
+
+/* ---- derived attributes (attr:) -------------------------------------------------------------------- */
+.p .disclosure { attr: aria-expanded var(--open); on: click(toggle(--open)); }
+.p .region { attr: hidden when(--open, false, true); }
+/* Native disabled: the browser blocks clicks and skips the button in the Tab order. */
+.p .submit { attr: disabled when(--locked); on: click(increment(--submits)); }
+/* aria-disabled: announced as unavailable, still focusable and clickable. Nothing is blocked by the
+   attribute: a more specific rule makes the action inactive while --busy. */
+.p .save { attr: aria-disabled when(--busy); on: click(increment(--saves)); }
+.p:when(--busy) .save { on: click(set(--busy, true)); }
+.p .card { attr: data-state var(--status); }
+.p .item { attr: tabindex when(--selected, 0, -1); }
+.p .submits { text: var(--submits); }
+.p .saves { text: var(--saves); }
+
+/* ---- an attribute that owns its state: state(initial, bind(attribute)) -------------------------- */
+.p .bound { --open2: state(false, bind(aria-expanded)); on: click(toggle(--open2)); }
+
+/* ---- live attribute table: native :has() over the real DOM attributes (no script) ---------------- */
+.d-exp::after, .d-bound::after, .d-aria::after { content: "(absent)"; color: #999; }
+.p:has(.disclosure[aria-expanded="true"]) .d-exp::after { content: '"true"'; color: inherit; }
+.p:has(.disclosure[aria-expanded="false"]) .d-exp::after { content: '"false"'; color: inherit; }
+.d-hidden::after { content: "absent"; } .p:has(.region[hidden]) .d-hidden::after { content: "present"; }
+.d-disabled::after { content: "absent"; } .p:has(.submit[disabled]) .d-disabled::after { content: "present"; }
+.p:has(.save[aria-disabled="true"]) .d-aria::after { content: '"true"'; color: inherit; }
+.p:has(.save[aria-disabled="false"]) .d-aria::after { content: '"false"'; color: inherit; }
+.d-state::after { content: "(absent)"; }
+.p:has(.card[data-state="idle"]) .d-state::after { content: '"idle"'; }
+.p:has(.card[data-state="loading"]) .d-state::after { content: '"loading"'; }
+.p:has(.card[data-state="done"]) .d-state::after { content: '"done"'; }
+.d-tab::after { content: "(absent)"; }
+.p:has(.item[tabindex="0"]) .d-tab::after { content: '"0"'; }
+.p:has(.item[tabindex="-1"]) .d-tab::after { content: '"-1"'; }
+.p:has(.bound[aria-expanded="true"]) .d-bound::after { content: '"true"'; color: inherit; }
+.p:has(.bound[aria-expanded="false"]) .d-bound::after { content: '"false"'; color: inherit; }

@@ -1,0 +1,39 @@
+/* History and motion: all behavior is in this file (Reactive CSS + native CSS). */
+
+body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #1c1c1e; background: #f6f6f4; }
+main { max-width: 560px; margin: 0 auto; padding: 24px 16px; }
+.note { color: #555; }
+.meter { background: #fff; border-radius: 14px; padding: 16px 20px; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
+.value { font-size: 28px; font-weight: 700; margin: 0; }
+.cur { display: inline-block; font-variant-numeric: tabular-nums; }
+.hist { color: #555; font-variant-numeric: tabular-nums; }
+.track { height: 12px; background: #eee; border-radius: 6px; overflow: hidden; }
+.bar { display: block; height: 100%; background: #1d4ed8; }
+button { font: inherit; padding: 6px 14px; border-radius: 8px; border: 1px solid #888; background: #fafafa; cursor: pointer; }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+
+/* ---- state and actions (0–20) ---------------------------------------------------------------------- */
+.meter { --v: state(5); }
+.meter .up { on: click(increment(--v)); attr: disabled when(--v >= 20); }
+.meter .down { on: click(decrement(--v)); attr: disabled when(--v <= 0); }
+.meter .jump { on: click(increment(--v, 5)); attr: disabled when(--v > 15); }
+.meter .reset { on: click(set(--v, 5)); }
+
+/* ---- history: previous() and direction() as real DOM text ------------------------------------------ */
+.meter .cur { text: var(--v); }
+.meter .prev { text: previous(--v); }
+.meter .dir { text: direction(--v); }
+.meter:when(direction(--v) > 0) .word { text: "went up"; }
+.meter:when(direction(--v) < 0) .word { text: "went down"; }
+
+/* ---- motion: native CSS only ---------------------------------------------------------------------- */
+.meter .bar { width: calc(var(--v) * 5%); transition: width 300ms ease-out; }
+.meter:changed(--v) .cur { animation: pulse 400ms ease-out; }
+.meter:changed(--v):when(direction(--v) < 0) .cur { animation-name: dip; }
+@keyframes pulse { from { transform: scale(1.3); color: #166534; } }
+@keyframes dip { from { transform: scale(0.8); color: #b42318; } }
+@media (prefers-reduced-motion: reduce) {
+  .meter .bar { transition: none; }
+  .meter:changed(--v) .cur { animation: none; }
+}

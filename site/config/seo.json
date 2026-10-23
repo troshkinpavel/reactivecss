@@ -1,0 +1,10 @@
+{
+  "siteName": "Reactive CSS",
+  "titleTemplate": "%s · Reactive CSS",
+  "homeTitle": "Reactive CSS · CSS that reacts.",
+  "description": "Reactive CSS adds state, events, conditions and bindings to the CSS you already write.",
+  "canonical": "https://reactivecss.com",
+  "ogImage": "/og/default.png",
+  "robots": "index, follow",
+  "sitemap": true
+}

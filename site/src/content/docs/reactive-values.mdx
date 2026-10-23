@@ -1,0 +1,117 @@
+---
+title: "Reactive Values"
+description: "Value functions produce values the stylesheet can’t compute on its own: randomness, the pointer, visibility, the viewport and re-evaluation over time or on events."
+group: Concepts
+type: Concept
+order: 16
+---
+## Sources at a glance
+| Function | Returns | Updates when |
+| --- | --- | --- |
+| `random(min, max)` | A value of the input type, per element | Never, unless inside `live()` or `on()` |
+| `pick(a, b, …)` | One of the values | Never, unless inside `live()` or `on()` |
+| `live(expr, interval)` | The value of `expr` | Every interval, default `1s`, minimum `50ms` |
+| `on(event, expr)` | The value of `expr` | Once when bound, then on each event on that element |
+| `mouse(x)` `mouse(y)` | A length in px | Pointer moves, at most once per frame |
+| `visible(threshold)` | `1` or `0` | Intersection changes |
+| `viewport(width)` | `100dvw` / `100dvh` | Natively, by the browser |
+
+These are the values' behavior in ordinary declarations. Inside a mutation of an `:on()` rule they are read once, at the event: see [below](#inside-mutations).
+
+## random() and pick()
+`random(min, max)` gives a value between `min` and `max`, of the same type, per element and per call. An optional step makes the result a multiple of the step above `min`. `pick()` chooses one of its values.
+
+```css confetti.css
+.confetti {
+  rotate: random(-30deg, 30deg);
+  translate: random(0px, 400px, by 20px) 0;
+  background: pick(#f2542d, #57534e, #d9d5cf);
+}
+```
+
+### Two syntaxes
+| Syntax | Where it comes from | Step |
+| --- | --- | --- |
+| `random(<random-key>?, min, max, step?)` | The CSS Values 5 draft that Chromium and WebKit implement | A plain third value: `random(0px, 400px, 20px)` |
+| `random([element-shared,] min, max [, by step])` | Reactive CSS, kept from an earlier draft | `by 20px` |
+
+The third value is always a step, never an update interval. To re-roll over time, use `live(random(…), 2s)`.
+
+### Native first
+Reactive CSS leaves to the browser what the browser can do:
+- **Native.** A top-level call that the browser supports as written, when it gives a value per element, whatever its units or step. Reactive CSS checks this once with a two-element probe, not by browser name.
+- **Native only.** A call with a native sharing key (`--name`, `element-scoped`, `property-scoped`, `fixed <n>`) is not claimed at all where the browser supports it: no binding, no diagnostic. Where the browser lacks it, one diagnostic says so; Reactive CSS does not guess what the key means.
+- **Reactive CSS runtime.** `by <step>` and `element-shared`, which browsers reject; calls nested in `live()` or `on()`; calls inside mutations; and any call the browser cannot evaluate.
+
+Browsers without native `random()` get the Reactive CSS polyfill for the whole list above, following the current draft for the plain step: a zero or negative step is ignored, and `max` below `min` gives `min`. Support differs between browsers and versions; see [Browser Compatibility](/docs/compat/).
+
+<Callout kind="note" title="random() in a custom property">
+
+`--r: random(0, 1)` behaves differently by engine. Handled natively, the custom property keeps the call as text, so each element that uses `var(--r)` rolls its own value. With the polyfill, the element that declares `--r` gets one value, and its descendants inherit it. To get the same result everywhere, put `random()` directly in the property that uses it.
+
+</Callout>
+
+## Re-evaluating with live() and on()
+`live()` re-evaluates its expression on a timer; `random()` and `pick()` inside it re-roll. `on()` does the same on an event.
+
+<Example id="dice" />
+
+<Callout kind="note" title="Three kinds of on">
+
+`on(event, expr)` is a value function that re-evaluates a value. `:on(event)` in a selector makes an [event rule](/docs/events/) that changes state. Each is unambiguous in its context. The `on()` value function's event list includes `pointerdown`, `keyup`, `animationend`, `transitionend` and `toggle`, among others.
+
+</Callout>
+
+```css particles.css
+.particle {
+  translate: live(random(0px, 500px), 2s) live(random(0px, 300px), 2s);
+  transition: translate 1s ease;
+}
+```
+
+## mouse()
+`mouse(x)` and `mouse(y)` return the pointer position in px: viewport coordinates by default, or from the element's top-left border-box corner with `local`. Both are `0px` before the first pointer move.
+
+<Example id="pointer" size="compact" />
+
+Viewport mode is a shared source: one pointer listener for the page and one write per declaration, not per element. `local` mode measures each element and does not update on scroll alone.
+
+## visible()
+`visible()` is `1` when at least `threshold` (default 0) of the element intersects the viewport, else `0`.
+
+```css reveal.css
+.reveal {
+  opacity: calc(0.2 + visible(0.3) * 0.8);
+  transition: opacity 400ms;
+}
+```
+
+## viewport()
+`viewport(width)` and `viewport(height)` compile to native `100dvw` and `100dvh`, with no runtime. They are a convenience for nesting, as in `random(0px, viewport(width))`.
+
+## Inside mutations
+In a mutation of an `:on()` rule, these values are **snapshots taken at the event**, not subscriptions:
+
+| Function | In a mutation |
+| --- | --- |
+| `random(min, max, step)` | Rolled again at each event. Both `step` and `by step` work. |
+| `pick(a, b, …)` | Chosen again at each event |
+| `mouse(x)`, `mouse(y)` | The event's pointer position; pointer, mouse and drag triggers only |
+| `element(width)`, `element(height)` | The rule element's border-box size at the event |
+| `viewport(width)`, `viewport(height)` | The window's inner size, in px |
+| `attr(name, fallback)` | The rule element's attribute at the event |
+
+```css dice.css
+.die {
+  --face: state(1);
+}
+
+.die:on(click) {
+  --face: set(random(1, 6, 1));
+}
+```
+
+`live()`, `on()` and `visible()` are not available in mutations. Details and the `event()` fields: [Event data](/docs/event-data/#snapshots-at-the-event).
+
+## Related
+<Related ids={["reference/random","reference/pick","reference/live","reference/on-value","reference/mouse","reference/visible","reference/viewport","event-data"]} />

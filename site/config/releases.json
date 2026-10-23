@@ -1,0 +1,79 @@
+{
+  "releases": {
+    "0.8.0": {
+      "title": "Modular runtime and custom bundles",
+      "summary": "Splits the runtime into a core and 11 features, and adds a builder and analyzer for bundles that include only the features a site uses.",
+      "date": "",
+      "highlights": [
+        "Core plus 11 optional features",
+        "reactive-css CLI and reactive-css/bundle API",
+        "Missing-feature diagnostics in custom bundles"
+      ],
+      "breaking": "",
+      "urls": {
+        "github": "",
+        "npm": "",
+        "cdn": []
+      },
+      "notes": "",
+      "workflow": {
+        "status": "local"
+      }
+    },
+    "0.8.1": {
+      "title": "Pre-beta stabilization",
+      "summary": "Fixes found by the internal experiments: safer CSS analysis with --root, keyboard focus timing, the :changed() lifecycle, and fast radio and checkbox choices with bind:. No new API.",
+      "date": "",
+      "highlights": [
+        "The analyzer resolves root-relative stylesheets only against an explicit --root",
+        "Enter and typed keys no longer activate a newly focused button",
+        ":changed() waits only for animations its own rules start",
+        "Fast radio and checkbox choices with bind: always reach the state"
+      ],
+      "breaking": "",
+      "limitations": "Firefox and screen readers are not verified. WebKit engine issues (not library bugs, with state-driven workarounds in the docs): a text: value inside a section hidden by CSS can stay stale when the section is shown without a state change, and :has(:invalid) does not update when a required, empty <select> is enabled.",
+      "urls": {
+        "github": "",
+        "npm": "",
+        "cdn": []
+      },
+      "notes": "",
+      "workflow": {
+        "status": "prepared",
+        "preparedAt": "2026-10-21T16:35:26.106Z",
+        "blockers": 0,
+        "warnings": 2
+      }
+    },
+    "0.9.0": {
+      "title": "Declarative events and state",
+      "summary": "A new authoring model: :on() event rules mutate a state on its own property, with event() data, bind() and persist() in state(), --attr-*, DOM text through content, focus requests, :blur and drag.",
+      "date": "",
+      "highlights": [
+        ":on() event rules with the prevent() and stop() modifiers, plus keydown(Key), keyup(Key) and outside()",
+        "Mutations on the state's own property: set(), toggle(), increment(), decrement(), cycle()",
+        "event() with 32 fields, and event-time calc(), clamp(), mouse(), element() and random()",
+        "bind(value) and bind(checked) in state(); persist() for localStorage or sessionStorage (experimental)",
+        "--attr-* attributes and DOM text through content (experimental)",
+        "focus: when() focus requests (experimental) and the :blur selector",
+        "Drag gestures: :on(drag) and drag(start | move | end | cancel) (experimental)",
+        "Native-first random(), production diagnostic codes, and new custom-bundle features: gestures, persist, blur",
+        "The 0.8 syntax keeps working"
+      ],
+      "breaking": "Custom properties named --attr-<attribute> now write that attribute when the attribute is allowlisted (aria-* states, data-*, disabled, hidden, required, tabindex). Rename any --attr-* property used for another purpose. The rest of the 0.8 syntax keeps working; see the migration guide.",
+      "limitations": "Minifiers that remove empty rules (esbuild minify, csso, Lightning CSS) delete modifier-only :on() rules such as a:on(click, prevent()) {}; minify Reactive stylesheets for whitespace only. Firefox, real Safari, touch and pen hardware and screen readers are not verified. persist(), content, focus: when(), drag and the --attr-* namespace are experimental. Bundle sizes are measured from the build on the Installation and Custom Bundles pages.",
+      "urls": {
+        "github": "",
+        "npm": "",
+        "cdn": []
+      },
+      "notes": "Sources: docs/release-0.9.0-preparation.md, docs/release-0.9.0-hardening.md (sizes, tests, stability labels), docs/manual-validation-0.9.md. Open before publication: the npm name (reactive-css is taken), the repository, homepage and bugs fields, the default bundle registry decision, and the stability labels. Website migrated locally for preview only.",
+      "workflow": {
+        "status": "prepared",
+        "preparedAt": "2026-10-22T00:09:38.358Z",
+        "blockers": 0,
+        "warnings": 3
+      }
+    }
+  }
+}

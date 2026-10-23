@@ -1,0 +1,17 @@
+:root {
+  --theme: state(light);
+}
+
+.theme-button:on(click) {
+  --theme: cycle(light, dark, sepia);
+}
+
+.page:when(--theme == dark) {
+  background: #1c1917;
+  color: #f5f5f4;
+}
+
+.page:when(--theme == sepia) {
+  background: #f3e7d0;
+  color: #3f2d1c;
+}

@@ -1,0 +1,36 @@
+/* Form validation: all behavior is in this file (Reactive CSS + native CSS). */
+
+body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #1c1c1e; background: #f6f6f4; }
+main { max-width: 560px; margin: 0 auto; padding: 24px 16px; }
+.note { color: #555; }
+.signup { background: #fff; border-radius: 14px; padding: 20px; display: grid; gap: 12px; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
+.signup h2 { margin: 0; }
+.field label { display: block; font-weight: 600; }
+.field input { font: inherit; width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #999; border-radius: 8px; }
+fieldset { border: 1px solid #ddd; border-radius: 10px; margin: 0; padding: 8px 12px 12px; }
+button { font: inherit; padding: 8px 16px; border-radius: 8px; border: 1px solid #1d4ed8; background: #1d4ed8; color: #fff; cursor: pointer; justify-self: start; }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+.err { margin: 4px 0 0; color: #b42318; display: none; }
+.ok { margin: 0; color: #166534; font-weight: 600; display: none; }
+:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+
+/* ---- state ------------------------------------------------------------------------------------ */
+.signup { --type: state(personal); --terms: state(false); --tried: state(false); }
+.signup .type input { bind: --type; }
+.signup .terms input { bind: --terms; }
+
+/* ---- derived attributes (attr:, 0.5.3) ---------------------------------------------------------
+   The company field exists only for business accounts. It is hidden AND not required otherwise:
+   a hidden required field would block submission with no visible message. */
+.signup .company { attr: hidden when(--type == business, false, true); }
+.signup .company input { attr: required when(--type == business); }
+/* Submit is natively disabled until the terms are accepted. */
+.signup button[type=submit] { attr: disabled when(--terms, false, true); on: click(set(--tried, true)); }
+
+/* ---- messages: native :invalid / :valid, shown after the first submit attempt --------------- */
+.signup:when(--tried) .field:has(input:invalid) .err { display: block; }
+.signup:when(--tried) .field input:invalid { border-color: #b42318; }
+.signup:when(--tried):valid .ok { display: block; }
+
+/* Real DOM text (text:, 0.5.1): the account type in words. */
+.signup .kind { text: when(--type == business, "Business", "Personal"); }

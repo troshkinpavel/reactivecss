@@ -1,0 +1,16 @@
+.counter {
+  --count: state(0);
+}
+
+.counter .plus:on(click) {
+  --count: increment(1);
+}
+
+.counter .minus:on(click) {
+  --count: decrement(1);
+}
+
+.counter output::before {
+  counter-reset: n var(--count);
+  content: counter(n);
+}

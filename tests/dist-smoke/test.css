@@ -1,0 +1,17 @@
+/* Uses only the generated browser bundle: state, events, conditions, binding, selectors. */
+.counter { --count: state(0); }
+.counter .inc { on: click(increment(--count)); }
+.counter output { counter-reset: n var(--count); }
+.counter output::before { content: counter(n); }
+.counter:when(--count >= 2) output { color: rgb(0, 128, 0); }
+.acc { --open: state(false); }
+.acc .trigger { on: click(toggle(--open)); }
+.acc .content { display: when(--open, block, none); }
+.form { --name: state(""); }
+.form input { bind: --name; }
+.form .preview::before { content: var(--name); }
+.tabs { --active: state(1); }
+.tab { on: click(set(--active, sibling-index())); }
+.panel { display: none; }
+.panel:nth-var(--active) { display: block; }
+.dot { display: block; width: random(5px, 5px, by 1px); height: live(pick(3px), 100ms); }

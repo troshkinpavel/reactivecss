@@ -1,0 +1,21 @@
+.counter {
+  --count: state(0);
+}
+
+.counter .inc:on(click) {
+  --count: increment(1);
+}
+
+.counter .dec:on(click) {
+  --count: decrement(1);
+}
+
+/* DOM text: the output's text node follows the state. */
+.counter .value {
+  content: var(--count);
+}
+
+/* A real disabled attribute while the count is 0. */
+.counter .dec {
+  --attr-disabled: when(--count <= 0);
+}

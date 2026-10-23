@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>State history — Reactive CSS API example</title>
+  <link rel="stylesheet" href="../api.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="kicker">API example 02 · <code>previous()</code> <code>direction()</code></p>
+    <h1>State history</h1>
+    <p class="lede">The current value, the one before it, and which way it moved.</p>
+    <section class="demo history" aria-label="Score with history">
+      <div class="row">
+        <button type="button" class="down">−1</button>
+        <button type="button" class="up">+1</button>
+      </div>
+      <dl class="values">
+        <div class="current"><dt>Current</dt><dd class="now">0</dd></div>
+        <div><dt>Previous</dt><dd class="prev">0</dd></div>
+        <div><dt>Direction</dt><dd><span class="arrow" aria-hidden="true">▲</span> <span class="word">none yet</span></dd></div>
+      </dl>
+    </section>
+    <p class="files"><a href="style.css">style.css</a> · <a href="README.md">README</a> · <a href="../">All API examples</a></p>
+  </main>
+</body>
+</html>

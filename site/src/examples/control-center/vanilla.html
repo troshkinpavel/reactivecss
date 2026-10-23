@@ -1,0 +1,47 @@
+<!-- Root: a real form; the controls hold the state -->
+<form class="control-center" action="/settings" method="POST">
+
+  <!-- Live preview -->
+  <section class="preview" aria-label="Preview">
+    <span class="avatar"></span>
+    <span class="name">Alex Rivera</span>
+    <span class="bell">Inbox <span class="badge">3</span></span>
+    <p class="alert"><span class="alert-text"></span></p>
+  </section>
+
+  <!-- Appearance -->
+  <fieldset class="theme">
+    <legend>Theme</legend>
+    <label><input type="radio" name="theme" value="light" checked> Light</label>
+    <label><input type="radio" name="theme" value="dark"> Dark</label>
+    <label><input type="radio" name="theme" value="system"> System</label>
+  </fieldset>
+
+  <fieldset class="accent">
+    <legend>Accent</legend>
+    <label><input type="radio" name="accent" value="ember" checked> Ember</label>
+    <label><input type="radio" name="accent" value="moss"> Moss</label>
+    <label><input type="radio" name="accent" value="slate"> Slate</label>
+  </fieldset>
+
+  <!-- Notifications -->
+  <!-- Unchecked boxes are left out of the submitted data. -->
+  <div class="notify">
+    <label for="notify">Notifications</label>
+    <span class="status" aria-hidden="true"></span>
+    <input type="checkbox" id="notify" name="notifications" value="on" checked>
+  </div>
+
+  <!-- Profile -->
+  <label class="profile">
+    Display name
+    <input type="text" name="displayName" value="Alex Rivera"
+           required maxlength="40" autocomplete="name">
+  </label>
+
+  <!-- Actions -->
+  <div class="actions">
+    <button type="reset">Reset</button>
+    <button type="submit">Save settings</button>
+  </div>
+</form>

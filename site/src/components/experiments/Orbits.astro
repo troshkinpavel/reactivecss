@@ -1,0 +1,13 @@
+---
+// The design's orbital artwork behind an experiment stage: concentric rings around the centre and
+// one vermilion body on the second ring. Decorative only.
+interface Props { rings: { size: number; dashed?: boolean; alpha: number }[]; body: number; top?: string; label?: string }
+const { rings, body, top = '50%', label } = Astro.props;
+---
+<div aria-hidden="true" class="pointer-events-none absolute left-1/2 size-0" style={`top:${top}`}>
+  {rings.map((r) => (
+    <span class={`absolute rounded-full border ${r.dashed ? 'border-dashed' : 'border-solid'}`} style={`left:${-r.size / 2}px;top:${-r.size / 2}px;width:${r.size}px;height:${r.size}px;border-color:oklch(1 0 0 / ${r.alpha})`}></span>
+  ))}
+  <span class="absolute size-2 rounded-full bg-[oklch(0.62_0.2_35)]" style={`left:${-body - 4}px;top:-4px`}></span>
+  {label && <span class="absolute font-mono text-[11px] whitespace-nowrap text-[oklch(0.62_0.006_80)]" style={`left:${-body + 10}px;top:12px`}>{label}</span>}
+</div>

@@ -1,0 +1,26 @@
+/* Dropdown menu */
+.dropdown { min-height: 210px; }
+.dropdown .menu { position: relative; display: inline-block; }
+.dropdown .trigger::after { content: "⌄"; margin-left: 10px; color: var(--ink-2); }
+.dropdown ul { display: none; position: absolute; top: calc(100% + 6px); left: 0; z-index: 2; min-width: 180px; margin: 0; padding: 4px; list-style: none; border: 1px solid var(--ink); border-radius: 4px; background: var(--card); box-shadow: 0 8px 24px rgb(0 0 0 / 0.1); }
+.dropdown li button { width: 100%; min-height: 36px; border: 0; text-align: left; }
+.dropdown .readout { margin: 16px 0 0; }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+.dropdown { --open: state(false); --back: state(false); --choice: state("none"); }
+
+.dropdown .trigger:on(click) { --open: toggle(); --back: set(false); }
+
+/* A choice, Escape or a click anywhere else closes it. */
+.dropdown li button:on(click) { --choice: set(attr(data-choice)); --open: set(false); --back: set(true); }
+.dropdown .menu:on(keydown(Escape)) { --open: set(false); --back: set(true); }
+.dropdown .menu:on(outside(click)) { --open: set(false); }
+
+.dropdown .trigger { --attr-aria-expanded: var(--open); }
+.dropdown:when(--open) ul { display: block; }
+
+/* Opening focuses the first item; Escape or a choice returns focus to the button. */
+.dropdown li:first-child button { focus: when(--open); }
+.dropdown .trigger { focus: when(--back); }
+
+.dropdown .choice { content: var(--choice); }

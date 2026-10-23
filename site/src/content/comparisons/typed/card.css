@@ -1,0 +1,14 @@
+@property --rotation {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.card {
+  rotate: var(--rotation);
+  transition: --rotation 400ms;
+}
+
+.card:hover {
+  --rotation: 90deg;
+}

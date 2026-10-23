@@ -1,0 +1,21 @@
+.pad {
+  --x: state(0px);
+  --y: state(0px);
+  --key: state("none");
+}
+
+/* A snapshot of where the press happened, relative to the pad. */
+.pad:on(pointerdown) {
+  --x: set(event(local-x));
+  --y: set(event(local-y));
+}
+
+/* Keyboard fields exist only for keyboard triggers. */
+.pad:on(keydown) {
+  --key: set(event(key));
+}
+
+.pad .dot { translate: var(--x) var(--y); }
+.pad .x { content: var(--x); }
+.pad .y { content: var(--y); }
+.pad .k { content: var(--key); }

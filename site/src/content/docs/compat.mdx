@@ -1,0 +1,96 @@
+---
+title: "Browser Compatibility"
+description: "What has been verified for 0.9.0 and how: automated engine tests in Chromium and WebKit, what is still manual, native-first behavior, build-tool requirements and compatibility with the 0.8 syntax."
+group: Project
+type: Project
+order: 40
+---
+## Verification status
+| Target | Version tested | Status for 0.9.0 |
+| --- | --- | --- |
+| Chromium | 156.0.8078.4, Playwright | All browser suites pass; 427 tests pass with the CPU throttled 4× |
+| WebKit | 27.2, Playwright build | All browser suites pass |
+| Firefox | Playwright Firefox, build 1555 | **Not run.** It fails to launch on the development machine ("Could not find profile folder"), so Firefox has no automated coverage |
+| Real Safari (macOS, iOS) | — | **Manual, pending** |
+| Touch and pen hardware | — | **Manual, pending.** Drag is tested with synthesized pointer events only |
+| Screen readers | — | **Manual, pending** |
+| CodePen | — | **Manual, pending.** A local CodePen-like harness passes; codepen.io itself was not used |
+
+Automated figures from the library's `docs/release-0.9.0-hardening.md` (§F): 848 browser tests passed and 6 skipped across Chromium and WebKit, and 188 unit tests passed. The skipped tests need the Chromium DevTools protocol. Engines ran with Playwright 1.64.1 on one Apple M4 Max with macOS 27.0.1. The manual checks are listed in the library's `docs/manual-validation-0.9.md`.
+
+For 0.7.1, a manual pass of the 20 library examples in real Google Chrome, Safari and Firefox was user-reported, without logs or browser versions. It is not repeated for 0.9.0 and does not cover the 0.9 syntax.
+
+<Callout kind="caution" title="What “tested” means">
+
+WebKit here is Playwright's WebKit build, not a Safari release. No claim is made for Firefox, Edge, real Safari, mobile browsers or assistive technology until those checks are done.
+
+</Callout>
+
+## Native CSS stays native
+- **Additive.** A stylesheet without Reactive CSS syntax is never tokenized. In a reactive sheet, only the reactive parts are rewritten; every other token passes through unchanged.
+- **Untouched:** `calc()`, `clamp()`, `min()`, `max()`, `:has()`, `:is()`, `:not()`, `:checked`, `:focus`, `:focus-visible`, `:focus-within`, transitions, `@starting-style`, `<dialog>`, `popover` and form behavior. Reactive CSS evaluates `attr()`, `if()`, `min()`, `max()`, `clamp()` and `round()` only inside `state()` and state mutations, and `calc()` only inside mutations.
+- **Generated content** stays native: `::before { content: var(--n); }`, literal strings and images. Only `content` on an element that reads state also writes DOM text (see [DOM Integration](/docs/binding/#dom-text-content)).
+- `element(#id)` stays the native image function, and native `random-item()` is unrelated and untouched.
+
+### random()
+Chromium 156 and WebKit 27.2 implement native `random()` as in the CSS Values 5 Editor's Draft of 4 September 2026. Reactive CSS leaves to the browser what it supports and runs only the rest:
+- **Native:** a top-level call the browser supports as written, when it gives each element its own value (checked with two probe elements), including the plain step form `random(0px, 100px, 10px)` and the native keys `--name`, `element-scoped`, `property-scoped` and `fixed`. Such calls get no diagnostic.
+- **Runtime:** the earlier draft's `by <step>` and `element-shared`, which both engines reject; calls nested in `live()` or `on()`; calls inside a mutation, rolled at each event.
+- **Polyfill:** any call the browser cannot evaluate. A native-only key without native support gets one diagnostic and is never guessed.
+- **One semantic difference:** a native `--r: random(…)` custom property keeps the call as text, so each `var(--r)` rolls its own value. The polyfill gives one value per declaring element, inherited by its descendants.
+
+Support was measured in two engines only; do not assume native `random()` elsewhere.
+
+## Content-Security-Policy
+Every 0.9 construct works under `default-src 'self'` with no inline scripts and no `eval`, and custom bundles work under `default-src 'none'`. No violation was recorded. See [Installation](/docs/installation/#content-security-policy).
+
+## Build tools and minifiers
+The runtime compiles from the stylesheet's source text, not from the browser's parsed rules. The browser drops selectors it does not know, such as `:on(click)`, but that does not matter: the rules still work. What matters is what your build does to the file before it reaches the browser.
+
+| Pipeline | Modifier-only rule `a:on(click, prevent()) {}` |
+| --- | --- |
+| Browser CSSOM parse | Dropped as an invalid selector. Irrelevant: the runtime reads the source text |
+| Inline and dynamically inserted `<style>` | Works |
+| esbuild `minifyWhitespace` | Kept |
+| esbuild `minify` or `minifySyntax`, csso, Lightning CSS | **Removed silently** |
+
+Rules with declarations survive all of these tools. Use whitespace-only minification for stylesheets with Reactive CSS. Nothing preserves empty rules automatically, and the runtime cannot detect a rule removed before the page loaded.
+
+## The --attr-* namespace
+Since 0.9.0, a custom property named `--attr-<attribute>` with an allowlisted suffix writes that attribute, in any trusted stylesheet. A third-party stylesheet that uses such names for its own purposes would now write attributes. Rename those properties. See [DOM Integration](/docs/binding/#--attr--attributes-from-a-value).
+
+## 0.8 syntax
+The 0.8 declarations `on:`, `bind:`, `text:`, `attr:` and `focus:` keep working in 0.9.0. All 0.8.1 browser suites pass, and one test page runs the 0.8 and 0.9 syntax side by side, with the full bundle and with a trimmed custom bundle. Behavior differences are listed in [Migrating from 0.8](/docs/migration/#differences-to-know).
+
+## Known WebKit engine limitations
+Both were reproduced in Playwright's WebKit with no Reactive CSS on the page, so they are engine bugs, not library bugs. Each has a test that will report when WebKit fixes it, and a workaround that works in both engines:
+
+- **Stale values in a section hidden by CSS.** An element that was rendered once and is then under a `display: none` ancestor keeps its old inherited values. A `content` or `text:` binding inside it can show an old value when the section is shown by something other than a state change, such as `:has(:checked)`, `details[open]` or a media query. Show such sections with a state-driven rule, for example `.c:when(not --show) .box { display: none; }`, so the reveal reads the current value.
+- **`:has(:invalid)` and a newly enabled `<select>`.** After a required, empty `<select>` is enabled, `:has(:invalid)` does not start matching. Derive the condition from state instead, for example `--attr-aria-disabled: when(--on == b and --size == "", true, false)`.
+
+## Build targets
+The build targets Chrome and Edge 111+, Firefox 128+ and Safari 16.4+. Event rules need `CSS.registerProperty()`, which Firefox added in 128. These are targets, not verified versions.
+
+## What the browser tests cover
+- Values, stylesheets, and the cascade: layers, `!important`, `@media`, `@supports`, `@container`, nesting, `:is()`, `:where()`, `:has()`, pseudo-elements, `@import`, the shadow DOM boundary.
+- All selectors, state, actions, conditions, history, `bind:` (IME, caret, reset, autofill) and `typed()`.
+- `element()`: box model, resize, hidden, nested and vertical elements, cleanup, `element(#id)` untouched, and the feedback-loop guard in both directions.
+- 0.5 expressions: `state(attr())` on the owner, `set(--x, attr())` at event time, nested owners, missing, empty, Unicode, quoted and control-character values kept as one string, password fields refused, native `attr()` untouched, `pick(split())` per owner and per event, empty lists and invalid `split()`.
+- Stable `state()` registrations across recompiles, edits, moves and two sheets, and cascade-chosen boolean initial values.
+- 0.5.1–0.7.0: `text:` ownership and restore, the seven new triggers, `state(…, bind())`, `attr:` timing and allowlist, `focus:` rules, `prevent()` with real keys on scrollable pages and the passive/non-passive listener switch.
+- 0.7.1: the eight validation examples, and regression tests for a disabled and re-enabled `<link>`, `text:`/`attr:`/`focus:` reading a state from a later-loading stylesheet, and `focus:` inside an open popover in WebKit.
+- 0.8.0: custom bundles (a bundle without features reports each missing one; the five profiles run real interfaces under a strict CSP and clean up), every example on the bundle the analyzer picks for it, and a `<link>` `href` swap race.
+- 0.8.1: the pre-beta regressions: Enter and typed keys that move focus no longer activate the new target, `:changed()` ignores unrelated animations, fast choices on bound radios and checkboxes (in one task, by arrow keys, cancelled clicks), and the `bind:` listener released by `stop()` and by removing the last bound control.
+- 0.9.0: event rules (cascade, modifiers, transactions, keyboard), event-time expressions, drag with synthesized mouse, touch and pen events, persistence including storage failures, `bind()` in `state()`, `--attr-*`, reactive `content`, focus requests and `:blur`; the native `random()` matrix; conditional at-rules, nesting and linked sheets; the CodePen-like harness; and each custom bundle under a strict CSP.
+- Five Content-Security-Policies with real headers, security regressions, and the minified bundle alone on a plain page.
+
+## Feature detection
+| Feature | Detection | Fallback |
+| --- | --- | --- |
+| Native `random()` | `CSS.supports()` and two probe elements must get different values | JS path |
+| Native `if()` for `when()` | `CSS.supports()` of a compound `if()` | Runtime `when()` |
+| `CSS.registerProperty` | try/catch | Features that need it warn once; `typed()` stays a plain property |
+| `ResizeObserver` `borderBoxSize` | Used directly | Content box |
+
+## Verifying Firefox
+Run `npm run test:firefox` in the library on a machine where Playwright's Firefox starts. Until then, Firefox is unverified for 0.9.0.

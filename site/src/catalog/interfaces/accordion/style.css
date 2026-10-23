@@ -1,0 +1,16 @@
+/* Accordion */
+.faq { padding: 0 20px; }
+.faq .item + .item { border-top: 1px solid var(--line); }
+.faq .item > button { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 0; border: 0; background: transparent; font-weight: 500; text-align: left; }
+.faq .chevron { color: var(--ink-2); transition: rotate 200ms; }
+.faq .body { display: none; padding: 0 0 14px; color: var(--ink-2); }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+/* Each item owns its own state: opening one leaves the others as they are. */
+.faq .item { --open: state(false); }
+
+.faq .item > button:on(click) { --open: toggle(); }
+
+.faq .item > button { --attr-aria-expanded: var(--open); }
+.faq .item:when(--open) .body { display: block; }
+.faq .item .chevron { rotate: when(--open, 180deg, 0deg); }

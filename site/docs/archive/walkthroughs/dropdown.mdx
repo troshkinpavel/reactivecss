@@ -1,0 +1,27 @@
+---
+title: "Dropdown"
+description: "A menu that opens on click and closes on Escape or a click elsewhere."
+group: Examples
+type: Example
+order: 27
+uses: ["reference/toggle","reference/outside","reference/key"]
+---
+<Example id="dropdown" size="expanded" />
+
+## How it works
+1. `.menu` declares `--open` plus two dismiss triggers: `outside(click, …)` and `key(Escape, …)`.
+2. The trigger button toggles the state.
+3. `ul:when(--open)` shows the list.
+
+## Consider popover first
+The native `popover` attribute gives light dismiss, Escape handling and top-layer stacking with no script.
+
+## Accessibility
+<Callout kind="warning" title="Visual only">
+
+A complete menu also needs `aria-expanded`, focus moved into the list, arrow keys and focus returned on close.
+
+</Callout>
+
+## APIs used
+<Related ids={["reference/toggle","reference/outside","reference/key","reference/when-selector"]} />

@@ -1,0 +1,236 @@
+---
+title: "Migrating from 0.8"
+description: "0.9 adds event rules with :on(), mutations on the state's own property, bind() in state(), --attr-* and reactive content. The 0.8 syntax keeps working; this page maps each form to its 0.9 equivalent and lists the differences."
+navLabel: "Migrating from 0.8"
+group: Start
+type: Guide
+order: 4
+status: new
+---
+0.9.0 adds a new way to write behavior. Selectors say when, declarations say what: an event rule such as `.button:on(click)` names the moment, and its declarations change the states it owns.
+
+**The 0.8 syntax keeps working in 0.9.** `on:`, `bind:`, `text:`, `attr:` and `focus:` compile to the same runtimes as before, and the runtime prints nothing about them. A page that works with 0.8.1 works with 0.9.0 unchanged, with one exception: custom properties named `--attr-*` (see [reserved attribute properties](#reserved-attribute-properties)).
+
+Migrating is not required. New code reads better in the 0.9 syntax, and it is what these docs use; move existing stylesheets over when you touch them.
+
+## Quick map
+| 0.8 | 0.9 |
+| --- | --- |
+| `.b { on: click(toggle(--open)) }` | `.b:on(click) { --open: toggle(); }` |
+| `.b { on: click(increment(--n, 2)) }` | `.b:on(click) { --n: increment(2); }` |
+| `.b { on: click(set(--x, 5)) }` | `.b:on(click) { --x: set(5); }` |
+| `.b { on: click(cycle(--m, a, b, c)) }` | `.b:on(click) { --m: cycle(a, b, c); }` |
+| `.d { on: key(Escape, set(--open, false)) }` | `.d:on(keydown(Escape)) { --open: set(false); }` |
+| `.m { on: outside(click, set(--open, false)) }` | `.m:on(outside(click)) { --open: set(false); }` |
+| `a { on: click(prevent(), set(--asked, true)) }` | `a:on(click, prevent()) { --asked: set(true); }` |
+| `.b { on: click(a(), b()), key(Enter, c()) }` | one `:on()` rule per trigger |
+| `input { --q: state(""); bind: --q; }` | `input { --q: state("", bind(value)); }` |
+| `input[type=checkbox] { --on: state(false); bind: --on; }` | `input[type=checkbox] { --on: state(false, bind(checked)); }` |
+| `.v { text: var(--n); }` | `.v { content: var(--n); }` |
+| `.b { attr: aria-expanded var(--open); }` | `.b { --attr-aria-expanded: var(--open); }` |
+| `.x:when(--open) { focus: true; } .x { focus: false; }` | `.x { focus: when(--open); }`, which 0.8 accepts too: `focus:` is the focus request |
+| `set(--x, v, closest(.scope))` | no 0.9 form: keep `on:` |
+| radio group with `bind: --size` | `.size input:on(change) { --size: set(event(value)); }` (one-way, see below) |
+
+## Events
+<CodePair>
+
+```css menu-0.8.css
+.menu {
+  --open: state(false);
+}
+
+.menu > button {
+  on: click(toggle(--open));
+}
+
+.menu {
+  on: key(Escape, set(--open, false)),
+      outside(click, set(--open, false));
+}
+```
+
+```css menu-0.9.css
+.menu {
+  --open: state(false);
+}
+
+.menu > button:on(click) {
+  --open: toggle();
+}
+
+.menu:on(keydown(Escape)) {
+  --open: set(false);
+}
+
+.menu:on(outside(click)) {
+  --open: set(false);
+}
+```
+
+</CodePair>
+
+- The mutation is written on the state's own property: `--open: toggle()` changes the nearest owner of `--open` on the element or its ancestors.
+- `key(Key, …)` becomes `keydown(Key)`. `keyup(Key)` is new.
+- `prevent()` moves into the selector as a modifier: `:on(click, prevent())`. `stop()` is new. Both are written as functions.
+- 0.9 adds triggers that `on:` never had, among them `submit`, `dblclick`, `pointerdown`, `pointermove`, `keyup`, `scroll` and drag. See [Events & Actions](/docs/events/).
+
+## Forms
+<CodePair>
+
+```css field-0.8.css
+.search input {
+  --q: state("");
+  bind: --q;
+}
+```
+
+```css field-0.9.css
+.search input {
+  --q: state("", bind(value));
+}
+```
+
+</CodePair>
+
+`state(…, bind(value))` binds the control to its **own** state. A radio group, or any control that writes an ancestor's state, keeps `bind: --state`; it is not deprecated. A one-way alternative copies the value at input time: `.search input:on(input) { --q: set(event(value)); }`, with `--q` on an ancestor. Details: [DOM Integration](/docs/binding/).
+
+## DOM text and attributes
+<CodePair>
+
+```css toggle-0.8.css
+.toggle {
+  --on: state(false);
+  on: click(toggle(--on));
+  attr: aria-pressed var(--on);
+}
+
+.toggle .label {
+  text: when(--on, "On", "Off");
+}
+```
+
+```css toggle-0.9.css
+.toggle {
+  --on: state(false);
+  --attr-aria-pressed: var(--on);
+}
+
+.toggle:on(click) {
+  --on: toggle();
+}
+
+.toggle .label {
+  content: when(--on, "On", "Off");
+}
+```
+
+</CodePair>
+
+## What has no 0.9 form
+- **Explicit owners.** `set(--x, v, closest(.scope))` stays in `on:`. A 0.9 mutation always changes the nearest owner of the state.
+- **Two-way ancestor binding.** `bind: --size` keeps a radio group and an ancestor's state equal in both directions. The 0.9 form is one-way: `.size input:on(change) { --size: set(event(value)); }`, with the initial radio marked `checked` in the HTML. Keep `bind:` where a change of the state must also update the controls.
+- **Focus requests.** `focus: when(--open)` is already the declaration for this, in 0.8 and in 0.9. See [Focus & Blur](/docs/focus/).
+- **One-time rules.** `:on()` has no `once` modifier. Guard the rule with a state instead: `.b:when(not --done):on(click) { --done: set(true); }`.
+
+## Differences to know
+### One transaction per event
+- In 0.8, `on:` runs its actions one after another. An inner and an outer `increment(--n)` for the same state gave +2.
+- In 0.9, every mutation reads the values from before the event, and when two rules on the event path write the same state, the outer one wins. The same two rules give +1, and `--a: set(var(--b)); --b: set(var(--a))` swaps two states.
+- Legacy `on:` rules keep the 0.8 behavior.
+
+### One mutation per state, per element
+- In 0.8 the cascade picked one `on:` declaration per element, so different actions in different rules replaced each other.
+- In 0.9 it picks one mutation per state. `.b:on(click) { --a: … }` and `.b.x:on(click) { --b: … }` both run; two rules for `--a` give one winner.
+
+### content is DOM text only under conditions
+- The rule must target elements, not `::before` or `::after`.
+- The value must read state, through `var()`, `when()`, `previous()` or `direction()`, and contain no image or `attr()`.
+- Everything else stays native `content`. `text: "Saved"` writes a literal string; `content: "Saved"` stays native and writes nothing. See [DOM Integration](/docs/binding/#dom-text-content).
+
+### Reserved attribute properties
+- A custom property named `--attr-<name>` now writes that attribute when `<name>` is on the allowlist (`aria-*` states, `disabled`, `hidden`, `required`, `tabindex`, `data-*`). Other `--attr-*` names give a diagnostic and stay plain custom properties.
+- This is the one change that can alter a page that worked with 0.8.1. **Rename any existing `--attr-*` custom property that is not meant as an attribute**, for example `--attr-hidden` to `--x-hidden`.
+
+### Functional :focus() is reported
+`:focus`, `:focus-visible` and `:focus-within` stay native and untouched. A functional form such as `:focus(…)` is not CSS: Reactive CSS reports it and leaves the rule unchanged.
+
+### Event-time values
+- Inside a mutation, `mouse()`, `element()`, `viewport()`, `random()`, `pick()` and `attr()` are read once, when the event happens.
+- Outside mutations they keep their 0.8 live behavior.
+- `event(field)` exists only inside mutations.
+
+## Build pipelines: keep empty rules
+A rule with only modifiers, such as `a.confirm:on(click, prevent()) {}`, is empty on purpose: it cancels the link's default and changes nothing else. Minifiers that remove empty rules delete it silently:
+
+| Tool | Empty `:on()` rule |
+| --- | --- |
+| esbuild with `minify` or `minifySyntax` | removed |
+| csso | removed |
+| Lightning CSS | removed |
+| esbuild with `minifyWhitespace` only | kept |
+
+Rules with declarations survive all of them. For stylesheets with Reactive CSS, use whitespace-only minification, or keep a modifier rule out of the minified file. Nothing preserves these rules automatically, and the runtime cannot see a rule that was removed before the page loaded.
+
+## Tools
+**Find the 0.8 syntax.** `reactive-css analyze` with `--json` lists the legacy declarations of each file, with their 0.9 form:
+
+```sh terminal
+npx reactive-css analyze --json styles/
+```
+
+```json output (excerpt)
+"legacy": [
+  { "syntax": "attr:", "use": "--attr-<attribute>: <value>" },
+  { "syntax": "on:", "use": ".x:on(event) { --state: action() }" },
+  { "syntax": "text:", "use": "content: <value>" }
+]
+```
+
+`bind:` and `focus:` are not listed: they remain the current form for what they do.
+
+**Read production diagnostics.** The minified bundles report problems as stable codes with their values, for example `RCSS-P001⟦:on()⟧⟦events⟧⟦events⟧`. Decode a message offline:
+
+```sh terminal
+npx reactive-css explain "RCSS-P001⟦:on()⟧⟦events⟧⟦events⟧"
+```
+
+```txt output
+:on() is not included in this bundle (feature "events"); build a bundle with it (reactive-css build --features events) or use the full bundle
+```
+
+Or load the development bundle, `reactive-css.js`, which logs the full text of every message. `explain` needs no esbuild.
+
+**Custom bundles.** Each 0.9 construct belongs to a feature. A custom bundle without the feature reports the syntax once, naming the feature to add.
+
+| Construct | Feature |
+| --- | --- |
+| `:on()`, `event()`, mutations | `events` |
+| `:on(drag)` | `gestures` (adds `events`) |
+| `persist()` | `persist` |
+| `:blur` | `blur` |
+| `bind(value)`, `bind(checked)` | `forms` |
+| `--attr-*`, `bind(attribute)` | `attributes` |
+| reactive `content` | `text` |
+| `focus:` | `focus` (adds `events`; `when()` also needs `conditions`) |
+
+`reactive-css analyze` detects all of them. See [Custom bundles](/docs/custom-bundles/).
+
+## Legacy 0.8.x compatibility
+These declarations are the 0.8 syntax. They keep working in 0.9.0 and compile to the same runtimes, but the docs and examples no longer use them. Their reference pages stay available for existing stylesheets:
+
+| 0.8 | Page | 0.9 form |
+| --- | --- | --- |
+| `on: <trigger>(<action>#)` | [`on:`](/docs/reference/on/) | [`:on()`](/docs/reference/on-rule/) rules with mutations |
+| `click()`, `change()`, `input()`, `focus()`… in `on:` | [Triggers](/docs/reference/triggers/) | the event in [`:on()`](/docs/reference/on-rule/) |
+| `key(<key>, <action>#)` | [`key()`](/docs/reference/key/) | `:on(keydown(<key>))` |
+| `focusin()`, `reset()`, `animationend()`… in `on:` | [Focus, reset, animation and transition triggers](/docs/reference/lifecycle-triggers/) | the event in [`:on()`](/docs/reference/on-rule/) |
+| `closest(<selector>)` | [`closest()`](/docs/reference/closest/) | no 0.9 form |
+| `bind: --x` | [`bind:`](/docs/reference/bind/) | [`bind()` in `state()`](/docs/reference/bind-state/), or an `:on(change)` copy |
+| `text: <value>` | [`text:`](/docs/reference/text/) | [`content`](/docs/reference/content/) |
+| `attr: <attribute> <value>` | [`attr:`](/docs/reference/attr-declaration/) | [`--attr-*`](/docs/reference/attr-property/) |
+
+Inside `on:`, the actions take the state as their first argument (`set(--x, 5)`, `toggle(--open)`) and `prevent()` is an action. In `:on()`, the state is the property (`--x: set(5)`) and [`prevent()` and `stop()`](/docs/reference/prevent/) are modifiers. `once` is not part of 0.9: guard the rule with a state.
+
+## Related
+<Related ids={["events","binding","focus","custom-bundles","reference/on-rule","reference/on","changelog"]} />

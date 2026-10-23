@@ -1,0 +1,12 @@
+---
+import { CodeComparison } from '~/components/examples/CodeComparison';
+import { getExample } from '~/examples/manifest';
+import { highlight } from '~/lib/code/highlight';
+import { getComparison } from '~/lib/content/comparisons';
+interface Props { id: string }
+const c = getComparison(Astro.props.id);
+const native = await Promise.all(c.nativeFiles.map(async (f) => ({ ...f, lines: await highlight(f.code, f.lang) })));
+---
+<div class="mt-2 mb-8 max-w-(--container-article)">
+  <CodeComparison client:visible title={c.title} relation={c.relation} status={c.status} nativeNote={c.nativeNote} reactiveNote={c.reactiveNote} native={native} example={getExample(c.example)} simpler={c.simpler} differences={c.differences} links={c.links} />
+</div>

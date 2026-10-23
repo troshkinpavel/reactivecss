@@ -1,0 +1,10 @@
+--- a/examples/api/index.html
++++ b/examples/api/index.html
+@@ -36,6 +36,7 @@
+       <li><a href="change-animation/"><span class="n">14</span> Change animation</a><span class="apis"><code>:changed()</code></span></li>
+       <li><a href="viewport/"><span class="n">15</span> Viewport tracking</a><span class="apis"><code>viewport()</code></span></li>
+       <li><a href="visibility/"><span class="n">16</span> Visibility detection</a><span class="apis"><code>visible()</code></span></li>
++      <li><a href="context-menu/"><span class="n">17</span> Context menu</a><span class="apis"><code>set()</code> <code>mouse()</code></span></li>
+     </ol>
+   </main>
+ </body>

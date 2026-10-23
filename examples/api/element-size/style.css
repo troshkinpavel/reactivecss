@@ -1,0 +1,16 @@
+/* Element size */
+.size label { margin-bottom: 16px; }
+.size .card {
+  box-sizing: content-box; padding: 16px; border: 1px solid var(--ink);   /* measured = width + 34px */
+  border-radius: 4px; background: var(--accent-soft);
+}
+.size .big { margin: 0; line-height: 1; font-weight: 700; }
+.size .readout { margin: 10px 0 0; }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+.size { --width: state(300); }
+.size .width { bind: --width; }                                       /* the slider sets the state */
+.size .set   { text: var(--width); }
+.size .card  { width: min(var(--width) * 1px, 100% - 34px); --w: element(width); }   /* border box */
+.size .big   { font-size: calc(var(--w) / 6); }                       /* follows the measured width */
+.size .measured::after { counter-reset: w round(var(--w) / 1px); content: counter(w); }

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Accessible toggle button — Reactive CSS example</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Accessible toggle button</h1>
+    <p class="note">The buttons' <code>aria-pressed</code> and <code>aria-expanded</code> attributes are real DOM attributes, kept in sync with the state. Inspect them in the developer tools.</p>
+
+    <section class="demo">
+      <h2>Toggle</h2>
+      <button type="button" class="toggle" aria-pressed="false">Notifications</button>
+      <button type="button" class="toggle" aria-pressed="true">Dark mode</button>
+    </section>
+
+    <section class="demo">
+      <h2>Disclosure</h2>
+      <button type="button" class="disclosure" aria-expanded="false" aria-controls="details-panel">Shipping details</button>
+      <div class="panel" id="details-panel">
+        <p>Orders ship within two business days. Returns are free for 30 days.</p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

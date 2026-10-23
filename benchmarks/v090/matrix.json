@@ -1,0 +1,244 @@
+{
+ "date": "2026-10-22T00:08:56.088Z",
+ "v081": {
+  "dist/reactive-css.min.js (full registry)": {
+   "min": 117830,
+   "gzip": 39715,
+   "brotli": 34983
+  },
+  "dist/reactive-css.compact.min.js": {
+   "min": 101644,
+   "gzip": 34357,
+   "brotli": 30418
+  },
+  "minimal state": {
+   "min": 41873,
+   "gzip": 15530,
+   "brotli": 14102
+  }
+ },
+ "rows": [
+  {
+   "name": "minimal state",
+   "features": [
+    "core"
+   ],
+   "added": [],
+   "before": {
+    "min": 53449,
+    "gzip": 19277,
+    "brotli": 17474
+   },
+   "after": {
+    "min": 45330,
+    "gzip": 16890,
+    "brotli": 15403
+   }
+  },
+  {
+   "name": "counter",
+   "features": [
+    "core",
+    "events",
+    "text"
+   ],
+   "added": [],
+   "before": {
+    "min": 89067,
+    "gzip": 30528,
+    "brotli": 27271
+   },
+   "after": {
+    "min": 78484,
+    "gzip": 26834,
+    "brotli": 24191
+   }
+  },
+  {
+   "name": "forms",
+   "features": [
+    "core",
+    "events",
+    "forms"
+   ],
+   "added": [],
+   "before": {
+    "min": 93125,
+    "gzip": 31798,
+    "brotli": 28463
+   },
+   "after": {
+    "min": 82752,
+    "gzip": 28060,
+    "brotli": 25438
+   }
+  },
+  {
+   "name": "focus",
+   "features": [
+    "core",
+    "events",
+    "focus"
+   ],
+   "added": [
+    "events"
+   ],
+   "before": {
+    "min": 93276,
+    "gzip": 31916,
+    "brotli": 28496
+   },
+   "after": {
+    "min": 78907,
+    "gzip": 27145,
+    "brotli": 24454
+   }
+  },
+  {
+   "name": "persistence",
+   "features": [
+    "core",
+    "persist"
+   ],
+   "added": [],
+   "before": {
+    "min": 57280,
+    "gzip": 20696,
+    "brotli": 18699
+   },
+   "after": {
+    "min": 48975,
+    "gzip": 18184,
+    "brotli": 16503
+   }
+  },
+  {
+   "name": "drag",
+   "features": [
+    "core",
+    "events",
+    "gestures"
+   ],
+   "added": [
+    "events"
+   ],
+   "before": {
+    "min": 88135,
+    "gzip": 30232,
+    "brotli": 27216
+   },
+   "after": {
+    "min": 78093,
+    "gzip": 26847,
+    "brotli": 24216
+   }
+  },
+  {
+   "name": "sensors",
+   "features": [
+    "core",
+    "dynamic",
+    "geometry"
+   ],
+   "added": [],
+   "before": {
+    "min": 60639,
+    "gzip": 21682,
+    "brotli": 19592
+   },
+   "after": {
+    "min": 52103,
+    "gzip": 19060,
+    "brotli": 17258
+   }
+  },
+  {
+   "name": "interactive profile",
+   "features": [
+    "core",
+    "events",
+    "gestures",
+    "persist",
+    "conditions",
+    "text",
+    "attributes"
+   ],
+   "added": [],
+   "before": {
+    "min": 109904,
+    "gzip": 37129,
+    "brotli": 33000
+   },
+   "after": {
+    "min": 99131,
+    "gzip": 33418,
+    "brotli": 29826
+   }
+  },
+  {
+   "name": "full (custom, compact registry)",
+   "features": [
+    "core",
+    "events",
+    "gestures",
+    "persist",
+    "conditions",
+    "nth-var",
+    "history",
+    "forms",
+    "text",
+    "attributes",
+    "focus",
+    "blur",
+    "values",
+    "dynamic",
+    "geometry"
+   ],
+   "added": [],
+   "before": {
+    "min": 140148,
+    "gzip": 46856,
+    "brotli": 41135
+   },
+   "after": {
+    "min": 126967,
+    "gzip": 42129,
+    "brotli": 37225
+   }
+  },
+  {
+   "name": "dist/reactive-css.min.js (full registry)",
+   "features": [
+    "all"
+   ],
+   "added": [],
+   "before": {
+    "min": 162675,
+    "gzip": 54074,
+    "brotli": 47147
+   },
+   "after": {
+    "min": 149039,
+    "gzip": 49233,
+    "brotli": 43272
+   }
+  },
+  {
+   "name": "dist/reactive-css.compact.min.js",
+   "features": [
+    "all"
+   ],
+   "added": [],
+   "before": {
+    "min": 141672,
+    "gzip": 47274,
+    "brotli": 41449
+   },
+   "after": {
+    "min": 128495,
+    "gzip": 42488,
+    "brotli": 37584
+   }
+  }
+ ]
+}

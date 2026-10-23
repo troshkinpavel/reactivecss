@@ -1,0 +1,23 @@
+---
+title: "Theme switcher"
+description: "Cycle through light, dark and sepia from one state on :root."
+group: Examples
+type: Example
+order: 26
+uses: ["reference/state","reference/cycle","reference/when-selector"]
+---
+<Example id="theme" size="expanded" />
+
+## How it works
+1. `--theme` is declared on `:root`, so the whole page can read it.
+2. The button runs `cycle(--theme, light, dark, sepia)`.
+3. One `:when(--theme == …)` rule per theme sets the colors.
+
+<Callout kind="note" title="Not persisted">
+
+The theme resets on reload, and honoring `prefers-color-scheme` first needs a media query or script. Use JavaScript and storage if you need either.
+
+</Callout>
+
+## APIs used
+<Related ids={["reference/state","reference/cycle","reference/when-selector"]} />

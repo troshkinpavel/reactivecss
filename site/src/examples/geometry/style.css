@@ -1,0 +1,27 @@
+.geo-wrap {
+  --size: state(320px);
+}
+
+.geo-wrap .narrower:on(click) {
+  --size: decrement(40px);
+}
+
+.geo-wrap .wider:on(click) {
+  --size: increment(40px);
+}
+
+.geo {
+  --w: element(width);
+  width: var(--size);
+  min-width: 160px;
+  max-width: 100%;
+}
+
+.geo .label {
+  font-size: clamp(12px, calc(var(--w) / 18), 28px);
+}
+
+.geo .px::before {
+  counter-reset: w calc(var(--w) / 1px);
+  content: counter(w) "px wide";
+}

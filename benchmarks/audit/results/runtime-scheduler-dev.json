@@ -1,0 +1,38 @@
+{
+ "date": "2026-10-18T17:58:42.710Z",
+ "browser": "156.0.8078.4",
+ "bundle": "dev",
+ "runs": 5,
+ "rows": [
+  {
+   "test": "starvation-20k-live50ms",
+   "toggleP50": 25.2,
+   "toggleP95": 35.8,
+   "toggleLost": 0,
+   "updatedFraction": 1,
+   "jobsPerS": 405668.5,
+   "flushesPerS": 40.5,
+   "maxQueued": 20001,
+   "lastFlushMs": 3.299999952316284
+  },
+  {
+   "test": "remove-10k-with-full-queue",
+   "queuedBefore": 10000,
+   "jobsInNextFrame": 8000,
+   "writesInNextFrame": 0,
+   "flushMs": 0.2,
+   "after": {
+    "bindings": 0,
+    "sources": 0,
+    "queued": 2000
+   }
+  },
+  {
+   "test": "visibility",
+   "ticksPerSVisible": 10,
+   "ticksPerSHidden": 0,
+   "ticksPerSAfter": 11,
+   "realBackgroundVisibility": "visible"
+  }
+ ]
+}

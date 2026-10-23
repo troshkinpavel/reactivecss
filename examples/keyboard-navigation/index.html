@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Keyboard navigation — Reactive CSS example</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Keyboard navigation</h1>
+    <p class="note">This page is deliberately tall, so it scrolls. Keys the list handles (arrows, Home, End) do not scroll it (<code>prevent()</code>, 0.7.0). Other keys (PageDown, Space) keep their browser behavior.</p>
+
+    <section class="nav" id="nav" aria-label="Keyboard navigation">
+      <p><label>Filter (keys stay native here) <input class="filter" id="filter" value="type here"></label></p>
+      <p><label><input type="checkbox" class="lock" id="lock"> Lock the list (arrow keys scroll the page again)</label></p>
+      <div class="list" role="listbox" aria-label="Fruits" id="list">
+        <div role="option" class="opt" id="o1">Apple</div>
+        <div role="option" class="opt" id="o2">Banana</div>
+        <div role="option" class="opt" id="o3">Cherry</div>
+        <div role="option" class="opt" id="o4">Date</div>
+        <div role="option" class="opt" id="o5">Elderberry
+          <span class="inner" id="inner" tabindex="0" aria-label="Quantity, ArrowLeft and ArrowRight change it">qty <span class="q">1</span></span></div>
+        <div role="option" class="opt" id="o6">Fig</div>
+      </div>
+      <p class="status">Selected: <span class="sel">1</span> · Escape (anywhere in this section, also in the filter) unlocks the list.</p>
+    </section>
+    <div class="filler" aria-hidden="true">Scroll space</div>
+  </main>
+</body>
+</html>

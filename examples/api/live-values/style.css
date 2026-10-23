@@ -1,0 +1,10 @@
+/* Live values */
+.live .meter { height: 18px; border-radius: 9px; background: #efece6; overflow: hidden; }
+.live .bar { display: block; height: 100%; background: var(--accent); transform-origin: left; transition: scale 700ms ease-in-out; }
+.live .readout { margin: 12px 0 0; }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+/* live() evaluates its expression again on a shared timer; random() inside it re-rolls each time. */
+.live { --level: live(random(0, 100, by 1), 2s); }
+.live .bar { scale: calc(var(--level) / 100) 1; }                     /* a transform: no layout work */
+.live .level::after { counter-reset: level var(--level); content: counter(level); }

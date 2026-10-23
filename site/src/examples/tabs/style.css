@@ -1,0 +1,19 @@
+.tabs {
+  --active: state(1);
+}
+
+.tab:on(click) {
+  --active: set(sibling-index());
+}
+
+.panel {
+  display: none;
+}
+
+.panel:nth-var(--active) {
+  display: block;
+}
+
+.tab:nth-var(--active) {
+  border-color: currentColor;
+}

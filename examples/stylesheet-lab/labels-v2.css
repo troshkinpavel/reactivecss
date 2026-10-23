@@ -1,0 +1,2 @@
+.lab .label { text: "labels v2 (recompiled)"; }
+.lab:when(--n >= 3) .label { text: "labels v2, n ≥ 3"; }

@@ -1,0 +1,36 @@
+/* State that the preview line reads lives on the form, the shared owner. */
+.signup {
+  --greeting: state("");
+  --news: state(false);
+}
+
+/* The field also owns a two-way state of its own. */
+.signup input[name=name] {
+  --name: state("", bind(value));
+}
+
+/* Copy the control's value up to the form at input time. */
+.signup input[name=name]:on(input) {
+  --greeting: set(event(value));
+}
+
+.signup input[name=news]:on(change) {
+  --news: set(event(checked));
+}
+
+/* The field styles itself from its own state. */
+.signup input[name=name]:when(--name != "") {
+  border-color: #15803d;
+}
+
+.signup .greeting {
+  content: when(--greeting == "", "stranger", "");
+}
+
+.signup:when(--greeting != "") .greeting {
+  content: var(--greeting);
+}
+
+.signup .sub {
+  content: when(--news, " Newsletter: yes.", "");
+}

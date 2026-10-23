@@ -1,0 +1,18 @@
+/* Attribute sync */
+.disclosure { display: grid; gap: 12px; }
+.disclosure .toggle { justify-self: start; text-align: left; }
+/* Native attr() prints the button's real attribute: proof that the DOM changed. */
+.disclosure .toggle::after {
+  content: 'aria-expanded="' attr(aria-expanded) '"';
+  display: block; margin-top: 4px; font: 12px ui-monospace, "SF Mono", Menlo, monospace; color: var(--ink-2);
+}
+.disclosure .panel p { margin: 0; color: var(--ink-2); }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+.disclosure { --open: state(false); }
+
+.disclosure .toggle:on(click) { --open: toggle(); }
+
+/* Real attributes, written by the runtime. */
+.disclosure .toggle { --attr-aria-expanded: var(--open); }
+.disclosure .panel { --attr-hidden: when(not --open); }

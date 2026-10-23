@@ -1,0 +1,25 @@
+---
+// Release summaries from config/releases.json on the changelog page, under the visibility policy in
+// publicReleases(): published releases only, plus prepared ones in a local preview build.
+import { publicReleases } from '~/lib/config';
+interface Props { anchors: Record<string, string> }
+const { anchors } = Astro.props;
+const list = publicReleases();
+---
+{list.length > 0 && (
+  <section aria-label="Releases" class="mb-8 flex flex-col gap-4" data-release-cards>
+    {list.map((r) => (
+      <article class="rounded-block border border-line bg-paper-2 px-5 py-4" data-release={r.version}>
+        <div class="flex flex-wrap items-baseline justify-between gap-2 font-mono text-tag text-mute">
+          <a href={`#${anchors[r.version] ?? ''}`}>{r.version} · release notes below</a>
+          {r.published ? (r.date && <span>{r.date}</span>) : <span class="rounded-tag border border-dashed border-rx px-1.5 text-rx-strong">prepared · not published</span>}
+        </div>
+        <h2 class="m-0 mt-1 text-[20px] font-semibold tracking-h2">{r.title}</h2>
+        <p class="m-0 mt-1.5 text-note leading-[1.55] text-ink-2">{r.summary}</p>
+        {r.highlights.length > 0 && <ul class="m-0 mt-2 pl-5 text-[15px] leading-[1.6]">{r.highlights.map((h) => <li>{h}</li>)}</ul>}
+        {r.breaking && <p class="m-0 mt-2 text-[14px]"><strong>Breaking:</strong> {r.breaking}</p>}
+        {r.limitations && <p class="m-0 mt-2 text-[14px] text-ink-2"><strong class="text-ink">Known limitations:</strong> {r.limitations}</p>}
+      </article>
+    ))}
+  </section>
+)}

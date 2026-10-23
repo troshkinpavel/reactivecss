@@ -1,0 +1,39 @@
+/* Accessible tabs: all behavior is in this file (Reactive CSS + native CSS). */
+
+body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #1c1c1e; background: #f6f6f4; }
+main { max-width: 680px; margin: 0 auto; padding: 24px 16px; }
+.note { color: #555; }
+.tabs { background: #fff; border-radius: 14px; padding: 16px 20px; margin: 16px 0; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
+[role=tablist] { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 2px solid #ddd; }
+[role=tab] { font: inherit; padding: 8px 14px; border: 0; border-bottom: 3px solid transparent; background: none; cursor: pointer; margin-bottom: -2px; }
+[role=tab][aria-selected="true"] { border-bottom-color: #1d4ed8; color: #1d4ed8; font-weight: 600; }
+[role=tab]:disabled { color: #999; cursor: not-allowed; }
+[role=tabpanel] h2 { margin: 12px 0 4px; font-size: 18px; }
+:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+
+/* ---- state: the active tab's position (1-based), owned by each tab set ------------------------ */
+.tabs { --active: state(1); --billing: state(false); }
+.tabs [role=tab] { on: click(set(--active, sibling-index())); }
+
+/* ---- derived attributes (attr:, 0.5.3) ---------------------------------------------------------
+   Every tab reports aria-selected; the cascade gives "true" to the active one. Every panel is
+   hidden except the active one. Child combinators keep a nested tab set independent. */
+.tabs > [role=tablist] > [role=tab] { attr: aria-selected "false"; attr: tabindex "-1"; focus: false; }
+.tabs > [role=tablist] > [role=tab]:nth-var(--active) { attr: aria-selected "true"; attr: tabindex "0"; focus: true; }
+
+/* ---- keyboard (0.6.0): the ARIA Tabs pattern with automatic activation ----------------------------
+   Roving tabindex (above): only the selected tab is in the Tab order. Arrow keys, Home and End
+   select another tab, and focus: moves focus to it (a keydown is a user action). prevent() (0.7.0)
+   stops these keys from also scrolling the page; other keys (PageDown, Space…) keep scrolling. The
+   key lists skip disabled tabs; they are written per tab set because each set has its own tabs. */
+#account > [role=tablist] { on: key(ArrowRight, prevent(), cycle(--active, 1, 2)), key(ArrowLeft, prevent(), cycle(--active, 2, 1)), key(Home, prevent(), set(--active, 1)), key(End, prevent(), set(--active, 2)); }
+#account:when(--billing) > [role=tablist] { on: key(ArrowRight, prevent(), cycle(--active, 1, 2, 3)), key(ArrowLeft, prevent(), cycle(--active, 3, 2, 1)), key(Home, prevent(), set(--active, 1)), key(End, prevent(), set(--active, 3)); }
+#docs > [role=tablist] { on: key(ArrowRight, prevent(), cycle(--active, 1, 2)), key(ArrowLeft, prevent(), cycle(--active, 2, 1)), key(Home, prevent(), set(--active, 1)), key(End, prevent(), set(--active, 2)); }
+[role=tabpanel]:focus-visible { outline-offset: 4px; }
+.tabs > .panels > [role=tabpanel] { attr: hidden true; }
+.tabs > .panels > [role=tabpanel]:nth-var(--active) { attr: hidden false; }
+
+/* "Team" is disabled in the HTML (static). "Billing" is disabled until the checkbox in the
+   Profile panel is checked: a derived, native disabled. */
+.tabs .has-billing { bind: --billing; }
+.tabs .billing { attr: disabled when(--billing, false, true); }

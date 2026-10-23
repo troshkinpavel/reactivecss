@@ -1,0 +1,89 @@
+{
+  "name": "@reactivecss/core",
+  "version": "0.9.0",
+  "description": "Reactive functions and stateful selectors for plain CSS. One script tag, no JavaScript required.",
+  "keywords": [
+    "css",
+    "reactive",
+    "declarative",
+    "state",
+    "custom-properties",
+    "selectors",
+    "no-javascript",
+    "interactions",
+    "progressive-enhancement"
+  ],
+  "homepage": "https://reactivecss.com",
+  "bugs": {
+    "url": "https://github.com/troshkinpavel/reactivecss/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/troshkinpavel/reactivecss.git"
+  },
+  "author": "Pavel Troshkin <troshkinp@proton.me>",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "reactive-css": "tools/reactive-css.mjs"
+  },
+  "unpkg": "./dist/reactive-css.min.js",
+  "jsdelivr": "./dist/reactive-css.min.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./auto": "./dist/reactive-css.min.js",
+    "./bundle": "./tools/bundle.mjs",
+    "./catalog.json": "./dist/catalog.json"
+  },
+  "files": [
+    "dist",
+    "!dist/custom",
+    "src",
+    "tools",
+    "!tools/fix-dts.mjs",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "docs/migration-0.9.md",
+    "docs/bundle-builder-0.8.md",
+    "docs/compatibility.md",
+    "docs/security.md"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "node build.mjs && tsc -p tsconfig.json --emitDeclarationOnly && node tools/fix-dts.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "serve": "node build.mjs --serve",
+    "test": "vitest run --dir tests/unit",
+    "test:browser": "npm run build && playwright test --project=chromium --project=webkit",
+    "bench": "npm run build && node benchmarks/run.mjs",
+    "test:dist": "npm run build && vitest run --dir tests/dist && tsc -p tests/dist/tsconfig.json && playwright test tests/browser/dist.spec.ts --project=chromium --project=webkit",
+    "verify": "npm run typecheck && npm test && npm run test:dist && playwright test --project=chromium --project=webkit",
+    "test:firefox": "npm run build && playwright test --project=firefox"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  },
+  "peerDependencies": {
+    "esbuild": ">=0.28"
+  },
+  "peerDependenciesMeta": {
+    "esbuild": {
+      "optional": true
+    }
+  }
+}

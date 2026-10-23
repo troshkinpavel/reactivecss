@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dropdown and dialog · 0.9 fixture</title>
+<script src="/dist/reactive-css.js" defer></script>
+<style>
+  body { font: 16px/1.4 system-ui, sans-serif; margin: 24px; min-height: 900px; }
+  .dropdown { --open: state(false); position: relative; display: inline-block; }
+  .dropdown > button { --attr-aria-expanded: var(--open); }
+  .dropdown > button:on(click) { --open: toggle(); }
+  .dropdown:on(outside(click)) { --open: set(false); }
+  .dropdown:on(keydown(Escape)) { --open: set(false); }
+  .dropdown > ul { display: none; position: absolute; margin: 0; padding: 4px; background: white; border: 1px solid; }
+  .dropdown:when(--open) > ul { display: block; }
+  /* Choosing an item closes the menu and records the choice from the item's attribute. */
+  .dropdown li > button:on(click) { --open: set(false); --choice: set(attr(data-value)); }
+  .page { --choice: state("none"); }
+  .page .choice { content: var(--choice); }
+
+  .modal { --open: state(false); }
+  .modal .open:on(click) { --open: set(true); }
+  .modal .close:on(click) { --open: set(false); }
+  .modal .sheet { display: none; padding: 12px; border: 1px solid; }
+  .modal:when(--open) .sheet { display: block; }
+  .modal .sheet:on(keydown(Escape)) { --open: set(false); }
+  /* Focus request: the field takes focus when the dialog opens (a transition, never at load). */
+  .modal .sheet input { focus: when(--open) }
+  .modal .open { focus: when(not --open) }
+</style>
+</head>
+<body>
+  <div class="page">
+    <div class="dropdown" id="dropdown">
+      <button>Menu</button>
+      <ul><li><button data-value="alpha">Alpha</button></li><li><button data-value="beta">Beta</button></li></ul>
+    </div>
+    <p>Choice: <span class="choice">none</span></p>
+    <p class="elsewhere">Elsewhere</p>
+  </div>
+
+  <div class="modal" id="modal">
+    <button class="open">Open dialog</button>
+    <div class="sheet" role="dialog" aria-label="Example"><label>Name <input class="name"></label> <button class="close">Close</button></div>
+  </div>
+</body>
+</html>

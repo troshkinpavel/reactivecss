@@ -1,0 +1,122 @@
+/* Phase 5 demos: state(), on:, set()/toggle()/increment()/decrement(), when(), :when().
+   No JavaScript on the page drives these components: the behavior is all in this file. */
+
+/* ---- G. Tabs (two independent instances) ------------------------------------ */
+.tabs {
+  --active: state(1);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.tab-list { display: flex; border-bottom: 1px solid var(--line); background: var(--code); }
+.tab {
+  flex: 1;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  padding: 10px;
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+  on: click(set(--active, sibling-index()));
+}
+.tab:nth-var(--active) { color: var(--accent); border-bottom-color: currentColor; font-weight: 600; }
+.panel { display: none; padding: 14px 16px; }
+.panel:nth-var(--active) { display: block; }
+
+/* ---- H. Accordion (independent instances) ----------------------------------- */
+.accordion { --open: state(false); border: 1px solid var(--line); border-radius: 12px; }
+.accordion + .accordion { margin-top: 8px; }
+.trigger {
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: none;
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  on: click(toggle(--open));
+}
+.trigger::after { content: "+"; transition: rotate 200ms; rotate: when(--open, 45deg, 0deg); }
+.content {
+  display: grid;
+  grid-template-rows: when(--open, 1fr, 0fr);
+  opacity: when(--open, 1, 0);
+  transition: grid-template-rows 250ms ease, opacity 250ms;
+}
+.content > div { overflow: hidden; padding: 0 14px; }
+.content > div > p { margin: 0 0 12px; }
+
+/* ---- I. Counters (three independent instances) ------------------------------ */
+.counters { display: flex; gap: 10px; flex-wrap: wrap; }
+.counter {
+  --count: state(0);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.counter .inc { on: click(increment(--count)); }
+.counter .dec { on: click(decrement(--count)); }
+.counter .reset { on: click(set(--count, 0)); }
+/* content: var() cannot print numbers; a CSS counter can. */
+.counter output { min-width: 2.5ch; text-align: center; font-variant-numeric: tabular-nums; counter-reset: n var(--count); }
+.counter output::before { content: counter(n); }
+.counter:when(--count < 0) output { color: #e5484d; }
+.counter:when(--count >= 10) output { color: #30a46c; font-weight: 700; }
+
+/* ---- J. Toggle switch ----------------------------------------------------------- */
+.switch-row { display: flex; align-items: center; gap: 12px; --on: state(false); }
+.switch-row label { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+/* A native checkbox (role="switch"): keyboard, focus and the on/off state are announced natively. */
+.switch {
+  bind: --on;
+  appearance: none;
+  margin: 0;
+  width: 44px;
+  height: 26px;
+  border-radius: 13px;
+  background:
+    radial-gradient(circle, #fff 9px, transparent 10px) no-repeat when(--on, 21px, 3px) 3px / 20px 20px,
+    when(--on, var(--accent), var(--line));
+  transition: background-position 200ms cubic-bezier(.3, 1.4, .6, 1), background-color 200ms;
+  cursor: pointer;
+}
+.switch-label::after { content: when(--on, "On", "Off"); }
+
+/* ---- G2. Tabs as a native radio group ------------------------------------------- */
+/* Radios give arrow-key navigation, one tab stop, a checked state and an accessible
+   name for free. The panels follow the bound state through :nth-var(). */
+.choice .tab-list { margin: 0; padding: 0; border: 0; border-bottom: 1px solid var(--line); background: var(--code); }
+.choice .tab-list label { flex: 1; text-align: center; padding: 10px; color: var(--muted); border-bottom: 2px solid transparent; cursor: pointer; }
+.choice .tab-list label:has(:checked) { color: var(--accent); border-bottom-color: currentColor; font-weight: 600; }
+.choice .tab-list label:has(:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; }
+.choice input { bind: --active; position: absolute; opacity: 0; width: 1px; height: 1px; }
+
+/* ---- K. Conditional card styles -------------------------------------------------- */
+.meter {
+  --value: state(40);
+  --level: state(normal);
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  transition: background 300ms, border-color 300ms;
+}
+.meter .bar { height: 8px; border-radius: 4px; background: var(--code); overflow: hidden; margin: 10px 0; }
+.meter .bar::before {
+  content: "";
+  display: block;
+  height: 100%;
+  width: calc(var(--value) * 1%);
+  background: when(--value >= 80, #30a46c, when(--value < 30, #e5484d, #f5a524));
+  transition: width 250ms, background 250ms;
+}
+.meter .up { on: click(increment(--value, 10)); }
+.meter .down { on: click(decrement(--value, 10)); }
+.meter .alert { on: click(set(--level, critical)); }
+.meter .calm { on: click(set(--level, normal)); }
+.meter .readout { counter-reset: v var(--value); }
+.meter .readout::before { content: counter(v) "%"; font-variant-numeric: tabular-nums; }
+.meter:when(--value >= 100 or --level == critical) { border-color: #e5484d; background: color-mix(in srgb, #e5484d 10%, var(--panel)); }
+.meter:when(--value <= 0) { opacity: 0.6; }

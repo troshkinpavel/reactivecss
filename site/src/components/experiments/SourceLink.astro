@@ -1,0 +1,10 @@
+---
+// "Source ↗": the experiment's folder in the repository, in a new tab. Until the repository is
+// public the link already points at the right folder, and its title says when it will open.
+import { REPOSITORY_PUBLIC, sourceUrl, type Experiment } from '~/lib/content/experiments';
+
+interface Props { experiment: Experiment; class?: string; arrowClass?: string }
+const { experiment, class: cls = '', arrowClass = '' } = Astro.props;
+const note = REPOSITORY_PUBLIC ? undefined : `Opens ${experiment.sourcePath}/ on GitHub. The repository is not public yet, so the link works once it is.`;
+---
+<a href={sourceUrl(experiment)} target="_blank" rel="noopener" title={note} data-source-link={experiment.slug} class={cls}>Source<span aria-hidden="true" class={arrowClass}>↗</span><span class="sr-only"> (opens GitHub in a new tab)</span></a>

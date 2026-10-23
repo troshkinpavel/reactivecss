@@ -1,0 +1,38 @@
+/* Focus transitions: all behavior is in this file (Reactive CSS + native CSS). */
+
+body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #1c1c1e; background: #f6f6f4; }
+main { max-width: 720px; margin: 0 auto; padding: 24px 16px; }
+.note { color: #555; }
+.flow { background: #fff; border-radius: 14px; padding: 16px 20px; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+button { font: inherit; padding: 6px 12px; border-radius: 8px; border: 1px solid #888; background: #fafafa; cursor: pointer; }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+.panel h2:focus-visible, .panel h3:focus-visible { outline: 3px solid #2563eb; outline-offset: 4px; }
+:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+.jump { padding: 12px 16px; border-radius: 10px; border: 1px solid #888; max-width: 320px; }
+
+/* ---- state ---------------------------------------------------------------------------------- */
+.flow { --panel: state(1); --more: state(false); --locked: state(false); }
+.flow .go1 { on: click(set(--panel, 1)); }
+.flow .go2 { on: click(set(--panel, 2)); }
+.flow .go3 { on: click(set(--panel, 3)); }
+.flow .next { on: click(increment(--panel)); attr: disabled when(--panel >= 3); }
+.flow .prev { on: click(decrement(--panel)); attr: disabled when(--panel <= 1); }
+.flow .more { on: click(toggle(--more)); attr: aria-expanded var(--more); }
+.flow .lock { bind: --locked; }
+.flow .status .n { text: var(--panel); }
+
+/* ---- visibility: one panel at a time; the extra details are hidden until asked for ------------ */
+.flow .panel { display: none; }
+.flow .panel:nth-var(--panel) { display: block; }
+.flow .extra { attr: hidden when(--more, false, true); }
+.flow .confirm { attr: disabled var(--locked); }
+
+/* ---- focus (focus:, 0.6.0) -------------------------------------------------------------------
+   Each target is true in exactly one state, so only a change to that state moves focus. */
+.flow .p1 h2 { focus: when(--panel == 1); }
+.flow .p2 h2 { focus: when(--panel == 2); }
+/* Panel 3 focuses Confirm, not its heading. Locked = disabled = not eligible: focus is unchanged. */
+.flow .confirm { focus: when(--panel == 3); }
+/* Revealed and focused together: the hidden attribute is removed before focus is resolved. */
+.flow .extra h3 { focus: var(--more); }

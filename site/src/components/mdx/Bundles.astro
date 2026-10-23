@@ -1,0 +1,60 @@
+---
+// Custom bundles, npm and CDN facts for the docs, rendered from the library's data
+// (src/lib/bundles/): nothing here is typed by hand, so it cannot drift from the release.
+import CodeBlock from '~/components/code/CodeBlock.astro';
+import { Callout } from '~/components/docs/Callout';
+import { DataTable } from '~/components/docs/Tables';
+import { CATALOG, PACKAGE, SIZES, featureById } from '~/lib/bundles/catalog';
+import { installCommand } from '~/lib/bundles/command';
+interface Props { part: 'catalog' | 'sizes' | 'overhead' | 'install' | 'cdn' | 'package' }
+const { part } = Astro.props;
+const nf = new Intl.NumberFormat('en-US');
+const NAMES: Record<string, string> = { core: 'core only', 'dist full': 'reactive-css.min.js (standard)', 'dist compact': 'reactive-css.compact.min.js' };
+const title = (id: string) => featureById(id)?.title ?? id;
+const { name, version } = PACKAGE;
+const jsdelivr = `https://cdn.jsdelivr.net/npm/${name}@${version}/${PACKAGE.jsdelivr.replace(/^\.\//, '')}`;
+const unpkg = `https://unpkg.com/${name}@${version}/${PACKAGE.unpkg.replace(/^\.\//, '')}`;
+---
+{part === 'catalog' && (
+  <DataTable><thead><tr><th>ID</th><th>Feature</th><th>Provides</th><th>Requires</th></tr></thead>
+    <tbody>{CATALOG.map((f) => (
+      <tr><td><code class="font-mono text-[0.9em]">{f.id}</code>{f.status === 'experimental' && <><br /><span class="font-mono text-tag text-rx-strong">experimental</span></>}</td><td>{f.title}</td><td class="font-mono text-label">{f.syntax.join(' · ')}</td>
+        <td>{f.id === 'core' ? 'always included' : f.requires.filter((r) => r !== 'core').map(title).join(', ') || 'core'}{f.optional.length > 0 && <><br /><span class="text-sm text-ink-2">optional: {f.optional.map(title).join(', ')}</span></>}</td></tr>
+    ))}</tbody></DataTable>
+)}
+{part === 'sizes' && (
+  <DataTable><thead><tr><th>Bundle</th><th>Features</th><th>min</th><th>gzip</th><th>brotli</th></tr></thead>
+    <tbody>{SIZES.measured.map((m) => (
+      <tr><td><code class="font-mono text-[0.9em]">{NAMES[m.name] ?? m.name}</code></td><td class="text-sm">{m.features ? m.features.join(', ') : 'every feature (prebuilt)'}</td>
+        <td class="font-mono text-label whitespace-nowrap">{nf.format(m.minified)}</td><td class="font-mono text-label whitespace-nowrap">{nf.format(m.gzip)}</td><td class="font-mono text-label whitespace-nowrap">{nf.format(m.brotli)}</td></tr>
+    ))}</tbody></DataTable>
+)}
+{part === 'overhead' && (
+  <DataTable><thead><tr><th>Feature</th><th>Measured over</th><th>min</th><th>gzip</th><th>brotli</th></tr></thead>
+    <tbody>{SIZES.overhead.map((o) => (
+      <tr><td><code class="font-mono text-[0.9em]">{o.id}</code></td><td class="text-sm">{o.over.join(', ')}</td>
+        <td class="font-mono text-label">+{nf.format(o.minified)}</td><td class="font-mono text-label">+{nf.format(o.gzip)}</td><td class="font-mono text-label">+{nf.format(o.brotli)}</td></tr>
+    ))}</tbody></DataTable>
+)}
+{part === 'install' && <CodeBlock lang="sh" label="terminal" code={installCommand()} />}
+{part === 'package' && (
+  <DataTable><thead><tr><th>Field</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Package</td><td><code class="font-mono text-[0.9em]">{name}</code> {version} · {PACKAGE.license}</td></tr>
+      <tr><td>Status</td><td>{PACKAGE.published ? 'published' : <>not published (<span class="text-sm">{PACKAGE.releaseHeading}</span>)</>}</td></tr>
+      <tr><td>Exports</td><td class="font-mono text-label">{Object.entries(PACKAGE.exports).map(([k, v]) => `${name}${k === '.' ? '' : k.slice(1)} → ${typeof v === 'string' ? v : v.import}`).join(' · ')}</td></tr>
+      <tr><td>CLI</td><td class="font-mono text-label">{Object.entries(PACKAGE.bin ?? {}).map(([k, v]) => `${k} → ${v}`).join(', ')}</td></tr>
+      <tr><td>Optional peer</td><td class="font-mono text-label">{Object.entries(PACKAGE.peerDependencies ?? {}).map(([k, v]) => `${k} ${v}`).join(', ')} <span class="font-sans text-sm text-ink-2">(only for building custom bundles)</span></td></tr>
+    </tbody></DataTable>
+)}
+{part === 'cdn' && (
+  <>
+    {!PACKAGE.published && (
+      <Callout kind="provisional" title="Illustrative until published">
+        {name} {version} is not on npm, so these URLs do not serve it. The npm name <code>{name}</code> currently belongs to an unrelated package: the final name is chosen before publication, and these URLs change with it.
+      </Callout>
+    )}
+    <CodeBlock lang="html" label={`jsDelivr · ${PACKAGE.published ? 'pinned' : 'after publication'}`} code={`<script defer src="${jsdelivr}"></script>`} />
+    <CodeBlock lang="html" label={`unpkg · ${PACKAGE.published ? 'pinned' : 'after publication'}`} code={`<script defer src="${unpkg}"></script>`} />
+  </>
+)}

@@ -1,0 +1,17 @@
+.profile {
+  --name: state("");
+}
+
+/* The card reads the name, so the state lives on .profile, around both. */
+.profile input:on(input) {
+  --name: set(event(value));
+}
+
+.card .name::after {
+  content: var(--name);
+}
+
+.card:when(--name == "") .name::after {
+  content: "Your name";
+  opacity: 0.4;
+}

@@ -1,0 +1,27 @@
+---
+title: "Toggle"
+description: "A switch whose track color and knob position come from one boolean state."
+group: Examples
+type: Example
+order: 21
+uses: ["reference/state","reference/on","reference/toggle","reference/when"]
+---
+<Example id="switch" size="expanded" />
+
+## How it works
+1. `--on: state(false)` gives each switch its own boolean.
+2. `on: click(toggle(--on))` flips it.
+3. Two `when()` declarations read it. Because both are boolean conditions with static values, they compile to native `if()` where supported.
+
+## Compared with JavaScript
+The JavaScript version keeps the state in `aria-checked` and lets CSS style `[aria-checked="true"]`. That is a good pattern, and the attribute is the accessible state.
+
+## Accessibility
+<Callout kind="warning" title="Visual only">
+
+`aria-checked` doesn't change. The library's own playground uses a native `<input type="checkbox" role="switch">` with `bind: --on` instead, which is complete.
+
+</Callout>
+
+## APIs used
+<Related ids={["reference/state","reference/on","reference/toggle","reference/when","reference/bind"]} />

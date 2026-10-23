@@ -1,0 +1,85 @@
+---
+name: reactive-css
+description: Write, review, validate and migrate Reactive CSS 0.9.0 (state(), :on() event rules, mutations, --attr-*, content, focus: when(), drag, persist()). Use when a project loads Reactive CSS or @reactivecss/core, or when the user asks for interactive UI in plain CSS without JavaScript.
+---
+
+# Reactive CSS 0.9.0
+
+Reactive CSS adds state, event rules and DOM bindings to plain CSS. One script runs it; there is no JavaScript to write. Status: experimental, not published yet (0.9.0 local release candidate).
+
+## Workflow
+
+1. **Native first.** If `:hover`, `:checked`, `:has()`, `<details>`, the Popover API, `<dialog>`, transitions or native `random()` do the job, use them.
+2. **Declare state** on the element that owns it, or on a container shared by everything that reads or changes it.
+3. **Change it** in `:on()` rules that contain only mutations; **show it** with `:when()`, `var()`, `when()`, `content` and `--attr-*` in ordinary rules.
+4. **Validate.** With the MCP server, call `validate_css` and fix every error and warning; call `get_api_reference` or `get_example` before using syntax you are unsure of. Without it, follow the rules below exactly.
+5. **Bundle.** `analyze_features` / `suggest_bundle` (or `npx reactive-css analyze`) for the smallest bundle.
+6. **Migrate** 0.8 code (`on:`, `text:`, `attr:`, `bind:` on the control itself) with `migrate_css`, then review its manual items.
+
+## Syntax
+
+| Need | 0.9 syntax |
+|---|---|
+| State (owned by each matching element) | `--open: state(false);` `--count: state(0);` `--x: state(0px);` `--mode: state(light);` `--q: state("");` |
+| Event rule | `.menu > button:on(click) { --open: toggle(); }` |
+| Mutations (only inside `:on()`) | `set(expr)`, `toggle()`, `increment(n?)`, `decrement(n?)`, `cycle(a, b, …)` |
+| Keys, outside, modifiers | `:on(keydown(Escape))`, `:on(outside(click))`, `:on(click, prevent())`, `:on(click, stop())` |
+| Event data | `--x: set(event(client-x));` with `--x: state(0px)` |
+| Drag | `.card:on(drag(move)) { --x: set(event(x)); }` (phases: start, move, end, cancel) |
+| Conditions | `.menu:when(--open) > ul { display: block; }`, `opacity: when(--open, 1, 0);` |
+| Persistence | `--theme: state("light", persist("theme"));` |
+| Form binding | `input { --q: state("", bind(value)); }`, `input[type=checkbox] { --on: state(false, bind(checked)); }` |
+| Attributes | `--attr-aria-expanded: var(--open);` |
+| DOM text | `.value { content: var(--count); }` (on elements, not `::before`) |
+| Focus | `.dialog input { focus: when(--open); }` and `input:blur { … }` |
+| History | `previous(--n)`, `direction(--n)`, `:changed(--n)` |
+
+```css
+.counter { --count: state(0); }                  /* each .counter owns a number */
+
+.counter .inc:on(click) { --count: increment(1); }
+.counter .dec:on(click) { --count: decrement(1); }
+
+.counter .value { content: var(--count); }        /* the number as real DOM text */
+```
+
+## Rules
+
+- Check native CSS and HTML first: `:hover`, `:checked`, `:has()`, `<details>`, the Popover API, `<dialog>`, transitions, native `random()`. Use Reactive CSS for values CSS cannot hold.
+- A state belongs to every element that matches its `state()` declaration. Mutations and `var()` use the nearest owner on the element or an ancestor; siblings never share a cell. Declare shared state on a common container.
+- The initial value fixes the type. Pointer coordinates and distances (`event(client-x)`, `event(local-x)`, `event(delta-x)`) are px lengths: use `state(0px)`, not `state(0)`. `toggle()` needs a boolean.
+- `:on()` rules contain only mutations. Put styles in `:when()` rules or read the state with `var()`; put `--attr-*` and `content` in ordinary rules.
+- `:on()` goes on the subject (last) compound, once per selector, never inside `:not()`/`:is()`/`:where()`/`:has()`, and every item of a selector list must use it.
+- `event(field)` exists only inside mutations, and the field must match the trigger (`key` needs `keydown`/`keyup`, `value` needs `input`/`change`, `x`/`y` need drag).
+- Modifiers are functions: `prevent()` (cancelable events only) and `stop()`. There is no `once`: guard with `:when(not --done)`.
+- Focus requests are the `focus: when(…)` declaration. `:focus(when())` and `:blur(when())` do not exist.
+- `:on(drag)` is pointer dragging of one element, not HTML drag and drop. Pair it with keyboard rules.
+- `content` becomes DOM text only on elements, when it reads state, without images or `attr()`. It never replaces child elements.
+- Modifier-only rules such as `form:on(submit, prevent()) {}` are empty rules: minify Reactive stylesheets for whitespace only.
+- Legacy 0.8 syntax (`on:`, `text:`, `attr:`) still runs in 0.9.0 but is not the default. Write `:on()`, `content` and `--attr-*`. `bind: --state` stays for controls that write an ancestor's state.
+
+## Mistakes to avoid
+
+| Mistake | Wrong | Right |
+|---|---|---|
+| :focus(when()) instead of focus: when() | `.dialog { --open: state(false); } .dialog input:focus(when(--open)) {}` | `.dialog { --open: state(false); } .dialog input { focus: when(--open); }` |
+| Bare prevent / stop in :on() | `.menu { --open: state(false); } .menu a:on(click, prevent) { --open: toggle(); }` | `.menu { --open: state(false); } .menu a:on(click, prevent()) { --open: toggle(); }` |
+| once() in :on() | `.b { --done: state(false); } .b:on(click, once()) { --done: set(true); }` | `.b { --done: state(false); } .b:when(not --done):on(click) { --done: set(true); }` |
+| drag(x) instead of a drag phase | `.card { --x: state(0px); } .card:on(drag(x)) { --x: set(event(x)); }` | `.card { --x: state(0px); } .card:on(drag(move)) { --x: set(event(x)); }` |
+| :blur(when()) | `.field input:blur(when(--touched)) { outline-color: red; }` | `.field input:blur { outline-color: red; }` |
+| A number state for a pointer coordinate | `.pad { --x: state(0); } .pad:on(click) { --x: set(event(client-x)); }` | `.pad { --x: state(0px); } .pad:on(click) { --x: set(event(client-x)); }` |
+| toggle() on a number state | `.menu { --open: state(0); } .menu button:on(click) { --open: toggle(); }` | `.menu { --open: state(false); } .menu button:on(click) { --open: toggle(); }` |
+| event(x) into a string or keyword state | `.card { --x: state(left); } .card:on(drag) { --x: set(event(x)); }` | `.card { --x: state(0px); } .card:on(drag) { --x: set(event(x)); }` |
+| A mutation outside an :on() rule | `.menu { --open: state(false); } .menu button { --open: toggle(); }` | `.menu { --open: state(false); } .menu button:on(click) { --open: toggle(); }` |
+| event() outside a mutation | `.pad { --x: state(0px); --y: calc(event(client-y) * 1); }` | `.pad { --x: state(0px); } .pad:on(pointermove) { --x: set(event(client-x)); }` |
+| A mutation of a state that nothing declares | `.counter .inc:on(click) { --count: increment(1); }` | `.counter { --count: state(0); } .counter .inc:on(click) { --count: increment(1); }` |
+| An event field the trigger does not provide | `.b { --k: state(""); } .b:on(click) { --k: set(event(key)); }` | `.b { --k: state(""); } .b:on(keydown) { --k: set(event(key)); }` |
+| Mixing :on() and plain selectors in one list | `.a { --open: state(false); } .a:on(click), .b { --open: toggle(); }` | `.a { --open: state(false); } .a:on(click) { --open: toggle(); }` |
+| Styles inside an :on() rule | `.b { --open: state(false); } .b:on(click) { --open: toggle(); color: red; }` | `.b { --open: state(false); } .b:on(click) { --open: toggle(); } .b:when(--open) { color: red; }` |
+| Native drag-and-drop events in :on() | `.card { --x: state(0px); } .card:on(dragstart) { --x: set(0px); }` | `.card { --x: state(0px); } .card:on(drag(start)) { --x: set(0px); }` |
+| 0.8 on: instead of :on() | `.menu { --open: state(false); } .menu > button { on: click(toggle(--open)); }` | `.menu { --open: state(false); } .menu > button:on(click) { --open: toggle(); }` |
+| 0.8 text: instead of content | `.counter { --count: state(0); } .counter .value { text: var(--count); }` | `.counter { --count: state(0); } .counter .value { content: var(--count); }` |
+| 0.8 attr: instead of --attr-* | `.menu { --open: state(false); } .menu > button { attr: aria-expanded var(--open); }` | `.menu { --open: state(false); } .menu > button { --attr-aria-expanded: var(--open); }` |
+| bind: on a control that owns its state | `input.q { --q: state(""); bind: --q; }` | `input.q { --q: state("", bind(value)); }` |
+| Writing a non-allowlisted attribute | `.b { --o: state(false); --attr-onclick: var(--o); }` | `.b { --o: state(false); --attr-aria-pressed: var(--o); }` |
+| Expecting DOM text from ::before { content: var(--x) } | `.counter { --count: state(0); } .counter .value::before { content: var(--count); }` | `.counter { --count: state(0); } .counter .value { content: var(--count); }` |

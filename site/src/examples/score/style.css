@@ -1,0 +1,19 @@
+.score {
+  --score: state(10);
+  --before: previous(--score);
+}
+
+.up:on(click)   { --score: increment(1); }
+.down:on(click) { --score: decrement(1); }
+
+.trend:when(direction(--score) > 0)::after {
+  content: "▲ up";
+}
+
+.trend:when(direction(--score) < 0)::after {
+  content: "▼ down";
+}
+
+.value:changed(--score) {
+  animation: nudge 300ms;
+}

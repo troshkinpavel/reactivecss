@@ -1,0 +1,28 @@
+---
+// The library's measurements, from src/lib/content/engineering.ts (copied from its release reports).
+import { DataTable } from '~/components/docs/Tables';
+import Li from './Li.astro';
+import Ul from './Ul.astro';
+import { BUNDLES, BUNDLES_SOURCE, DISPATCH, LATENCY, MEMORY_NOTE, SOURCE, STARTUP, TESTS, bytes, ms } from '~/lib/content/engineering';
+interface Props { part: 'tests' | 'latency' | 'bundles' | 'notes' }
+const { part } = Astro.props;
+---
+{part === 'tests' && (
+  <DataTable><thead><tr><th>Suite</th><th>Result</th></tr></thead><tbody>{TESTS.map(([a, b]) => <tr><td>{a}</td><td>{b}</td></tr>)}</tbody></DataTable>
+)}
+{part === 'latency' && (
+  <DataTable><thead><tr><th>Scenario</th><th>Reactive CSS p50 / p95</th><th>Plain JavaScript p50 / p95</th></tr></thead>
+    <tbody>{LATENCY.map((l) => <tr><td>{l.scenario}</td><td>{ms(l.rcss.p50)} / {ms(l.rcss.p95)} ms</td><td>{ms(l.js.p50)} / {ms(l.js.p95)} ms</td></tr>)}</tbody></DataTable>
+)}
+{part === 'bundles' && (
+  <DataTable><thead><tr><th>Bundle</th><th>{BUNDLES_SOURCE.prev} min / gzip / brotli</th><th>{BUNDLES_SOURCE.now} min / gzip / brotli</th></tr></thead>
+    <tbody>{BUNDLES.map((b) => <tr><td><code class="font-mono text-[0.9em]">{b.file}</code><br /><span class="text-sm text-ink-2">{b.note}</span></td><td>{b.prev.map(bytes).join(' / ')}</td><td>{b.now.map(bytes).join(' / ')}</td></tr>)}</tbody></DataTable>
+)}
+{part === 'notes' && (
+  <Ul>
+    <Li>{STARTUP}</Li>
+    <Li>{DISPATCH}</Li>
+    <Li>{MEMORY_NOTE}</Li>
+    <Li>Latest report: the library's <code class="font-mono text-[0.9em]">{SOURCE.file}</code>. {SOURCE.where}.</Li>
+  </Ul>
+)}

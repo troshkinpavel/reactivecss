@@ -1,0 +1,12 @@
+/* Input binding */
+.binding label { display: block; margin-bottom: 6px; font-weight: 600; }
+.binding .out { margin: 16px 0 8px; font-size: 26px; }
+.binding .greet { color: var(--accent); }
+.binding .compare { display: grid; gap: 4px; margin: 0; }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+.binding { --name: state(""); }
+.binding .name { bind: --name; }                                      /* field ⇄ state */
+.binding :is(.greet, .greet-2) { text: var(--name); }                 /* real DOM text */
+.binding:when(--name == "") :is(.greet, .greet-2) { text: "stranger"; }
+.binding .generated::after { content: var(--name); }                   /* CSS text, for comparison */

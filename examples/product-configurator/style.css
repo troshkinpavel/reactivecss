@@ -1,0 +1,58 @@
+/* Product configurator: all behavior is in this file (Reactive CSS + native CSS). */
+
+body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #1c1c1e; background: #f6f6f4; }
+main { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+.note { color: #555; }
+.products { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.product { background: #fff; border-radius: 14px; padding: 20px; display: grid; gap: 12px; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
+.product h2 { margin: 0; }
+.base { margin: 0; color: #555; font-size: 14px; }
+fieldset { border: 1px solid #ddd; border-radius: 10px; margin: 0; padding: 8px 12px 12px; }
+.qty { display: flex; align-items: center; gap: 8px; }
+.qty legend { margin-bottom: 4px; }
+.qty button { width: 40px; height: 40px; font-size: 20px; border-radius: 8px; border: 1px solid #bbb; background: #fafafa; }
+.count { width: 4em; height: 36px; font-size: 16px; text-align: center; }
+.count:invalid { outline: 2px solid #c62828; }
+.color label { display: block; padding: 2px 0; }
+:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+
+/* ---- state ------------------------------------------------------------------------------
+   The form owns three states. bind: keeps each control and its state in sync both ways,
+   including the native reset button (states return to their initial values). */
+.product { --qty: state(1); --color: state(black); --gift: state(false); }
+.product .count { bind: --qty; }
+.product .color input { bind: --color; }
+.product .gift input { bind: --gift; }
+
+/* Quantity buttons (0.6.0). The form owns --qty. At a bound the button reports
+   aria-disabled="true" (attr:) and stays focusable, so keyboard focus never falls to the page;
+   aria-disabled does not block anything by itself, so a more specific rule replaces the action
+   with a clamp. (0.5.3 used native disabled, which drops focus at the bound; the shopping cart
+   example keeps native disabled for comparison.) Conditions are current for every click, even
+   several in one task (0.5.1). */
+.product .plus  { on: click(increment(--qty)); attr: aria-disabled when(--qty >= 10); }
+.product .minus { on: click(decrement(--qty)); attr: aria-disabled when(--qty <= 1); }
+.product:when(--qty >= 10) .plus { on: click(set(--qty, 10)); }
+.product:when(--qty <= 1) .minus { on: click(set(--qty, 1)); }
+.qty button[aria-disabled="true"] { opacity: 0.4; cursor: not-allowed; }
+
+/* ---- price: native CSS math ---------------------------------------------------------------
+   All prices in cents (integers), so the arithmetic is exact. A typed quantity outside 1–10 is
+   shown as :invalid by the browser; the total uses the clamped quantity. */
+.product {
+  --extra: when(--color == silver, 1000, 0);
+  --total: calc((4900 + var(--extra)) * clamp(1, var(--qty), 10) + var(--gift) * 500);
+}
+/* Real DOM text (text:, 0.5.1). A registered integer property makes the browser compute the
+   number; text: writes it into the <span>. Every price here is a whole dollar amount, so the
+   cents stay ".00" in the HTML (there is no number formatting). The HTML holds the initial
+   total, shown before the script runs. */
+@property --dollars { syntax: "<integer>"; inherits: true; initial-value: 0; }
+.product { --dollars: calc(var(--total) / 100); }
+.product .dollars { text: var(--dollars); }
+.product .total { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* ---- visual feedback ------------------------------------------------------------------------ */
+.swatch { height: 90px; border-radius: 10px; background: var(--color); border: 1px solid #ccc; transition: background-color 200ms; }
+.product:when(--gift) .swatch { background-image: linear-gradient(90deg, transparent 45%, #d32f2f 45% 55%, transparent 55%); }
+@media (prefers-reduced-motion: reduce) { .swatch { transition: none; } }

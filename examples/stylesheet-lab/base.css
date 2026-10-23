@@ -1,0 +1,16 @@
+/* Stylesheet lifecycle lab: layout and the counter's actions (the state is in state-v1.css). */
+body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #1c1c1e; background: #f6f6f4; }
+main { max-width: 720px; margin: 0 auto; padding: 24px 16px; }
+.note { color: #555; }
+.lab { background: #fff; border-radius: 14px; padding: 12px 18px; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
+.out th { text-align: left; font-weight: 400; color: #555; padding-right: 16px; }
+.out td { font: 13px/1.6 ui-monospace, monospace; }
+.harness { margin-top: 16px; border: 2px dashed #b45309; border-radius: 14px; padding: 8px 16px; background: #fffbeb; }
+.harness h2 { font-size: 16px; margin: 4px 0 8px; } .harness small { font-weight: 400; color: #92400e; }
+.buttons { display: flex; flex-wrap: wrap; gap: 6px; }
+.log { font: 12px/1.5 ui-monospace, monospace; white-space: pre-wrap; margin: 8px 0 0; }
+button { font: inherit; padding: 4px 10px; border-radius: 8px; border: 1px solid #888; background: #fafafa; cursor: pointer; }
+:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+
+.lab .inc { on: click(increment(--n)); }
+.lab .n { text: var(--n); }

@@ -1,0 +1,27 @@
+---
+title: "Live form preview"
+description: "A text input, a select and a checkbox update a preview card as you type."
+group: Examples
+type: Example
+order: 25
+uses: ["reference/bind","reference/state","reference/when-selector"]
+---
+<Example id="form" size="expanded" />
+
+## How it works
+1. Three states on `.signup` hold the name, plan and newsletter choice.
+2. `bind:` connects each native control to its state in both directions.
+3. The preview reads them with `var()` and `:when()`. Strings read as quoted CSS strings, so `content: var(--name)` prints them.
+
+## Compared with JavaScript
+The JavaScript version reads the whole form with `FormData` on each input event, which scales well to many fields. The Reactive CSS version needs a state per field but no event wiring.
+
+## Accessibility
+<Callout kind="tip" title="Complete for the form">
+
+The controls are native and labelled. The preview is decorative.
+
+</Callout>
+
+## APIs used
+<Related ids={["reference/bind","reference/state","reference/when-selector"]} />

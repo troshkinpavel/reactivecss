@@ -1,0 +1,9 @@
+.card {
+  --rotation: typed(0deg);
+  rotate: var(--rotation);
+  transition: --rotation 400ms;
+}
+
+.card:hover {
+  --rotation: 90deg;
+}

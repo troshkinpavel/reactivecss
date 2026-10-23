@@ -1,0 +1,12 @@
+.card {
+  width: 112px;
+  height: 112px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid oklch(0.21 0.01 80);
+  border-radius: 6px;
+  background: #f2542d;
+  color: #fff;
+  font-family: 'Red Hat Mono', monospace;
+  font-size: 13px;
+}

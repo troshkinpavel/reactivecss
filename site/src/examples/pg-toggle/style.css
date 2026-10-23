@@ -1,0 +1,10 @@
+/* The state is reflected into the switch's aria-checked attribute. */
+.switch {
+  --on: state(false, bind(aria-checked));
+  background: when(--on, #f2542d, #d9d5cf);
+  transition: background 200ms;
+}
+
+.switch:on(click) {
+  --on: toggle();
+}

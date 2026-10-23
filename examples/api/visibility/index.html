@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visibility detection — Reactive CSS API example</title>
+  <link rel="stylesheet" href="../api.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="kicker">API example 16 · <code>visible()</code></p>
+    <h1>Visibility detection</h1>
+    <p class="lede">A target reacts when it scrolls into view inside a box, through an IntersectionObserver.</p>
+    <section class="demo vis" aria-label="Visibility detection">
+      <div class="frame">
+        <div class="scroller" tabindex="0" role="region" aria-label="Scrollable box">
+          <p class="hint">Scroll down inside this box ↓</p>
+          <div class="target"><span class="status"></span><div class="box">Hello, I am the target.</div></div>
+          <p class="hint">End of the box.</p>
+        </div>
+      </div>
+    </section>
+    <p class="files"><a href="style.css">style.css</a> · <a href="README.md">README</a> · <a href="../">All API examples</a></p>
+  </main>
+</body>
+</html>

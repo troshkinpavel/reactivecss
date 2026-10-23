@@ -1,0 +1,107 @@
+---
+title: "Persistence"
+description: "persist() keeps a state across reloads in localStorage or sessionStorage. Stored values are validated against the state's type, and the state keeps working when storage is unavailable."
+group: Concepts
+type: Guide
+order: 10
+status: experimental
+---
+<Callout kind="experimental">
+
+`persist()` is new in 0.9.0 and experimental. It is correct in every automated test, but real storage policies (Safari private browsing, partitioned storage in iframes) still need manual validation.
+
+</Callout>
+
+## persist()
+Add `persist("key")` to a `state()` declaration, and the state keeps its value across reloads.
+
+```css theme.css
+:root {
+  --dark: state(false, persist("theme"));
+}
+
+.theme-switch:on(click) {
+  --dark: toggle();
+}
+```
+
+The first visit starts at `false`. After a click, the value is stored, and the next page load starts from it. Reference: [`persist()`](/docs/reference/persist/).
+
+<Example id="docs-persist" size="compact" />
+
+<Callout kind="note" title="Sandboxed preview">
+
+The live previews on this site run in sandboxed frames that have no storage, so the example above shows the fallback: the theme switches, but a reload forgets it, and the console has one note. Copy the code into your own page to see it persist.
+
+</Callout>
+
+## Storage modes
+| Declaration | Storage | Lifetime |
+| --- | --- | --- |
+| `persist("theme")` or `persist("theme", local)` | `localStorage` | Until the user or the browser clears the site's data |
+| `persist("draft", session)` | `sessionStorage` | The current tab, until it is closed |
+
+Storage belongs to the page's origin, in this browser profile. A persisted state never synchronizes across devices or browsers.
+
+## Keys
+- A key is a quoted string of 1 to 64 characters from letters, digits, `_`, `.`, `:` and `-`. Anything else is a compile error.
+- It is stored as `rcss:<key>`, so `persist("theme")` uses the storage entry `rcss:theme`.
+- Every state with the same key and storage shares one value on the page: changing one changes the others.
+- `localStorage` keys also follow other tabs of the same origin through the browser's `storage` event. The incoming value is validated like a stored one and is not written back.
+- Choose keys that are unique on your origin. To start over after changing a state's meaning, use a new key, such as `"theme.v2"`.
+
+## The initial value
+When a persisted state is created, its value comes from the first of these that exists:
+
+1. a valid stored value;
+2. the DOM source of a [`bind()`](/docs/binding/): a valid attribute value, or a form control the user or the browser has edited;
+3. the declared initial value.
+
+A stored value is then written to the bound attribute or control, so the two agree from the start. When another state with the same key already exists on the page, a new one starts from its current value.
+
+```css prefs.css
+html {
+  --theme: state(light, bind(data-theme), persist("theme"));
+}
+
+html:when(--theme == dark) body {
+  background: #111;
+  color: #eee;
+}
+
+.theme:on(click) {
+  --theme: cycle(light, dark);
+}
+```
+
+Here the stored theme wins; without one, a `data-theme` attribute in the HTML wins; without that, `light`.
+
+## Types and validation
+Every state type can be persisted: boolean, number, dimension (with its unit), string and keyword. Values are stored as JSON that records the type, the value and the unit.
+
+A stored value is used only if it fits the declared state, under the same rules as a mutation: a `px` value fits a `px` state, a string fits a string state. Keyword values must be identifiers or `#hex` colors, so stored text can never turn into `url()` or extra CSS. A value that does not fit, or cannot be read, is ignored with one note, and the state starts from its DOM source or initial value.
+
+## Writing
+- Each change schedules a write. Writes are combined per key: at most one `setItem` every 250 ms, and the last value always wins. A drag that moves a persisted position writes about 4 times per second, not 60.
+- An unchanged value is not written again.
+- Pending writes are flushed when the page becomes hidden (`visibilitychange`) and on `pagehide`, so a reload right after a change keeps it.
+
+## When storage fails
+Sandboxed iframes, some privacy modes and blocked site data make storage unavailable; a full quota makes writes fail. In each case Reactive CSS gives one note, and the state keeps working as an ordinary, non-persisted state. After a quota error, storage keeps the last value it accepted.
+
+## What is never stored
+- Only declared states are persisted. Reactive CSS never reads or stores anything else from the page.
+- A state bound to a password, one-time-code or payment field (`autocomplete="cc-…"`) is never persisted; `persist()` there gives one diagnostic.
+- The library never clears storage. Removing the declaration leaves the entry in place; the user can clear it with the site's data, or your own script with `localStorage.removeItem("rcss:theme")`.
+
+<Callout kind="caution" title="Storage is not private">
+
+Any script on the same origin can read `localStorage`. Persist preferences and UI state, not personal or sensitive data.
+
+</Callout>
+
+## Bundles
+`persist()` is its own feature, `persist`, and needs neither the events nor the forms feature. A custom bundle without it reports `persist()` once. See [Custom Bundles](/docs/custom-bundles/).
+
+## Related
+<Related ids={["reference/persist","reference/state","reference/bind-state","state","binding"]} />

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Multi-step wizard — Reactive CSS example</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Multi-step wizard</h1>
+    <p class="note">Two independent instances. Nothing is submitted or stored.</p>
+
+    <section class="wizard" id="setup" aria-label="Workspace setup">
+      <ol class="steps">
+        <li>Introduction</li><li>Preferences</li><li>Configuration</li><li>Review</li>
+      </ol>
+      <div class="progress" aria-hidden="true"><span></span></div>
+      <p class="status">Step <span class="n">1</span> of 4</p><p class="done">Completed</p>
+      <div class="panels">
+        <section class="panel" aria-label="Step 1">
+          <h2 tabindex="-1">Introduction</h2>
+          <p>This short setup takes three steps. You can go back at any time.</p>
+        </section>
+        <section class="panel" aria-label="Step 2">
+          <h2 tabindex="-1">Preferences</h2>
+          <label>Workspace name (required) <input name="workspace" required minlength="2" autocomplete="off"></label>
+          <label><input type="checkbox" name="weekly"> Send me a weekly summary</label>
+        </section>
+        <section class="panel" aria-label="Step 3">
+          <h2 tabindex="-1">Configuration</h2>
+          <fieldset><legend>Region</legend>
+            <label><input type="radio" name="region-setup" value="eu" checked> Europe</label>
+            <label><input type="radio" name="region-setup" value="us"> United States</label>
+          </fieldset>
+        </section>
+        <section class="panel" aria-label="Step 4">
+          <h2 tabindex="-1">Review</h2>
+          <p>Check your choices with Back, or finish.</p>
+        </section>
+        <section class="panel" aria-label="Done">
+          <h2 tabindex="-1">All set</h2>
+          <p>The wizard is complete (nothing was sent anywhere).</p>
+          <button type="button" class="restart">Start again</button>
+        </section>
+      </div>
+      <p class="hint">Complete the required fields on this step first.</p>
+      <div class="nav">
+        <button type="button" class="back">Back</button>
+        <button type="button" class="next">Next</button>
+        <button type="button" class="finish">Finish</button>
+      </div>
+    </section>
+
+    <section class="wizard" id="second" aria-label="Second wizard">
+      <ol class="steps">
+        <li>Introduction</li><li>Preferences</li><li>Configuration</li><li>Review</li>
+      </ol>
+      <div class="progress" aria-hidden="true"><span></span></div>
+      <p class="status">Step <span class="n">1</span> of 4</p><p class="done">Completed</p>
+      <div class="panels">
+        <section class="panel" aria-label="Step 1"><h2 tabindex="-1">Introduction</h2><p>A second, independent instance.</p></section>
+        <section class="panel" aria-label="Step 2"><h2 tabindex="-1">Preferences</h2><label>Display name (required) <input name="display" required autocomplete="off"></label></section>
+        <section class="panel" aria-label="Step 3"><h2 tabindex="-1">Configuration</h2><label><input type="checkbox" name="beta"> Join the beta</label></section>
+        <section class="panel" aria-label="Step 4"><h2 tabindex="-1">Review</h2><p>Ready.</p></section>
+        <section class="panel" aria-label="Done"><h2 tabindex="-1">All set</h2><button type="button" class="restart">Start again</button></section>
+      </div>
+      <p class="hint">Complete the required fields on this step first.</p>
+      <div class="nav">
+        <button type="button" class="back">Back</button>
+        <button type="button" class="next">Next</button>
+        <button type="button" class="finish">Finish</button>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

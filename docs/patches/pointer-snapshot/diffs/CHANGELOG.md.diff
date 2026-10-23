@@ -1,0 +1,26 @@
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -28,7 +28,23 @@
+ 
+   Both have documented state-driven workarounds. They are not library fixes.
+ - Version: one source in the runtime (`src/core/version.ts`), checked against `package.json`. The lockfile metadata (stale since 0.1.0) was resynchronized.
++
++## Unreleased
++
++Design: `docs/rfc-pointer-snapshot.md`.
++
++### Added
++- **`set(--x, mouse(x | y [, local]))`** *(experimental)*: stores the pointer position of the triggering event, once, in a length state.
++  - Viewport mode is `clientX` / `clientY`; `local` measures from the border box of the element with the `on:` declaration (the same definition as the live `mouse(…, local)`).
++  - Allowed in `click(…)`, `pointerenter(…)`, `pointerleave(…)` and `outside(click | pointerdown, …)`. In other triggers it is a compile error.
++  - A click without a pointer (Enter or Space, `element.click()`: `event.detail === 0`) gives the center of that element.
++  - Feature `events` (usage key `expr:mouse`); listed by `describe()` as an expression. It does not need the `dynamic` feature.
++- **API example 17, `examples/api/context-menu/`:** a menu that opens where you click.
+ 
++### Changed
++- An action's `compile()` receives the trigger and a usage-key recorder as a second argument (internal registry API).
++- `set(--x, var(--y))` is still an error; its message now also lists `mouse()`.
++
+ ## 0.8.0 — Modular runtime and custom bundle builder (local, unpublished)
+ 
+ Report: `docs/release-0.8.0.md`. Decision record: `docs/rfc-modular-runtime-0.8.md`. Tooling: `docs/bundle-builder-0.8.md`.

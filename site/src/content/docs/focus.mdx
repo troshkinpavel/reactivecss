@@ -1,0 +1,112 @@
+---
+title: "Focus & Blur"
+description: "Native focus styles stay native. focus: when(condition) moves focus after a user action changes a state, and :blur matches an element from a real focus loss until it is focused again."
+group: Concepts
+type: Concept
+order: 12
+status: experimental
+---
+## Native focus first
+Focus styling is native CSS, and Reactive CSS leaves it untouched:
+
+```css native.css
+.input:focus-visible {
+  outline: 2px solid royalblue;
+}
+```
+
+`:focus`, `:focus-visible` and `:focus-within` are never compiled or rewritten. Native `autofocus`, `<dialog>` and `popover` keep managing their own focus. Reactive CSS adds two things the platform has no CSS for: moving focus when a state changes, and matching the moment after a field loses focus.
+
+<Example id="docs-focus" />
+
+## Focus requests: focus: when()
+The `focus:` declaration moves focus to the matched element when its value changes from false to true because of a user action. The usual value is a condition on a state:
+
+```css search.css
+.search {
+  --open: state(false);
+}
+
+.search .toggle:on(click) {
+  --open: toggle();
+}
+
+.search .field {
+  focus: when(--open);
+}
+```
+
+Clicking the toggle opens the search and focuses its field. The value can also be `true`, `false`, `1`, `0` or `var(--boolean-state)`. `focus:` is an ordinary declaration, so the cascade picks the winner for each element, and conditional rules work:
+
+```css wizard.css
+.wizard .panel > h2 {
+  focus: false;
+}
+
+.wizard .panel:nth-var(--step) > h2 {
+  focus: true;
+}
+```
+
+Each step change moves focus to the new panel's heading. Headings are not focusable by default, so the HTML gives them `tabindex="-1"`.
+
+To return focus when something closes, request it on the opener with the opposite condition:
+
+```css dialog.css
+.modal .sheet input {
+  focus: when(--open);
+}
+
+.modal .open {
+  focus: when(not --open);
+}
+```
+
+### Guarantees
+- **Never on load.** The first value an element gets, on page load, on insertion, or when it starts matching a `focus:` rule, is recorded without moving focus. Use native `autofocus` for focus on load.
+- **Transitions only.** A value that stays true never refocuses the element.
+- **Only after a user action.** A request is armed only when a trusted `click`, `keydown`, `input`, `change`, `pointerup` or `submit`, or the end of a drag, changes a state that the value reads. Scripts, timers, form reset, focus events and `outside()` never move focus, so focus cannot cycle through `focusin` and back.
+- **Eligible targets only.** The target must be focusable, rendered, not disabled and not inert. Otherwise focus does not move, and a diagnostic names the element. When several targets become true at once, the first eligible one in document order wins.
+- **Dialogs and popovers keep their focus.** An open `<dialog>` or popover that has focus, or that the user acted in, manages its own focus. Focus that is already inside the target is left where it is, and a focus change the user made is not overridden.
+- **Keys finish first.** After Enter or a printable key, focus moves once the key press has finished, so Enter does not also activate the newly focused button, and the letter is not typed into the newly focused field. Arrow keys, Home, End, Escape, Tab and prevented keys move focus in the same task, as roving tabindex needs.
+- **No tabindex is added.** Reactive CSS never changes the Tab order. A target that cannot take focus is reported; give it `tabindex="-1"` in the HTML.
+
+### Rules
+- `focus:` works only in trusted stylesheets: same-origin, or inline with the default `trustInlineStyles`.
+- `focus:` is a declaration, not a selector: put it in an ordinary rule. Inside an `:on()` rule it is dropped with a warning, because an event rule only changes state.
+- A functional `:focus()` is not CSS. Reactive CSS reports `:focus() takes no arguments` and leaves the rule unchanged. Plain `:focus` stays native.
+- `focus:` is a declaration, not an empty rule, so minifiers keep it.
+- In a [custom bundle](/docs/custom-bundles/), the `focus` feature requires `events`, which records the user action. A `when()` value also needs `conditions`, which the analyzer adds; `focus: var(--open)` does not. `forms` is not required.
+
+`focus:` has existed since 0.6.0 and is experimental. It has not yet been checked with screen readers.
+
+## :blur
+`:blur` matches an element from a genuine focus loss, its own `blur` event, until it is focused again.
+
+```css shake.css
+@keyframes shake {
+  25% { translate: -4px 0; }
+  75% { translate: 4px 0; }
+}
+
+.input:blur {
+  animation: shake 250ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .input:blur { animation: none; }
+}
+```
+
+- **Never at load.** An element that has never lost focus does not match. This is the difference from `:not(:focus)`, which matches every unfocused element from the start.
+- **Once per blur.** Focusing the element removes the match and the next blur adds it again, so the animation plays once for each focus loss. Rapid focus and blur toggle it each time, and the last event wins.
+- **It stays until the next focus.** Unlike an animation, the match does not end by itself. Declarations other than the animation stay applied while the element is unfocused.
+- **Nested elements.** Only the element that lost focus matches. For a container, use `:has()`: `.form:has(:blur) .hint { display: block; }`.
+- **No timers.** Listeners exist only while a `:blur` rule exists, and the match goes away with the element.
+
+`:blur` combines with native selectors, for example `input:blur:invalid` for a field the user has left invalid. Native `:user-invalid` already covers most validation styling, and plain transitions on `:focus` and `:focus-visible` cover simple focus effects. Reach for `:blur` when something should happen once, right after focus leaves.
+
+`:blur` is small and fully covered by the automated tests, and it is a candidate for stable. The runtime's feature registry still reports it as experimental.
+
+## Related
+<Related ids={["reference/focus-declaration","reference/blur","events","binding","reference/state"]} />

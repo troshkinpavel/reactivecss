@@ -1,0 +1,32 @@
+--- a/README.md
++++ b/README.md
+@@ -190,12 +190,19 @@
+ 
+ | Action | Does |
+ |---|---|
+-| `set(--x, value)` | Sets the nearest `--x` to a literal of a compatible type, to an [expression](#expressions-in-state-and-set) (`attr()`, `pick()`), to `sibling-index()` (the position of the element with the `on:` declaration among its siblings) or to `sibling-count()` |
++| `set(--x, value)` | Sets the nearest `--x` to a literal of a compatible type, to an [expression](#expressions-in-state-and-set) (`attr()`, `pick()`), to `sibling-index()` (the position of the element with the `on:` declaration among its siblings), to `sibling-count()`, or *(experimental, unreleased)* to `mouse(x)` / `mouse(y)` / `mouse(x, local)`: the pointer position of **this event**, stored once (see below) |
+ | `toggle(--x)` | Flips a boolean state |
+ | `increment(--x, step)`, `decrement(--x, step)` | Adds or subtracts (default 1, in the state's unit) |
+ | `cycle(--x, a, b, c)` | Next value in the list, wrapping around (the first one if the current value is not listed) |
+ | `prevent()` *(experimental, 0.7.0)* | Cancels the event's native default action (see below). Only in `click(…)` and `key(…)` |
+ 
++**Pointer position on click** *(experimental, unreleased; [docs/rfc-pointer-snapshot.md](docs/rfc-pointer-snapshot.md))*. `set(--x, mouse(x))` stores the event's `clientX` in px; `mouse(x, local)` measures from the border box of the element with the `on:` declaration, as the live `mouse(x, local)` does. It is a snapshot: the state does not follow the pointer afterwards. Only in `click(…)`, `pointerenter(…)`, `pointerleave(…)` and `outside(click | pointerdown, …)`; elsewhere it is a compile error. A click without a pointer (Enter or Space, `element.click()`) gives the center of that element. The state must be a length state, such as `state(0px)`. `set(--x, var(--y))` is still not supported.
++
++```css
++.area { --menu-x: state(0px); --menu-y: state(0px);
++  on: click(set(--menu-x, mouse(x, local)), set(--menu-y, mouse(y, local)), set(--open, true)); }
++```
++
+ **Order and timing.** Actions run synchronously, in order, while the event is dispatched; each one reads the value the previous one wrote (50 synchronous increments give 50). Since 0.5.1, before an event is dispatched, the logical consequences of earlier actions in the same frame (state values, `:when()` and `:nth-var()` markers) are applied, so conditional `on:` rules always see the current state, even for several clicks before the next frame. Visual updates still happen in the next frame. Events not on the list above (`submit`, `animationstart`, `keyup`…) are compile errors. Actions never stop propagation.
+ 
+ <a id="prevent"></a>**Cancelling a default action: `prevent()`** *(experimental, 0.7.0)*. It calls the native `event.preventDefault()` synchronously, while the event is dispatched:
+@@ -725,7 +732,7 @@
+ npm run bench
+ ```
+ 
+-`npm ci` installs exactly the locked dependencies. `npm run test:browser` runs Chromium and WebKit; `npm run test:firefox` runs Firefox where Playwright's Firefox starts. `npm run test:dist` builds, then tests the generated files only: the minified bundle on a plain HTML page (`tests/dist-smoke/`), a Node import of `dist/index.js` and a TypeScript consumer of the declarations. `npm run verify` runs everything (typecheck, unit, dist, browser). Everything runs locally; no service or account is needed. `node benchmarks/quick.mjs <scenario> <n> <impl...>` measures one scenario, and `node benchmarks/profile.mjs <scenario> <n> <impl>` prints a heap snapshot summary and a CPU profile. `npm run serve` serves the playground at `http://localhost:8080/examples/` and rebuilds on change. Examples: `examples/api/` holds sixteen one-feature API examples (counter, `previous()`, `random()`, `focus:`, `visible()`…), and the application-sized demos are listed in the demo lab at `examples/lab/`; see [docs/api-examples-0.8.md](docs/api-examples-0.8.md). Source layout: `src/core` (tokenizer, parser, registry, scheduler, elements, engine, config, features), `src/functions`, `src/selectors`, `src/state` (state, actions, conditions, bind, changed, keys, typed, values), `src/features` (bundle catalog and one entry per feature), `src/api.ts` (the API every bundle exports), `src/index.ts` (ESM entry, all features), `src/auto.ts` (browser build), `tools/` (bundle builder and analyzer). Docs: [docs/](docs/) (state engine, 0.3 API design, security, compatibility, release notes).
++`npm ci` installs exactly the locked dependencies. `npm run test:browser` runs Chromium and WebKit; `npm run test:firefox` runs Firefox where Playwright's Firefox starts. `npm run test:dist` builds, then tests the generated files only: the minified bundle on a plain HTML page (`tests/dist-smoke/`), a Node import of `dist/index.js` and a TypeScript consumer of the declarations. `npm run verify` runs everything (typecheck, unit, dist, browser). Everything runs locally; no service or account is needed. `node benchmarks/quick.mjs <scenario> <n> <impl...>` measures one scenario, and `node benchmarks/profile.mjs <scenario> <n> <impl>` prints a heap snapshot summary and a CPU profile. `npm run serve` serves the playground at `http://localhost:8080/examples/` and rebuilds on change. Examples: `examples/api/` holds seventeen one-feature API examples (counter, `previous()`, `random()`, `focus:`, `visible()`, a context menu at the click position…), and the application-sized demos are listed in the demo lab at `examples/lab/`; see [docs/api-examples-0.8.md](docs/api-examples-0.8.md). Source layout: `src/core` (tokenizer, parser, registry, scheduler, elements, engine, config, features), `src/functions`, `src/selectors`, `src/state` (state, actions, conditions, bind, changed, keys, typed, values), `src/features` (bundle catalog and one entry per feature), `src/api.ts` (the API every bundle exports), `src/index.ts` (ESM entry, all features), `src/auto.ts` (browser build), `tools/` (bundle builder and analyzer). Docs: [docs/](docs/) (state engine, 0.3 API design, security, compatibility, release notes).
+ 
+ ## Proposed (not implemented)
+ 

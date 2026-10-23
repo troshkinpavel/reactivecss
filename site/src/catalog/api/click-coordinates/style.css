@@ -1,0 +1,27 @@
+/* Click coordinates */
+.coords .pad {
+  position: relative; height: 200px; overflow: hidden; cursor: crosshair; border-radius: 4px;
+  background: repeating-linear-gradient(0deg, transparent 0 23px, #eeebe5 23px 24px),
+    repeating-linear-gradient(90deg, #fbfaf8 0 23px, #eeebe5 23px 24px);
+}
+.coords .marker {
+  position: absolute; top: -8px; left: -8px; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); opacity: 0; pointer-events: none;
+}
+.coords .readout { margin: 12px 0 0; }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+.coords { --x: state(0px); --y: state(0px); --clicks: state(0); }
+
+/* Read once, at the click: a snapshot, not continuous tracking. */
+.coords .pad:on(click) {
+  --x: set(round(event(local-x), 1px));
+  --y: set(round(event(local-y), 1px));
+  --clicks: increment(1);
+}
+
+.coords .marker { translate: var(--x) var(--y); }
+.coords:when(--clicks > 0) .marker { opacity: 1; }
+.coords .x { content: var(--x); }
+.coords .y { content: var(--y); }
+.coords .n { content: var(--clicks); }

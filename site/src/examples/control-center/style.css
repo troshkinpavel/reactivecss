@@ -1,0 +1,103 @@
+/* Layout and typography live in base.css, shared by both versions. */
+
+/* ── State ───────────────────────────────── */
+/* In memory only. Saving is the form's job. */
+.control-center {
+  --theme: state("light");
+  --accent: state("ember");
+  --notify: state(true);
+  --name: state("Alex Rivera");
+}
+
+/* ── Controls → state ────────────────────── */
+/* Each control copies its value into the form's state when it changes. */
+.theme input:on(change)   { --theme: set(event(value)); }
+.accent input:on(change)  { --accent: set(event(value)); }
+.notify input:on(change)  { --notify: set(event(checked)); }
+.profile input:on(input)  { --name: set(event(value)); }
+
+/* A form reset puts the controls back to their HTML defaults: the states follow. */
+.control-center:on(reset) {
+  --theme: set("light");
+  --accent: set("ember");
+  --notify: set(true);
+  --name: set("Alex Rivera");
+}
+
+/* ── Theme ───────────────────────────────── */
+.control-center {
+  --bg: #fbfaf7;
+  --fg: #1c1917;
+  --muted: #78716c;
+  background: var(--bg);
+  color: var(--fg);
+  transition: background 200ms, color 200ms;
+}
+
+.control-center:when(--theme == "dark") {
+  --bg: #1c1917;
+  --fg: #f5f5f4;
+  --muted: #a8a29e;
+}
+
+@media (prefers-color-scheme: dark) {
+  .control-center:when(--theme == "system") {
+    --bg: #1c1917;
+    --fg: #f5f5f4;
+    --muted: #a8a29e;
+  }
+}
+
+/* ── Accent ──────────────────────────────── */
+.control-center                         { --tint: #c8462c; }
+.control-center:when(--accent == "moss")  { --tint: #3f7a5a; }
+.control-center:when(--accent == "slate") { --tint: #4d6284; }
+
+/* ── Native control states ───────────────── */
+.theme label:has(:checked) {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.control-center input {
+  accent-color: var(--tint);
+}
+
+.notify input:checked {
+  background: var(--tint);
+}
+
+.profile input:user-invalid {
+  border-color: #b42318;
+}
+
+/* ── Notifications ───────────────────────── */
+.notify .status::after {
+  content: when(--notify, "On", "Muted");
+}
+
+/* ── Live preview ────────────────────────── */
+.preview .avatar      { background: var(--tint); }
+.preview .name::after { content: var(--name); }
+
+.preview .bell {
+  opacity: when(--notify, 1, 0.4);
+}
+
+.preview .badge {
+  display: none;
+  background: var(--tint);
+}
+
+.preview .badge:when(--notify) {
+  display: inline-grid;
+}
+
+.preview .alert {
+  border-color: when(--notify, var(--tint), var(--muted));
+  opacity: when(--notify, 1, 0.6);
+}
+
+.preview .alert-text::after {
+  content: when(--notify, "Sam replied to your comment", "Notifications are muted");
+}

@@ -1,0 +1,125 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import Redirect from '~/layouts/Redirect.astro';
+import { BordersAndRadii, MotionTable, SpacingScale, Swatches, SyntaxTable, TypeScale } from '~/components/design/Foundations';
+import { TraceSpecimen } from '~/components/design/TraceSpecimen';
+import { SiteHeader } from '~/components/navigation/SiteHeader';
+import { Callout } from '~/components/docs/Callout';
+import { Button } from '~/components/ui/Button';
+import { LogoMark } from '~/components/ui/Logo';
+import { Tag } from '~/components/ui/Tag';
+import { FEATURES } from '~/lib/config';
+import { APPROVED_FEATURES } from '~/lib/config/schema';
+
+// Hidden in config/features.json: the route stays, as a redirect, so existing links never break.
+const hidden = !FEATURES.designSystem;
+
+const card = 'flex flex-col gap-3 rounded-block border border-line p-5';
+const kicker = 'font-mono text-meta text-mute';
+const h2 = 'm-0 text-section font-semibold tracking-[-0.03em]';
+const label = 'font-mono text-label text-mute';
+---
+{hidden ? <Redirect to={APPROVED_FEATURES.designSystem.fallback} title="Design system" /> : (
+<BaseLayout title="Design system" description="Static is ink. Reactive is vermilion. The colors, type, code highlighting, spacing, components and motion of the Reactive CSS site.">
+  <SiteHeader context="design system" links={[{ label: 'Home', href: '/' }, { label: 'Docs', href: '/docs/getting-started/' }, { label: 'Playground', href: '/playground/' }]} />
+  <main class="mx-auto flex max-w-[1200px] flex-col gap-24 px-(--gutter) pt-[clamp(40px,6vw,80px)] pb-30">
+    <section class="flex flex-col gap-7">
+      <div class={kicker}>00 · Concept</div>
+      <h1 class="m-0 max-w-[16ch] text-[clamp(40px,6vw,76px)] leading-[0.95] font-semibold tracking-[-0.045em] text-balance">Static is ink. Reactive is vermilion.</h1>
+      <p class="m-0 max-w-[62ch] text-[18px] leading-[1.6] text-pretty text-ink-2">The site is almost monochrome. One color is reserved for one meaning: something that can change at runtime. That covers Reactive CSS syntax in code, live values, and state readouts. Native CSS, navigation, buttons and prose never use it. When a reader sees vermilion, they are looking at the part this library adds.</p>
+      <div class="grid grid-cols-[repeat(auto-fit,minmax(min(100%,300px),1fr))] gap-3">
+        <div class={card}><span class={label}>Signature 1</span><h2 class="m-0 text-[19px] font-semibold">Live values in code</h2><p class="m-0 text-base leading-[1.55] text-ink-2">Every state declaration shows its current value as an outlined chip at the end of the line. Code blocks are never just pictures of code.</p></div>
+        <div class={card}><span class={label}>Signature 2</span><h2 class="m-0 text-[19px] font-semibold">The reaction trace</h2><p class="m-0 text-base leading-[1.55] text-ink-2">On interaction, the lines involved light up in order: the event, the state it wrote, then the declarations that changed. Unused <span class="font-mono text-[0.9em]">when()</span> branches fade.</p></div>
+        <div class={card}><span class={label}>Mark</span><h2 class="m-0 flex items-center gap-2.5 text-[19px] font-semibold"><LogoMark />A value in a block</h2><p class="m-0 text-base leading-[1.55] text-ink-2">A declaration block holding one live value. The same dot marks active state across the site.</p></div>
+      </div>
+      <TraceSpecimen client:visible />
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <div class={kicker}>01 · Color</div>
+      <h2 class={h2}>Warm neutrals, one signal</h2>
+      <Swatches />
+      <div class="flex flex-wrap gap-3">
+        <div class="flex flex-[1_1_320px] flex-col gap-2.5 rounded-block bg-[oklch(0.2_0.008_80)] p-6 text-[oklch(0.93_0.005_85)]"><span class="font-mono text-label text-[oklch(0.72_0.006_80)]">Dark mode · proposed, not shipped</span><span class="text-base leading-[1.55]">Surfaces oklch(0.2 0.008 80) and oklch(0.24 0.008 80). Ink oklch(0.93 0.005 85). Vermilion lifts to <span class="font-mono text-night-rx">oklch(0.72 0.17 40)</span> to hold 4.5:1.</span></div>
+        <div class="flex flex-[1_1_320px] flex-col gap-2.5 rounded-block border border-line p-6"><span class={label}>Rules</span><span class="text-base leading-[1.55] text-ink-body">Vermilion is never the only cue: reactive tokens also carry a dotted underline, chips are outlined, status uses text labels. Errors use ink, a border and a “!” mark, so they never read as reactive.</span></div>
+      </div>
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <div class={kicker}>02 · Typography</div>
+      <h2 class={h2}>Instrument Sans and Red Hat Mono</h2>
+      <p class="m-0 max-w-[62ch] text-[16px] leading-[1.6] text-ink-2">A compact grotesque with tight display tracking for headlines, and a mono with real weights so selectors and reactive tokens can be bolder than values without changing color. Mono also carries all metadata: kickers, labels, file names, statuses.</p>
+      <TypeScale />
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <div class={kicker}>03 · Code highlighting</div>
+      <h2 class={h2}>Weight for structure, color for reaction</h2>
+      <SyntaxTable />
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <div class={kicker}>04 · Space, grid, shape</div>
+      <h2 class={h2}>A 4px base and hairlines</h2>
+      <div class="grid grid-cols-[repeat(auto-fit,minmax(min(100%,320px),1fr))] gap-8">
+        <div class="flex flex-col gap-2"><span class={`${label} mb-1.5`}>Spacing scale</span><SpacingScale /></div>
+        <div class="flex flex-col gap-3.5">
+          <span class={label}>Grid</span>
+          <div class="grid h-14 grid-cols-12 gap-1.5">{Array.from({ length: 12 }, () => <span class="border border-line bg-hover" />)}</div>
+          <ul class="m-0 pl-[18px] text-ui leading-[1.7] text-ink-body">
+            <li>Marketing: 12 columns, 1280px max, gutter clamp(16px, 4vw, 40px).</li>
+            <li>Docs: nav 264px · article max 960px · TOC 220px. TOC folds into the article below 1300px, nav into a menu below 900px.</li>
+            <li>Layouts wrap with flex-basis and container queries instead of breakpoints wherever possible.</li>
+          </ul>
+          <span class={`${label} mt-2`}>Borders and radii</span>
+          <BordersAndRadii />
+          <span class="text-sm leading-normal text-ink-2">No shadows on content. One soft shadow is allowed for overlays (search dialog). Dashed borders mark anything prototype-only or not yet built.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <div class={kicker}>05 · Components and states</div>
+      <h2 class={h2}>Components</h2>
+      <p class="m-0 max-w-[62ch] text-[16px] leading-[1.6] text-ink-2">Every component, with all its states and editable props, is in Storybook: <code class="font-mono text-[0.9em]">npm run storybook</code>.</p>
+      <div class="grid grid-cols-[repeat(auto-fit,minmax(min(100%,340px),1fr))] gap-3">
+        <div class={card}>
+          <span class={label}>Buttons · default / hover / focus / disabled</span>
+          <div class="flex flex-wrap gap-2"><Button>Primary</Button><Button className="!bg-ink-hover">Hover</Button><Button className="outline-2 outline-offset-2 outline-ink outline-solid">Focus</Button><Button disabled>Disabled</Button></div>
+          <div class="flex flex-wrap gap-2"><Button variant="secondary">Secondary</Button><Button variant="quiet">Quiet</Button></div>
+          <span class="text-[13px] text-mute">Min height 40px desktop, 44px touch. Focus ring 2px ink, 2px offset, on every interactive element.</span>
+        </div>
+        <div class={card}>
+          <span class={label}>Status labels and live chips</span>
+          <div class="flex flex-wrap gap-1.5"><Tag>stable</Tag><Tag>exp</Tag><Tag>new</Tag><Tag>requires runtime</Tag><Tag tone="experimental">experimental</Tag></div>
+          <div class="flex flex-wrap items-center gap-2 font-mono text-label"><span class="rounded-tag border border-rx px-1.5 py-px font-medium text-rx">false</span><span class="rounded-tag border border-rx bg-rx px-1.5 py-px font-medium text-on-ink">true</span><span class="font-sans text-[12.5px] text-mute">resting · just changed</span></div>
+          <span class="text-[13px] text-mute">Statuses are text, never color alone. Chips are the only filled vermilion on the site, and only for ~500ms.</span>
+        </div>
+        <div class={card}>
+          <span class={label}>Navigation item · default / hover / current</span>
+          <div class="flex max-w-60 flex-col gap-0.5">
+            <span class="px-2.5 py-1.5 text-ui text-ink-2">Events &amp; Actions</span>
+            <span class="px-2.5 py-1.5 text-ui text-ink underline underline-offset-3">Dynamic Selectors</span>
+            <span class="rounded-block bg-active px-2.5 py-1.5 text-ui font-semibold">Conditions</span>
+            <span class="py-1.5 pr-2.5 pl-[22px] font-mono text-[13px] text-rx">state()</span>
+          </div>
+          <span class="text-[13px] text-mute">API entries are set in mono and vermilion because they are reactive syntax.</span>
+        </div>
+        <div class={card}>
+          <span class={label}>Callouts</span>
+          <Callout kind="note"><p>Tinted surface, hairline border.</p></Callout>
+          <Callout kind="caution"><p>Paper surface, ink border.</p></Callout>
+          <Callout kind="warning"><p>Errors name the declaration that failed and what happens next.</p></Callout>
+        </div>
+      </div>
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <div class={kicker}>06 · Motion</div>
+      <h2 class={h2}>Motion only answers input</h2>
+      <p class="m-0 max-w-[62ch] text-[16px] leading-[1.6] text-ink-2">Nothing moves on its own, except examples that demonstrate periodic motion such as wave(). Every other animation on the site is caused by something the reader did, which is the product's point.</p>
+      <MotionTable />
+    </section>
+  </main>
+</BaseLayout>
+)}

@@ -1,0 +1,63 @@
+{
+  "name": "@reactivecss/mcp",
+  "version": "0.1.0",
+  "description": "Official Model Context Protocol server for Reactive CSS: API reference, examples, validation, feature analysis, bundle suggestions and 0.8 → 0.9 migration for AI coding agents. Offline, read-only, stdio.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "reactive-css",
+    "css",
+    "ai-agents",
+    "validation"
+  ],
+  "homepage": "https://reactivecss.com",
+  "bugs": {
+    "url": "https://github.com/troshkinpavel/reactivecss/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/troshkinpavel/reactivecss.git",
+    "directory": "packages/mcp"
+  },
+  "author": "Pavel Troshkin <troshkinp@proton.me>",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "reactivecss-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "AGENTS.md",
+    "skills",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "reactivecss": {
+    "supports": "0.9.x",
+    "knowledge": "0.9.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "prepack": "node scripts/build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test test/unit.test.mjs test/protocol.test.mjs",
+    "test:consumer": "node test/consumer.mjs",
+    "bench": "node test/bench.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.3.1",
+    "zod": "^4.2.0"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "2.3.1",
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  }
+}

@@ -1,0 +1,128 @@
+{
+ "date": "2026-10-18T23:35:44.225Z",
+ "browser": "156.0.8078.4",
+ "cpu": 4,
+ "runs": 5,
+ "rows": [
+  {
+   "example": "product-configurator",
+   "readyMs": 142.3,
+   "compileMs": 8.2,
+   "heapKB": 1631,
+   "actMs": 2.9,
+   "actRange": "2.100-3.400",
+   "attributeInSameTask": true,
+   "diagnostics": 0
+  },
+  {
+   "example": "multi-step-wizard",
+   "readyMs": 113.1,
+   "compileMs": 9.6,
+   "heapKB": 1726,
+   "actMs": 2.9,
+   "actRange": "2.700-3.400",
+   "attributeInSameTask": true,
+   "diagnostics": 0
+  },
+  {
+   "example": "interactive-quiz",
+   "readyMs": 126.3,
+   "compileMs": 10.4,
+   "heapKB": 1827,
+   "actMs": 3.5,
+   "actRange": "3.200-3.800",
+   "attributeInSameTask": true,
+   "diagnostics": 0
+  },
+  {
+   "example": "live-form-preview",
+   "readyMs": 112.5,
+   "compileMs": 7.5,
+   "heapKB": 1616,
+   "actMs": 2.1,
+   "actRange": "1.800-2.900",
+   "attributeInSameTask": true,
+   "diagnostics": 0
+  },
+  {
+   "example": "score-history",
+   "readyMs": 111.6,
+   "compileMs": 7.9,
+   "heapKB": 1652,
+   "actMs": 3.1,
+   "actRange": "2.500-3.300",
+   "attributeInSameTask": true,
+   "diagnostics": 0
+  },
+  {
+   "example": "settings-panel",
+   "readyMs": 112.7,
+   "compileMs": 7.4,
+   "heapKB": 1598,
+   "actMs": 3.1,
+   "actRange": "2.700-3.700",
+   "attributeInSameTask": true,
+   "diagnostics": 0
+  },
+  {
+   "example": "accessible-tabs",
+   "readyMs": 110,
+   "compileMs": 6.9,
+   "heapKB": 1613,
+   "actMs": 2.7,
+   "actRange": "2.200-3.100",
+   "attributeInSameTask": true,
+   "diagnostics": 0
+  },
+  {
+   "example": "shopping-cart",
+   "readyMs": 113.5,
+   "compileMs": 8.9,
+   "heapKB": 1770,
+   "actMs": 2.8,
+   "actRange": "2.600-3.000",
+   "attributeInSameTask": true,
+   "diagnostics": 0
+  },
+  {
+   "example": "notification-center",
+   "readyMs": 109.2,
+   "compileMs": 9.2,
+   "heapKB": 1723,
+   "actMs": 2,
+   "actRange": "1.800-2.700",
+   "attributeInSameTask": true,
+   "diagnostics": 0
+  },
+  {
+   "example": "form-validation",
+   "readyMs": 112.9,
+   "compileMs": 7.6,
+   "heapKB": 1694,
+   "actMs": 2.7,
+   "actRange": "2.200-3.400",
+   "attributeInSameTask": true,
+   "diagnostics": 0
+  },
+  {
+   "example": "keyboard-playground",
+   "readyMs": 109.5,
+   "compileMs": 9.1,
+   "heapKB": 1659,
+   "actMs": 1,
+   "actRange": "0.800-1.700",
+   "attributeInSameTask": true,
+   "diagnostics": 0
+  },
+  {
+   "example": "accessible-toggle",
+   "readyMs": 108.9,
+   "compileMs": 4.7,
+   "heapKB": 1485,
+   "actMs": 1.3,
+   "actRange": "0.700-1.500",
+   "attributeInSameTask": true,
+   "diagnostics": 0
+  }
+ ]
+}

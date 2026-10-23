@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Keyboard controls — Reactive CSS API example</title>
+  <link rel="stylesheet" href="../api.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="kicker">API example 11 · <code>key()</code> <code>prevent()</code></p>
+    <h1>Keyboard controls</h1>
+    <p class="lede">Arrow keys move a token on a board. The page around it does not scroll.</p>
+    <section class="demo keys" aria-label="Keyboard controls">
+      <div class="board" tabindex="0" role="group" aria-label="Board" aria-describedby="keys-help">
+        <span class="token" aria-hidden="true"></span>
+      </div>
+      <p id="keys-help" class="readout">Focus the board, then use the arrow keys. Edges wrap around.</p>
+      <p class="readout" aria-live="polite">Column <span class="col">3</span>, row <span class="r">3</span></p>
+      <label for="note">A text field outside the board</label>
+      <input id="note" type="text" value="Arrow keys move the caret here">
+    </section>
+    <p class="filler">The page is taller than the window on purpose: arrow keys on the board do not scroll it, but Page Down and Space still do.</p>
+    <p class="files"><a href="style.css">style.css</a> · <a href="README.md">README</a> · <a href="../">All API examples</a></p>
+  </main>
+</body>
+</html>

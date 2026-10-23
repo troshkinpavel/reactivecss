@@ -1,0 +1,5 @@
+{
+  "announcements": [
+    { "id": "demo-version", "title": "Demo version", "message": "Reactive CSS {version} is not published yet, and its syntax may change.", "ctaLabel": "How to try it", "ctaUrl": "/docs/installation/", "placement": "home", "status": "active" }
+  ]
+}

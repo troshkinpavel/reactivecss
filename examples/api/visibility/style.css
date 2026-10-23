@@ -1,0 +1,22 @@
+/* Visibility detection */
+.vis .frame { position: relative; padding-top: 36px; }                 /* the status line sits here */
+.vis .scroller { height: 200px; overflow-y: auto; border: 1px solid var(--line); border-radius: 4px; padding: 0 16px; }
+.vis .hint { margin: 16px 0 260px; color: var(--ink-2); }
+.vis .hint:last-child { margin: 16px 0; }
+.vis .box {
+  padding: 28px 16px; border-radius: 6px; background: var(--accent); color: #fff; font-weight: 600; text-align: center;
+  transition: opacity 400ms, scale 400ms;
+}
+/* The status is the target's child, so it inherits --seen, but it is positioned against .frame,
+   outside the scrolling box, so it stays visible while the target scrolls away. (The target has
+   no transform: a transform would make it the status's containing block.) */
+.vis .status { position: absolute; top: 4px; left: 0; color: var(--ink); font: 14px ui-monospace, Menlo, monospace; }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+/* visible(0.6): 1 while at least 60 % of the target is visible, else 0. */
+.vis .target { --seen: visible(0.6); }
+.vis .box { opacity: calc(0.2 + var(--seen) * 0.8); scale: calc(0.85 + var(--seen) * 0.15); }
+.vis .status::after { content: "target: out of view"; }
+@container style(--seen: 1) {                                          /* native style query on the 0/1 value */
+  .vis .status::after { content: "target: in view ✓"; }
+}

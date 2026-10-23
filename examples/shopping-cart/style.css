@@ -1,0 +1,62 @@
+/* Shopping cart: all behavior is in this file (Reactive CSS + native CSS). */
+
+body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #1c1c1e; background: #f6f6f4; }
+main { max-width: 720px; margin: 0 auto; padding: 24px 16px; }
+.note { color: #555; }
+.cart { background: #fff; border-radius: 14px; padding: 20px; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
+.cart h2 { margin: 0 0 8px; }
+.lines { list-style: none; margin: 0; padding: 0; }
+.line { display: grid; grid-template-columns: 1fr auto auto 4em auto; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eee; }
+.line .price { color: #555; }
+.line .sub { text-align: right; font-variant-numeric: tabular-nums; }
+.qty-controls { display: inline-flex; align-items: center; gap: 6px; }
+.qty { min-width: 1.5em; text-align: center; font-variant-numeric: tabular-nums; }
+button { font: inherit; padding: 6px 12px; border-radius: 8px; border: 1px solid #888; background: #fafafa; cursor: pointer; }
+.qty-controls button { width: 34px; height: 34px; padding: 0; }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+.totals { font-weight: 600; font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+@media (max-width: 480px) { .line { grid-template-columns: 1fr auto; } }
+
+/* ---- state: one quantity per line, owned by the cart -------------------------------------------
+   The total needs every quantity, and CSS cannot sum values owned by different elements: the
+   cart owns all three (no aggregate functions, no arrays). Prices are CSS numbers. Initial
+   values repeat the HTML. */
+.cart { --q1: state(1); --q2: state(0); --q3: state(2); --p1: 12; --p2: 30; --p3: 8; }
+
+/* One rule per line: CSS has no parameterized rules, and each line needs its own state name. */
+.cart .l1 .plus { on: click(increment(--q1)); attr: disabled when(--q1 >= 9); }
+.cart .l2 .plus { on: click(increment(--q2)); attr: disabled when(--q2 >= 9); }
+.cart .l3 .plus { on: click(increment(--q3)); attr: disabled when(--q3 >= 9); }
+.cart .l1 .minus { on: click(decrement(--q1)); attr: disabled when(--q1 <= 0); }
+.cart .l2 .minus { on: click(decrement(--q2)); attr: disabled when(--q2 <= 0); }
+.cart .l3 .minus { on: click(decrement(--q3)); attr: disabled when(--q3 <= 0); }
+.cart .l1 .remove { on: click(set(--q1, 0)); attr: disabled when(--q1 == 0); }
+.cart .l2 .remove { on: click(set(--q2, 0)); attr: disabled when(--q2 == 0); }
+.cart .l3 .remove { on: click(set(--q3, 0)); attr: disabled when(--q3 == 0); }
+.cart .l1 { attr: data-empty when(--q1 == 0, "true", "false"); }
+.cart .l2 { attr: data-empty when(--q2 == 0, "true", "false"); }
+.cart .l3 { attr: data-empty when(--q3 == 0, "true", "false"); }
+.line[data-empty="true"] .name { color: #888; text-decoration: line-through; }
+
+/* ---- numbers: native CSS math on integers, written as real DOM text (text:) -------------------- */
+@property --s1 { syntax: "<integer>"; inherits: true; initial-value: 0; }
+@property --s2 { syntax: "<integer>"; inherits: true; initial-value: 0; }
+@property --s3 { syntax: "<integer>"; inherits: true; initial-value: 0; }
+@property --items { syntax: "<integer>"; inherits: true; initial-value: 0; }
+@property --total { syntax: "<integer>"; inherits: true; initial-value: 0; }
+.cart {
+  --s1: calc(var(--q1) * var(--p1)); --s2: calc(var(--q2) * var(--p2)); --s3: calc(var(--q3) * var(--p3));
+  --items: calc(var(--q1) + var(--q2) + var(--q3));
+  --total: calc(var(--s1) + var(--s2) + var(--s3));
+}
+.cart .l1 .qty { text: var(--q1); } .cart .l1 .sub .n { text: var(--s1); }
+.cart .l2 .qty { text: var(--q2); } .cart .l2 .sub .n { text: var(--s2); }
+.cart .l3 .qty { text: var(--q3); } .cart .l3 .sub .n { text: var(--s3); }
+.cart .items { text: var(--items); }
+.cart .total { text: var(--total); }
+
+/* ---- cart-wide: checkout and "Empty cart" are disabled for an empty cart ------------------------ */
+.cart .checkout, .cart .clear { attr: disabled when(--q1 == 0 and --q2 == 0 and --q3 == 0); }
+.cart .clear { on: click(set(--q1, 0), set(--q2, 0), set(--q3, 0)); }
+.cart .empty { attr: hidden when(--q1 == 0 and --q2 == 0 and --q3 == 0, false, true); color: #555; }

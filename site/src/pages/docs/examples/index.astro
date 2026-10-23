@@ -1,0 +1,7 @@
+---
+// The former walkthroughs index: the Examples catalog replaces it (src/lib/content/redirects.json).
+import Redirect from '~/layouts/Redirect.astro';
+import r from '~/lib/content/redirects.json';
+const [to, title] = r.walkthroughs[''] as [string, string];
+---
+<Redirect to={to} title={title} />

@@ -1,0 +1,10 @@
+.like {
+  --liked: state(false);
+  --attr-aria-pressed: var(--liked);
+  color: when(--liked, #f2542d, #57534e);
+  transition: color 200ms;
+}
+
+.like:on(click) {
+  --liked: toggle();
+}

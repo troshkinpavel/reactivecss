@@ -1,0 +1,23 @@
+.billing {
+  --annual: state(false);
+}
+
+.billing [role="switch"]:on(click) {
+  --annual: toggle();
+}
+
+.billing [role="switch"] {
+  --attr-aria-checked: var(--annual);
+}
+
+.price::after {
+  content: when(--annual, "$96 / year", "$10 / month");
+}
+
+.saving {
+  display: none;
+}
+
+.saving:when(--annual) {
+  display: inline;
+}

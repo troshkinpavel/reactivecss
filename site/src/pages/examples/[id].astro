@@ -1,0 +1,143 @@
+---
+import { createMarkdownProcessor } from '@astrojs/markdown-remark';
+import AppShell from '~/layouts/AppShell.astro';
+import ExampleBlock from '~/components/examples/ExampleBlock.astro';
+import { ExampleDetail } from '~/components/gallery/ExampleDetail';
+import { GalleryCard } from '~/components/gallery/GalleryCard';
+import { ScoreComparison } from '~/components/examples/ScoreComparison';
+import scoreJs from '~/content/vanilla/score-history.js?raw';
+import scoreJsCss from '~/content/vanilla/score-history.css?raw';
+import { InlineMarkdown } from '~/components/docs/InlineMarkdown';
+import { Tag } from '~/components/ui/Tag';
+import { SiteFooter } from '~/components/navigation/SiteFooter';
+import { INSTALL_TAG } from '~/lib/content/home';
+import { FOOTER_GROUPS } from '~/lib/content/site';
+import { exampleIds, getExample } from '~/examples/manifest';
+import { highlight } from '~/lib/code/highlight';
+import { CATALOG, CATEGORIES, catalogEntry, docsHref, howRows, neighbours, position, sourceOf } from '~/lib/content/catalog';
+import { focusablePre, unlinkRepoPaths } from '~/lib/content/demos';
+import { LIBRARY_VERSION, plain } from '~/lib/content/reference';
+
+// Catalog entries (API examples, library interfaces, lab cases) get the gallery detail page. Other
+// site examples keep a plain page: docs embed them, and they are not listed in the gallery or in
+// search. The Control Center examples have workspace pages.
+export function getStaticPaths() {
+  const live = CATALOG.filter((e) => e.example).map((e) => e.id);
+  // docs-* are method examples embedded in the docs and the reference: no page of their own.
+  const legacy = exampleIds.filter((id) => !id.startsWith('control-center') && !id.startsWith('docs-') && !live.includes(id));
+  return [...live, ...legacy].map((id) => ({ params: { id } }));
+}
+const { id } = Astro.params;
+const entry = catalogEntry(id!);
+const ex = entry?.example ?? getExample(id!);
+
+// score-history also runs beside a plain JavaScript version of the same behavior (moved from Vision v1).
+const vanilla = id === 'score-history' && { js: { code: scoreJs, lines: await highlight(scoreJs, 'js') }, html: await highlight(ex.files.html, 'html') };
+const md = await createMarkdownProcessor({ syntaxHighlight: false });
+const render = async (s?: string) => (s ? focusablePre((await md.render(unlinkRepoPaths(s))).code) : '');
+const n = entry?.notes ?? {};
+const isApi = entry?.category === 'api';
+// Site examples in the 0.9 syntax open in the Playground with their HTML and CSS.
+const editable = entry?.category === 'api' || entry?.category === 'interfaces';
+const rows = entry ? howRows(entry) : [];
+const hint = n['How to interact'] ? plain(n['How to interact'].trim()).replace(/\s+/g, ' ') : undefined;
+const how = entry && {
+  what: await render(n['What it demonstrates']),
+  native: await render(n['Native CSS alternative'] ?? n['What native HTML/CSS does']),
+  js: await render(n['What would normally need JavaScript']),
+  limits: await render(n['Limitations'] ?? n['Limitations found']),
+  a11y: await render(n['Accessibility']),
+};
+const cat = entry && CATEGORIES.find((c) => c.id === entry.category)!;
+const pos = entry && position(entry);
+// The next example already has its own link above Related.
+const related = entry && pos ? neighbours(entry, 4).filter((r) => r.id !== pos.next.id).slice(0, 3) : [];
+const htmlLines = await highlight(ex.files.html, 'html');
+const tags = (entry?.primary ?? []).map((label) => ({ label, href: docsHref(label) }));
+---
+{/* Older site examples are embedded by the docs; their own pages stay out of search engines. */}
+<AppShell title={ex.title} description={plain(ex.description)} context="examples" current="examples" robots={entry ? undefined : 'noindex, follow'}>
+  {entry && cat && pos && how ? (
+    <main class="mx-auto max-w-(--container-marketing) px-(--gutter) pt-4 pb-[clamp(56px,7vw,96px)]" data-pagefind-body data-pagefind-meta={`section:Examples · ${cat.name}`}>
+      <nav aria-label="Breadcrumb" class="flex min-h-10 flex-wrap items-center justify-between gap-3 text-[14px]">
+        <div class="flex min-w-0 flex-wrap items-center gap-2">
+          <a href="/examples/" class="text-ink-2 no-underline hover:text-ink">Examples</a>
+          <span aria-hidden="true" class="text-faint">/</span>
+          <span aria-current="page" class="font-medium">{entry.title}</span>
+          <a href={`/examples/#${cat.id}`} class="ml-1.5 inline-flex h-6 items-center rounded-tag border border-line px-2 font-mono text-tag text-ink-2 no-underline hover:border-ink" title="Show all in this category">{cat.name}</a>
+        </div>
+        <div class="flex items-center gap-1 font-mono text-label text-ink-2">
+          <a href={pos.prev.href} aria-label={`Previous in ${cat.name}: ${pos.prev.title}`} class="grid size-8 place-items-center rounded-block border border-line text-[15px] text-ink no-underline hover:border-ink">‹</a>
+          <span class="px-1.5 whitespace-nowrap"><span class="hidden sm:inline">{cat.name} · </span>{pos.i + 1} / {pos.n}</span>
+          <a href={pos.next.href} aria-label={`Next in ${cat.name}: ${pos.next.title}`} class="grid size-8 place-items-center rounded-block border border-line text-[15px] text-ink no-underline hover:border-ink">›</a>
+        </div>
+      </nav>
+
+      <header class="flex flex-col gap-3 pt-[clamp(18px,3vw,36px)] pb-[clamp(20px,2.5vw,28px)]">
+        <h1 data-pagefind-meta="title" class="m-0 text-[clamp(36px,5.2vw,68px)] leading-none font-semibold tracking-[-0.045em] text-balance">{entry.title}</h1>
+        <p class="m-0 max-w-[62ch] text-[clamp(16px,1.4vw,18px)] leading-[1.5] text-pretty text-ink-2"><InlineMarkdown text={entry.description} /></p>
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+          {tags.map((t) => t.href ? <a href={t.href} class="no-underline"><Tag tone="reactive" className="hover:border-rx">{t.label}</Tag></a> : <Tag>{t.label}</Tag>)}
+          {entry.experimental && <Tag tone="experimental">experimental</Tag>}
+          {entry.legacy && <a href="/docs/migration/#legacy-08x-compatibility" class="no-underline" title="Written with the 0.8 declarations, which 0.9.0 still runs"><Tag>0.8 syntax</Tag></a>}
+        </div>
+      </header>
+
+      <ExampleDetail client:load example={ex} htmlLines={htmlLines} playgroundHref={editable ? `/playground/?example=${entry.id}` : undefined} hint={hint}
+        sourceNote={`Source: ${sourceOf(entry.id)}. ${editable ? 'style.css from its Reactive CSS divider; the layout above it and the shared api.css run but are not shown.' : 'style.css from its first section comment; the layout above it runs but is not shown.'}${entry.legacy ? ' Written in the 0.8 syntax (on:, bind:, text:, attr:), which 0.9.0 still runs; see Migrating from 0.8 for the 0.9 forms.' : ''}`}>
+        <section aria-labelledby="how-title" data-pagefind-weight="0.5" class="flex flex-col gap-3">
+          <h2 id="how-title" class="m-0 text-[20px] font-semibold tracking-[-0.015em]">How it works</h2>
+          <ul class="m-0 flex list-none flex-col border-t border-line p-0">
+            {rows.map((r) => (
+              <li class="flex flex-col gap-1.5 border-b border-line px-0.5 py-3.5">
+                <span class="flex items-baseline justify-between gap-2.5">
+                  {r.href ? <a href={r.href} class="font-mono text-[13px] font-semibold text-rx no-underline hover:underline">{r.label}</a> : <span class="font-mono text-[13px] font-semibold">{r.label}</span>}
+                  {r.lines.length > 0 && <span class="font-mono text-[11px] whitespace-nowrap text-mute">{r.lines.length === 1 ? 'line' : 'lines'} {r.lines.slice(0, 4).join(', ')}{r.lines.length > 4 ? '…' : ''}</span>}
+                </span>
+                <span class="text-[14px] leading-normal text-pretty text-ink-body">{r.summary}</span>
+              </li>
+            ))}
+          </ul>
+          <div class="prose-md prose-note mt-1 text-ink-2" set:html={how.what} />
+          {how.native && <div class="rounded-block border border-line bg-paper-2 px-4 py-3.5"><h3 class="m-0 mb-1.5 font-mono text-label font-normal text-mute">{editable ? 'Native CSS alternative' : 'Left to native HTML and CSS'}</h3><div class="prose-md prose-note" set:html={how.native} /></div>}
+          {how.js && <div><h3 class="m-0 mb-1.5 text-[15px] font-semibold">What would normally need JavaScript</h3><div class="prose-md prose-note" set:html={how.js} /></div>}
+          {how.limits && <div><h3 class="m-0 mb-1.5 text-[15px] font-semibold">Limitations</h3><div class="prose-md prose-note" set:html={how.limits} /></div>}
+          {how.a11y && <div><h3 class="m-0 mb-1.5 text-[15px] font-semibold">Accessibility</h3><div class="prose-md prose-note" set:html={how.a11y} /></div>}
+        </section>
+      </ExampleDetail>
+
+      {vanilla && (
+        <section id="vanilla" aria-labelledby="vanilla-title" class="mt-[clamp(48px,6vw,80px)] scroll-mt-[120px]">
+          <h2 id="vanilla-title" class="m-0 mb-2 text-[20px] font-semibold tracking-[-0.015em]">Compared with plain JavaScript</h2>
+          <p class="m-0 mb-6 max-w-[68ch] text-[15px] leading-[1.6] text-pretty text-ink-2">The same demo, unchanged, next to a vanilla JavaScript version of the same behavior on the same markup. Both run, independently; the JavaScript one loads no Reactive CSS.</p>
+          <ScoreComparison client:visible={{ rootMargin: '400px' }} demo={ex} js={vanilla.js} jsCss={scoreJsCss} html={vanilla.html} />
+        </section>
+      )}
+
+      <section aria-label="More examples" class="mt-[clamp(48px,6vw,80px)] flex flex-col gap-7 border-t border-ink pt-6">
+        <div class="flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
+          <a href={pos.next.href} class="flex max-w-[640px] flex-col gap-1.5 text-ink no-underline hover:text-rx-strong">
+            <span class="font-mono text-label text-mute">Next recommended</span>
+            <span class="text-[clamp(28px,3.4vw,40px)] leading-[1.05] font-semibold tracking-[-0.035em]">{pos.next.title} →</span>
+            <span class="text-[15px] text-pretty text-ink-2">{plain(pos.next.description)}</span>
+          </a>
+          <a href="/examples/" class="py-1.5 text-[14.5px] font-medium">← All examples</a>
+        </div>
+        <div class="flex flex-col gap-3">
+          <span class="font-mono text-label text-mute">Related</span>
+          <div class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,260px),1fr))] gap-4">
+            {related.map((r) => <GalleryCard title={r.title} href={r.href} description={plain(r.description)} apis={r.primary.map((label) => ({ label, reactive: !!docsHref(label) }))} experimental={r.experimental} legacy={r.legacy} />)}
+          </div>
+        </div>
+      </section>
+    </main>
+  ) : (
+    <main class="mx-auto max-w-(--container-article) px-(--gutter) py-12">
+      <h1 class="mb-3 text-[clamp(34px,6vw,44px)] leading-none font-semibold tracking-h1">{ex.title}</h1>
+      <p class="mb-8 max-w-(--container-prose) text-lede text-pretty text-ink-2"><InlineMarkdown text={ex.description} /></p>
+      <ExampleBlock id={id!} size="expanded" />
+      <p class="mt-6 text-sm"><a href="/examples/">All examples →</a></p>
+    </main>
+  )}
+  <SiteFooter groups={FOOTER_GROUPS} installTag={INSTALL_TAG} version={LIBRARY_VERSION} />
+</AppShell>

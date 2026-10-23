@@ -1,0 +1,6 @@
+.signup { display: grid; gap: 12px; width: 100%; max-width: 320px; font-size: 14px; }
+.signup label { display: grid; gap: 4px; }
+.signup label.check { display: flex; align-items: center; gap: 8px; }
+.signup input[name=name] { min-height: 38px; padding: 0 10px; border: 1px solid oklch(0.75 0.01 80); border-radius: 3px; background: white; }
+.signup .out { margin: 4px 0 0; color: oklch(0.43 0.01 80); }
+.signup output { color: oklch(0.21 0.01 80); font-weight: 600; }

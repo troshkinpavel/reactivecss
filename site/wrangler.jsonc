@@ -1,0 +1,25 @@
+// Cloudflare Worker with Static Assets for the site (output: 'static', no server code).
+// No account ID, tokens or secrets here: wrangler reads CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN
+// from the environment. Deployment steps and the staging Access setup: deploy/README.md.
+{
+  "name": "reactivecss-site",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    // Astro builds /path/index.html with trailingSlash: 'always'; /path redirects to /path/.
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  // Production has no public URL until launch. To launch, add:
+  //   "routes": [{ "pattern": "reactivecss.com", "custom_domain": true }]
+  "workers_dev": false,
+  "preview_urls": false,
+  "env": {
+    // Worker "reactivecss-site-staging": served only on its workers.dev URL, behind Cloudflare Access.
+    // Enable Access on that URL before the first real deploy (deploy/README.md, "Staging").
+    "staging": {
+      "workers_dev": true,
+      "preview_urls": false
+    }
+  }
+}

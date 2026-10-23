@@ -1,0 +1,16 @@
+---
+// The API reference index: one table per category, status from the feature registry.
+import { ApiIndexTable } from '~/components/docs/Tables';
+import { CATEGORIES, SHIPPED_API, apiHref, entryKind, entryStatus } from '~/lib/content/reference';
+import Heading from './Heading.astro';
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+---
+{CATEGORIES.map((c) => (
+  <>
+    <Heading level={2} id={slug(c)}>{c}</Heading>
+    <ApiIndexTable rows={SHIPPED_API.filter((a) => a.category === c).map((a) => {
+      const s = entryStatus(a);
+      return { name: a.name, href: apiHref(a.id), kind: entryKind(a), summary: a.summary, status: [s.since ? 'since ' + s.since : '', s.experimental ? 'exp' : ''].filter(Boolean).join(' · ') || '—' };
+    })} />
+  </>
+))}

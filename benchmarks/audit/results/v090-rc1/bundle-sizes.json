@@ -1,0 +1,331 @@
+{
+  "date": "2026-10-21T22:05:23.576Z",
+  "version": "0.9.0",
+  "n": 1000,
+  "runs": 5,
+  "sizes": [
+    {
+      "name": "core",
+      "features": [
+        "core"
+      ],
+      "minified": 53449,
+      "gzip": 19277,
+      "brotli": 17474
+    },
+    {
+      "name": "basic",
+      "features": [
+        "core",
+        "events"
+      ],
+      "minified": 85926,
+      "gzip": 29461,
+      "brotli": 26488
+    },
+    {
+      "name": "forms",
+      "features": [
+        "core",
+        "events",
+        "forms",
+        "text",
+        "attributes"
+      ],
+      "minified": 105995,
+      "gzip": 35666,
+      "brotli": 31712
+    },
+    {
+      "name": "stateful-ui",
+      "features": [
+        "core",
+        "events",
+        "conditions",
+        "history",
+        "attributes",
+        "focus"
+      ],
+      "minified": 109265,
+      "gzip": 36876,
+      "brotli": 32670
+    },
+    {
+      "name": "interactive",
+      "features": [
+        "core",
+        "events",
+        "gestures",
+        "persist",
+        "conditions",
+        "text",
+        "attributes"
+      ],
+      "minified": 109904,
+      "gzip": 37129,
+      "brotli": 33000
+    },
+    {
+      "name": "dynamic",
+      "features": [
+        "core",
+        "values",
+        "dynamic",
+        "geometry"
+      ],
+      "minified": 66129,
+      "gzip": 23646,
+      "brotli": 21410
+    },
+    {
+      "name": "full",
+      "features": [
+        "core",
+        "events",
+        "gestures",
+        "persist",
+        "conditions",
+        "nth-var",
+        "history",
+        "forms",
+        "text",
+        "attributes",
+        "focus",
+        "blur",
+        "values",
+        "dynamic",
+        "geometry"
+      ],
+      "minified": 140148,
+      "gzip": 46856,
+      "brotli": 41135
+    },
+    {
+      "name": "dist full",
+      "features": null,
+      "minified": 162675,
+      "gzip": 54074,
+      "brotli": 47147
+    },
+    {
+      "name": "dist compact",
+      "features": null,
+      "minified": 141672,
+      "gzip": 47274,
+      "brotli": 41449
+    }
+  ],
+  "overhead": [
+    {
+      "id": "events",
+      "over": [
+        "core"
+      ],
+      "minified": 32477,
+      "gzip": 10184,
+      "brotli": 9014
+    },
+    {
+      "id": "gestures",
+      "over": [
+        "core",
+        "events"
+      ],
+      "minified": 2209,
+      "gzip": 771,
+      "brotli": 728
+    },
+    {
+      "id": "persist",
+      "over": [
+        "core"
+      ],
+      "minified": 3831,
+      "gzip": 1419,
+      "brotli": 1225
+    },
+    {
+      "id": "conditions",
+      "over": [
+        "core"
+      ],
+      "minified": 6076,
+      "gzip": 2157,
+      "brotli": 1851
+    },
+    {
+      "id": "nth-var",
+      "over": [
+        "core"
+      ],
+      "minified": 4119,
+      "gzip": 1572,
+      "brotli": 1257
+    },
+    {
+      "id": "history",
+      "over": [
+        "core"
+      ],
+      "minified": 5184,
+      "gzip": 1882,
+      "brotli": 1594
+    },
+    {
+      "id": "forms",
+      "over": [
+        "core"
+      ],
+      "minified": 8372,
+      "gzip": 2849,
+      "brotli": 2474
+    },
+    {
+      "id": "text",
+      "over": [
+        "core"
+      ],
+      "minified": 3254,
+      "gzip": 1085,
+      "brotli": 920
+    },
+    {
+      "id": "attributes",
+      "over": [
+        "core"
+      ],
+      "minified": 10237,
+      "gzip": 3419,
+      "brotli": 2867
+    },
+    {
+      "id": "focus",
+      "over": [
+        "core",
+        "events"
+      ],
+      "minified": 7350,
+      "gzip": 2455,
+      "brotli": 2008
+    },
+    {
+      "id": "blur",
+      "over": [
+        "core"
+      ],
+      "minified": 927,
+      "gzip": 401,
+      "brotli": 276
+    },
+    {
+      "id": "values",
+      "over": [
+        "core"
+      ],
+      "minified": 5498,
+      "gzip": 2070,
+      "brotli": 1789
+    },
+    {
+      "id": "dynamic",
+      "over": [
+        "core"
+      ],
+      "minified": 5033,
+      "gzip": 1659,
+      "brotli": 1467
+    },
+    {
+      "id": "geometry",
+      "over": [
+        "core"
+      ],
+      "minified": 2196,
+      "gzip": 908,
+      "brotli": 744
+    }
+  ],
+  "startup": [
+    {
+      "name": "core",
+      "bindings": 0,
+      "diagnostics": 2,
+      "errors": [],
+      "scriptMs": 5.7,
+      "taskMs": 23,
+      "heapMB": 1.74
+    },
+    {
+      "name": "basic",
+      "bindings": 0,
+      "diagnostics": 1,
+      "errors": [],
+      "scriptMs": 7.5,
+      "taskMs": 24.8,
+      "heapMB": 1.88
+    },
+    {
+      "name": "forms",
+      "bindings": 1000,
+      "diagnostics": 0,
+      "errors": [],
+      "scriptMs": 7.2,
+      "taskMs": 24.4,
+      "heapMB": 2.14
+    },
+    {
+      "name": "stateful-ui",
+      "bindings": 0,
+      "diagnostics": 1,
+      "errors": [],
+      "scriptMs": 8.2,
+      "taskMs": 25.2,
+      "heapMB": 1.91
+    },
+    {
+      "name": "interactive",
+      "bindings": 1000,
+      "diagnostics": 0,
+      "errors": [],
+      "scriptMs": 7.2,
+      "taskMs": 24.1,
+      "heapMB": 2.15
+    },
+    {
+      "name": "dynamic",
+      "bindings": 0,
+      "diagnostics": 2,
+      "errors": [],
+      "scriptMs": 6.1,
+      "taskMs": 23.1,
+      "heapMB": 1.76
+    },
+    {
+      "name": "full",
+      "bindings": 1000,
+      "diagnostics": 0,
+      "errors": [],
+      "scriptMs": 7,
+      "taskMs": 24.1,
+      "heapMB": 2.18
+    },
+    {
+      "name": "dist full",
+      "bindings": 1000,
+      "diagnostics": 0,
+      "errors": [],
+      "scriptMs": 7.3,
+      "taskMs": 24.4,
+      "heapMB": 2.22
+    },
+    {
+      "name": "dist compact",
+      "bindings": 1000,
+      "diagnostics": 0,
+      "errors": [],
+      "scriptMs": 7.6,
+      "taskMs": 24.8,
+      "heapMB": 2.18
+    }
+  ]
+}

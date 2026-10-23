@@ -1,0 +1,2119 @@
+{
+ "date": "2026-10-21T22:53:43.970Z",
+ "throttle": 1,
+ "browser": "156.0.8078.4",
+ "cpu": "Apple M4 Max",
+ "cores": 14,
+ "node": "v26.8.2",
+ "runs": 5,
+ "results": {
+  "startup": {
+   "100 components (300 elements)": {
+    "v0.8.1 (0.8 syntax)": {
+     "taskMs": {
+      "median": 16.54,
+      "min": 16.02,
+      "max": 16.85
+     },
+     "scriptMs": {
+      "median": 4.823,
+      "min": 4.693,
+      "max": 4.965
+     },
+     "styleMs": {
+      "median": 0.524,
+      "min": 0.505,
+      "max": 0.546
+     },
+     "compileMs": {
+      "median": 1.1,
+      "min": 1,
+      "max": 1.2
+     },
+     "heapMB": {
+      "median": 2.255,
+      "min": 2.251,
+      "max": 2.259
+     }
+    },
+    "v0.9.0-rc1 (0.9 syntax)": {
+     "taskMs": {
+      "median": 17.41,
+      "min": 17.01,
+      "max": 17.67
+     },
+     "scriptMs": {
+      "median": 5.596,
+      "min": 5.338,
+      "max": 5.676
+     },
+     "styleMs": {
+      "median": 0.576,
+      "min": 0.564,
+      "max": 0.636
+     },
+     "compileMs": {
+      "median": 1.8,
+      "min": 1.7,
+      "max": 1.8
+     },
+     "heapMB": {
+      "median": 2.375,
+      "min": 2.371,
+      "max": 2.38
+     }
+    },
+    "v0.9.0 (0.8 syntax)": {
+     "taskMs": {
+      "median": 16.57,
+      "min": 16.5,
+      "max": 16.77
+     },
+     "scriptMs": {
+      "median": 5.097,
+      "min": 4.958,
+      "max": 5.151
+     },
+     "styleMs": {
+      "median": 0.541,
+      "min": 0.52,
+      "max": 0.563
+     },
+     "compileMs": {
+      "median": 1.3,
+      "min": 1.2,
+      "max": 1.5
+     },
+     "heapMB": {
+      "median": 2.33,
+      "min": 2.321,
+      "max": 2.333
+     }
+    },
+    "v0.9.0 (0.9 syntax)": {
+     "taskMs": {
+      "median": 17.31,
+      "min": 17.21,
+      "max": 17.57
+     },
+     "scriptMs": {
+      "median": 5.677,
+      "min": 5.326,
+      "max": 5.734
+     },
+     "styleMs": {
+      "median": 0.549,
+      "min": 0.533,
+      "max": 0.559
+     },
+     "compileMs": {
+      "median": 1.7,
+      "min": 1.7,
+      "max": 1.8
+     },
+     "heapMB": {
+      "median": 2.358,
+      "min": 2.346,
+      "max": 2.358
+     }
+    },
+    "v0.9.0 custom (events, conditions, attributes, text)": {
+     "taskMs": {
+      "median": 17.18,
+      "min": 16.6,
+      "max": 17.41
+     },
+     "scriptMs": {
+      "median": 5.504,
+      "min": 5.19,
+      "max": 5.588
+     },
+     "styleMs": {
+      "median": 0.546,
+      "min": 0.531,
+      "max": 0.558
+     },
+     "compileMs": {
+      "median": 1.7,
+      "min": 1.6,
+      "max": 1.9
+     },
+     "heapMB": {
+      "median": 2.259,
+      "min": 2.256,
+      "max": 2.263
+     }
+    },
+    "no library": {
+     "taskMs": {
+      "median": 7.638,
+      "min": 7.184,
+      "max": 7.793
+     },
+     "scriptMs": {
+      "median": 0.11,
+      "min": 0.07,
+      "max": 0.128
+     },
+     "styleMs": {
+      "median": 0.275,
+      "min": 0.25,
+      "max": 0.305
+     },
+     "compileMs": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "heapMB": {
+      "median": 0.9487,
+      "min": 0.9487,
+      "max": 0.9487
+     }
+    }
+   },
+   "1000 components (3000 elements)": {
+    "v0.8.1 (0.8 syntax)": {
+     "taskMs": {
+      "median": 32.87,
+      "min": 32.45,
+      "max": 33.52
+     },
+     "scriptMs": {
+      "median": 11.46,
+      "min": 11.27,
+      "max": 11.85
+     },
+     "styleMs": {
+      "median": 3.564,
+      "min": 3.484,
+      "max": 3.611
+     },
+     "compileMs": {
+      "median": 1.2,
+      "min": 1.2,
+      "max": 1.3
+     },
+     "heapMB": {
+      "median": 3.853,
+      "min": 3.837,
+      "max": 3.872
+     }
+    },
+    "v0.9.0-rc1 (0.9 syntax)": {
+     "taskMs": {
+      "median": 33.09,
+      "min": 32.75,
+      "max": 33.39
+     },
+     "scriptMs": {
+      "median": 12.02,
+      "min": 11.8,
+      "max": 12.37
+     },
+     "styleMs": {
+      "median": 3.475,
+      "min": 3.415,
+      "max": 3.49
+     },
+     "compileMs": {
+      "median": 1.9,
+      "min": 1.8,
+      "max": 2.3
+     },
+     "heapMB": {
+      "median": 3.996,
+      "min": 3.983,
+      "max": 4.022
+     }
+    },
+    "v0.9.0 (0.8 syntax)": {
+     "taskMs": {
+      "median": 32.77,
+      "min": 32.59,
+      "max": 33.2
+     },
+     "scriptMs": {
+      "median": 11.73,
+      "min": 11.61,
+      "max": 11.85
+     },
+     "styleMs": {
+      "median": 3.489,
+      "min": 3.363,
+      "max": 3.583
+     },
+     "compileMs": {
+      "median": 1.4,
+      "min": 1.3,
+      "max": 1.5
+     },
+     "heapMB": {
+      "median": 3.953,
+      "min": 3.941,
+      "max": 3.968
+     }
+    },
+    "v0.9.0 (0.9 syntax)": {
+     "taskMs": {
+      "median": 33.57,
+      "min": 32.93,
+      "max": 33.67
+     },
+     "scriptMs": {
+      "median": 12.07,
+      "min": 11.79,
+      "max": 12.35
+     },
+     "styleMs": {
+      "median": 3.514,
+      "min": 3.477,
+      "max": 3.557
+     },
+     "compileMs": {
+      "median": 1.8,
+      "min": 1.8,
+      "max": 1.9
+     },
+     "heapMB": {
+      "median": 3.972,
+      "min": 3.969,
+      "max": 3.999
+     }
+    },
+    "v0.9.0 custom (events, conditions, attributes, text)": {
+     "taskMs": {
+      "median": 33.16,
+      "min": 32.66,
+      "max": 34.2
+     },
+     "scriptMs": {
+      "median": 11.9,
+      "min": 11.8,
+      "max": 12.27
+     },
+     "styleMs": {
+      "median": 3.463,
+      "min": 3.369,
+      "max": 3.613
+     },
+     "compileMs": {
+      "median": 1.9,
+      "min": 1.8,
+      "max": 1.9
+     },
+     "heapMB": {
+      "median": 3.886,
+      "min": 3.865,
+      "max": 3.889
+     }
+    },
+    "no library": {
+     "taskMs": {
+      "median": 14.81,
+      "min": 14.35,
+      "max": 15.48
+     },
+     "scriptMs": {
+      "median": 0.097,
+      "min": 0.082,
+      "max": 0.118
+     },
+     "styleMs": {
+      "median": 1.611,
+      "min": 1.491,
+      "max": 1.727
+     },
+     "compileMs": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "heapMB": {
+      "median": 0.9487,
+      "min": 0.9487,
+      "max": 0.9487
+     }
+    }
+   },
+   "5000 components (15000 elements)": {
+    "v0.8.1 (0.8 syntax)": {
+     "taskMs": {
+      "median": 91.36,
+      "min": 91.17,
+      "max": 92.35
+     },
+     "scriptMs": {
+      "median": 29.29,
+      "min": 28.83,
+      "max": 29.52
+     },
+     "styleMs": {
+      "median": 15.56,
+      "min": 15.46,
+      "max": 15.72
+     },
+     "compileMs": {
+      "median": 1.2,
+      "min": 1.1,
+      "max": 1.3
+     },
+     "heapMB": {
+      "median": 12.54,
+      "min": 12.48,
+      "max": 12.6
+     }
+    },
+    "v0.9.0-rc1 (0.9 syntax)": {
+     "taskMs": {
+      "median": 94.18,
+      "min": 92.45,
+      "max": 97.46
+     },
+     "scriptMs": {
+      "median": 30.76,
+      "min": 30.36,
+      "max": 33.56
+     },
+     "styleMs": {
+      "median": 15.93,
+      "min": 15.92,
+      "max": 16.2
+     },
+     "compileMs": {
+      "median": 1.9,
+      "min": 1.8,
+      "max": 2
+     },
+     "heapMB": {
+      "median": 12.98,
+      "min": 12.93,
+      "max": 13.15
+     }
+    },
+    "v0.9.0 (0.8 syntax)": {
+     "taskMs": {
+      "median": 92.32,
+      "min": 91.62,
+      "max": 92.87
+     },
+     "scriptMs": {
+      "median": 29.8,
+      "min": 28.92,
+      "max": 30.15
+     },
+     "styleMs": {
+      "median": 15.71,
+      "min": 15.65,
+      "max": 15.92
+     },
+     "compileMs": {
+      "median": 1.4,
+      "min": 1.1,
+      "max": 1.5
+     },
+     "heapMB": {
+      "median": 12.99,
+      "min": 12.86,
+      "max": 13.06
+     }
+    },
+    "v0.9.0 (0.9 syntax)": {
+     "taskMs": {
+      "median": 92.01,
+      "min": 90.76,
+      "max": 93.35
+     },
+     "scriptMs": {
+      "median": 29.61,
+      "min": 28.69,
+      "max": 30.41
+     },
+     "styleMs": {
+      "median": 15.93,
+      "min": 15.77,
+      "max": 15.94
+     },
+     "compileMs": {
+      "median": 1.9,
+      "min": 1.8,
+      "max": 2
+     },
+     "heapMB": {
+      "median": 13.04,
+      "min": 12.95,
+      "max": 13.15
+     }
+    },
+    "v0.9.0 custom (events, conditions, attributes, text)": {
+     "taskMs": {
+      "median": 92.58,
+      "min": 91.22,
+      "max": 92.96
+     },
+     "scriptMs": {
+      "median": 30.05,
+      "min": 29.31,
+      "max": 30.38
+     },
+     "styleMs": {
+      "median": 15.8,
+      "min": 15.79,
+      "max": 16.03
+     },
+     "compileMs": {
+      "median": 1.8,
+      "min": 1.8,
+      "max": 1.9
+     },
+     "heapMB": {
+      "median": 12.8,
+      "min": 12.74,
+      "max": 12.82
+     }
+    },
+    "no library": {
+     "taskMs": {
+      "median": 45.92,
+      "min": 45.72,
+      "max": 46.48
+     },
+     "scriptMs": {
+      "median": 0.094,
+      "min": 0.084,
+      "max": 0.104
+     },
+     "styleMs": {
+      "median": 7.348,
+      "min": 7.288,
+      "max": 7.534
+     },
+     "compileMs": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "heapMB": {
+      "median": 0.9487,
+      "min": 0.9487,
+      "max": 0.9487
+     }
+    }
+   },
+   "10000 components (30000 elements)": {
+    "v0.8.1 (0.8 syntax)": {
+     "taskMs": {
+      "median": 169.7,
+      "min": 167.6,
+      "max": 169.9
+     },
+     "scriptMs": {
+      "median": 53.5,
+      "min": 52.47,
+      "max": 53.72
+     },
+     "styleMs": {
+      "median": 31.05,
+      "min": 31.03,
+      "max": 31.47
+     },
+     "compileMs": {
+      "median": 1.2,
+      "min": 1.2,
+      "max": 1.4
+     },
+     "heapMB": {
+      "median": 20.16,
+      "min": 20.11,
+      "max": 20.19
+     }
+    },
+    "v0.9.0-rc1 (0.9 syntax)": {
+     "taskMs": {
+      "median": 169.8,
+      "min": 169.1,
+      "max": 171.4
+     },
+     "scriptMs": {
+      "median": 53.85,
+      "min": 53.56,
+      "max": 55.03
+     },
+     "styleMs": {
+      "median": 31.5,
+      "min": 31.39,
+      "max": 31.6
+     },
+     "compileMs": {
+      "median": 1.8,
+      "min": 1.7,
+      "max": 2.3
+     },
+     "heapMB": {
+      "median": 20.56,
+      "min": 20.54,
+      "max": 20.66
+     }
+    },
+    "v0.9.0 (0.8 syntax)": {
+     "taskMs": {
+      "median": 169.7,
+      "min": 167.2,
+      "max": 172.8
+     },
+     "scriptMs": {
+      "median": 53.06,
+      "min": 52.09,
+      "max": 54.71
+     },
+     "styleMs": {
+      "median": 31.13,
+      "min": 30.97,
+      "max": 31.91
+     },
+     "compileMs": {
+      "median": 1.4,
+      "min": 1.4,
+      "max": 1.5
+     },
+     "heapMB": {
+      "median": 20.52,
+      "min": 20.5,
+      "max": 20.53
+     }
+    },
+    "v0.9.0 (0.9 syntax)": {
+     "taskMs": {
+      "median": 169.3,
+      "min": 166.5,
+      "max": 172.8
+     },
+     "scriptMs": {
+      "median": 53.23,
+      "min": 51.94,
+      "max": 54.74
+     },
+     "styleMs": {
+      "median": 31.47,
+      "min": 31.38,
+      "max": 31.67
+     },
+     "compileMs": {
+      "median": 2,
+      "min": 2,
+      "max": 2.4
+     },
+     "heapMB": {
+      "median": 20.54,
+      "min": 20.54,
+      "max": 20.64
+     }
+    },
+    "v0.9.0 custom (events, conditions, attributes, text)": {
+     "taskMs": {
+      "median": 169.3,
+      "min": 168.2,
+      "max": 174.4
+     },
+     "scriptMs": {
+      "median": 53.8,
+      "min": 53.04,
+      "max": 55.1
+     },
+     "styleMs": {
+      "median": 31.32,
+      "min": 31.28,
+      "max": 32.33
+     },
+     "compileMs": {
+      "median": 1.8,
+      "min": 1.7,
+      "max": 1.9
+     },
+     "heapMB": {
+      "median": 20.41,
+      "min": 20.37,
+      "max": 20.61
+     }
+    },
+    "no library": {
+     "taskMs": {
+      "median": 85.64,
+      "min": 84.79,
+      "max": 86.57
+     },
+     "scriptMs": {
+      "median": 0.091,
+      "min": 0.071,
+      "max": 0.112
+     },
+     "styleMs": {
+      "median": 14.4,
+      "min": 14.3,
+      "max": 14.74
+     },
+     "compileMs": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "heapMB": {
+      "median": 0.9487,
+      "min": 0.9487,
+      "max": 0.9487
+     }
+    }
+   },
+   "1000 components, one-feature bundles (v0.9.0)": {
+    "core + events": {
+     "taskMs": {
+      "median": 26.58,
+      "min": 25.77,
+      "max": 26.82
+     },
+     "scriptMs": {
+      "median": 5.869,
+      "min": 5.791,
+      "max": 6.154
+     }
+    },
+    "core + forms": {
+     "taskMs": {
+      "median": 26.4,
+      "min": 26.24,
+      "max": 26.96
+     },
+     "scriptMs": {
+      "median": 5.631,
+      "min": 5.409,
+      "max": 5.831
+     }
+    },
+    "core + focus": {
+     "taskMs": {
+      "median": 26.72,
+      "min": 26.46,
+      "max": 27.39
+     },
+     "scriptMs": {
+      "median": 6.157,
+      "min": 6.032,
+      "max": 6.292
+     }
+    },
+    "core + persist": {
+     "taskMs": {
+      "median": 27.44,
+      "min": 26.84,
+      "max": 28
+     },
+     "scriptMs": {
+      "median": 6.835,
+      "min": 6.766,
+      "max": 7.578
+     }
+    },
+    "core + events + gestures": {
+     "taskMs": {
+      "median": 26.34,
+      "min": 25.64,
+      "max": 26.64
+     },
+     "scriptMs": {
+      "median": 5.855,
+      "min": 5.597,
+      "max": 6.113
+     }
+    }
+   }
+  },
+  "click": {
+   "1000 components, 150 clicks": {
+    "v0.8.1 (0.8 syntax)": {
+     "scriptMsPerClick": {
+      "median": 0.03487,
+      "min": 0.0317,
+      "max": 0.03767
+     },
+     "taskMsPerClick": {
+      "median": 0.8115,
+      "min": 0.8094,
+      "max": 0.9112
+     },
+     "latencyMedian": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "latencyP95": {
+      "median": 0.1,
+      "min": 0.1,
+      "max": 0.2
+     }
+    },
+    "v0.9.0-rc1 (0.9 syntax)": {
+     "scriptMsPerClick": {
+      "median": 0.03881,
+      "min": 0.03768,
+      "max": 0.04339
+     },
+     "taskMsPerClick": {
+      "median": 0.8266,
+      "min": 0.8132,
+      "max": 0.8554
+     },
+     "latencyMedian": {
+      "median": 0,
+      "min": 0,
+      "max": 0.1
+     },
+     "latencyP95": {
+      "median": 0.2,
+      "min": 0.1,
+      "max": 0.2
+     }
+    },
+    "v0.9.0 (0.8 syntax)": {
+     "scriptMsPerClick": {
+      "median": 0.03781,
+      "min": 0.03466,
+      "max": 0.04127
+     },
+     "taskMsPerClick": {
+      "median": 0.8189,
+      "min": 0.8164,
+      "max": 0.8523
+     },
+     "latencyMedian": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "latencyP95": {
+      "median": 0.1,
+      "min": 0.1,
+      "max": 0.2
+     }
+    },
+    "v0.9.0 (0.9 syntax)": {
+     "scriptMsPerClick": {
+      "median": 0.03925,
+      "min": 0.03657,
+      "max": 0.04259
+     },
+     "taskMsPerClick": {
+      "median": 0.8308,
+      "min": 0.8093,
+      "max": 0.8648
+     },
+     "latencyMedian": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "latencyP95": {
+      "median": 0.1,
+      "min": 0.1,
+      "max": 0.2
+     }
+    },
+    "plain JavaScript": {
+     "scriptMsPerClick": {
+      "median": 0.01123,
+      "min": 0.01028,
+      "max": 0.01334
+     },
+     "taskMsPerClick": {
+      "median": 0.8363,
+      "min": 0.8261,
+      "max": 0.897
+     },
+     "latencyMedian": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "latencyP95": {
+      "median": 0.1,
+      "min": 0.1,
+      "max": 0.1
+     }
+    }
+   },
+   "1000 components, rules per element (v0.9.0)": {
+    "one rule (no style read)": {
+     "scriptMsPerClick": {
+      "median": 0.02815,
+      "min": 0.0274,
+      "max": 0.02957
+     },
+     "taskMsPerClick": {
+      "median": 0.3915,
+      "min": 0.389,
+      "max": 0.3959
+     },
+     "latencyMedian": {
+      "median": 13,
+      "min": 12.8,
+      "max": 13.5
+     }
+    },
+    "five competing rules (one style read)": {
+     "scriptMsPerClick": {
+      "median": 0.03324,
+      "min": 0.03014,
+      "max": 0.03721
+     },
+     "taskMsPerClick": {
+      "median": 0.3856,
+      "min": 0.3757,
+      "max": 0.4018
+     },
+     "latencyMedian": {
+      "median": 13,
+      "min": 12.5,
+      "max": 13.1
+     }
+    }
+   },
+   "1000 components, four mutations per click (v0.9.0)": {
+    "four mutations per click": {
+     "scriptMsPerClick": {
+      "median": 0.04021,
+      "min": 0.03811,
+      "max": 0.04064
+     },
+     "taskMsPerClick": {
+      "median": 0.401,
+      "min": 0.3878,
+      "max": 0.4102
+     },
+     "latencyMedian": {
+      "median": 12.8,
+      "min": 12.7,
+      "max": 13.3
+     }
+    }
+   }
+  },
+  "pointer": {
+   "mouse(x) live on 1,000 elements (same CSS)": {
+    "v0.8.1": {
+     "scriptMsPerS": {
+      "median": 5.372,
+      "min": 3.555,
+      "max": 5.9
+     },
+     "taskMsPerS": {
+      "median": 249.6,
+      "min": 157.3,
+      "max": 257.3
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "eventsPerS": {
+      "median": 59.91,
+      "min": 59.9,
+      "max": 59.92
+     }
+    },
+    "v0.9.0-rc1": {
+     "scriptMsPerS": {
+      "median": 5.251,
+      "min": 3.826,
+      "max": 5.886
+     },
+     "taskMsPerS": {
+      "median": 240.3,
+      "min": 177.8,
+      "max": 253.4
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "eventsPerS": {
+      "median": 59.9,
+      "min": 59.9,
+      "max": 59.91
+     }
+    },
+    "v0.9.0": {
+     "scriptMsPerS": {
+      "median": 5.508,
+      "min": 3.876,
+      "max": 6.18
+     },
+     "taskMsPerS": {
+      "median": 245.4,
+      "min": 168.4,
+      "max": 261.9
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "eventsPerS": {
+      "median": 59.9,
+      "min": 59.9,
+      "max": 59.9
+     }
+    }
+   },
+   "pointermove snapshot, one element": {
+    "v0.9.0-rc1 :on(pointermove)": {
+     "scriptMsPerS": {
+      "median": 11.96,
+      "min": 11.46,
+      "max": 13.18
+     },
+     "taskMsPerS": {
+      "median": 65.59,
+      "min": 64,
+      "max": 71.82
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "eventsPerS": {
+      "median": 59.9,
+      "min": 59.88,
+      "max": 59.92
+     }
+    },
+    "v0.9.0 :on(pointermove)": {
+     "scriptMsPerS": {
+      "median": 12.23,
+      "min": 9.519,
+      "max": 12.7
+     },
+     "taskMsPerS": {
+      "median": 65.98,
+      "min": 50.29,
+      "max": 69.1
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "eventsPerS": {
+      "median": 59.9,
+      "min": 59.81,
+      "max": 59.91
+     }
+    },
+    "plain JavaScript": {
+     "scriptMsPerS": {
+      "median": 3.301,
+      "min": 2.596,
+      "max": 3.423
+     },
+     "taskMsPerS": {
+      "median": 50.12,
+      "min": 40.15,
+      "max": 54.42
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "eventsPerS": {
+      "median": 59.81,
+      "min": 59.8,
+      "max": 59.9
+     }
+    }
+   }
+  },
+  "drag": {
+   "one active drag among 1 candidates": {
+    "v0.9.0-rc1 :on(drag)": {
+     "scriptMsPerS": {
+      "median": 9.839,
+      "min": 8.82,
+      "max": 10.62
+     },
+     "scriptMsPerMove": {
+      "median": 0.165,
+      "min": 0.148,
+      "max": 0.1782
+     },
+     "layoutCount": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    },
+    "v0.9.0 :on(drag)": {
+     "scriptMsPerS": {
+      "median": 10.58,
+      "min": 9.959,
+      "max": 10.88
+     },
+     "scriptMsPerMove": {
+      "median": 0.1781,
+      "min": 0.1671,
+      "max": 0.1825
+     },
+     "layoutCount": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    },
+    "v0.9.0 custom (events, gestures)": {
+     "scriptMsPerS": {
+      "median": 10.49,
+      "min": 9.206,
+      "max": 10.84
+     },
+     "scriptMsPerMove": {
+      "median": 0.176,
+      "min": 0.1545,
+      "max": 0.1819
+     },
+     "layoutCount": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    },
+    "plain JavaScript": {
+     "scriptMsPerS": {
+      "median": 2.278,
+      "min": 2.057,
+      "max": 2.537
+     },
+     "scriptMsPerMove": {
+      "median": 0.03813,
+      "min": 0.03444,
+      "max": 0.04246
+     },
+     "layoutCount": {
+      "median": 1,
+      "min": 1,
+      "max": 1
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "one active drag among 1000 candidates": {
+    "v0.9.0-rc1 :on(drag)": {
+     "scriptMsPerS": {
+      "median": 10.76,
+      "min": 9.643,
+      "max": 11.23
+     },
+     "scriptMsPerMove": {
+      "median": 0.1804,
+      "min": 0.1618,
+      "max": 0.1884
+     },
+     "layoutCount": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    },
+    "v0.9.0 :on(drag)": {
+     "scriptMsPerS": {
+      "median": 10.22,
+      "min": 10.06,
+      "max": 11.26
+     },
+     "scriptMsPerMove": {
+      "median": 0.1714,
+      "min": 0.1688,
+      "max": 0.1889
+     },
+     "layoutCount": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    },
+    "v0.9.0 custom (events, gestures)": {
+     "scriptMsPerS": {
+      "median": 10.63,
+      "min": 10.2,
+      "max": 11.74
+     },
+     "scriptMsPerMove": {
+      "median": 0.1783,
+      "min": 0.171,
+      "max": 0.1969
+     },
+     "layoutCount": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    },
+    "plain JavaScript": {
+     "scriptMsPerS": {
+      "median": 2.398,
+      "min": 2.303,
+      "max": 2.469
+     },
+     "scriptMsPerMove": {
+      "median": 0.04014,
+      "min": 0.03853,
+      "max": 0.04134
+     },
+     "layoutCount": {
+      "median": 1,
+      "min": 1,
+      "max": 1
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "persisted position, 300 moves": {
+    "persisted --x": {
+     "storageWrites": {
+      "median": 21,
+      "min": 21,
+      "max": 21
+     },
+     "scriptMsPerMove": {
+      "median": 0.1967,
+      "min": 0.1809,
+      "max": 0.2143
+     }
+    }
+   }
+  },
+  "idle": {
+   "10 s idle after start, 1000 components": {
+    "v0.8.1 (0.8 syntax)": {
+     "scriptMs": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "taskMs": {
+      "median": 0.622,
+      "min": 0.589,
+      "max": 0.972
+     },
+     "flushes": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "ticks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    },
+    "v0.9.0-rc1 (0.9 syntax, every new feature)": {
+     "scriptMs": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "taskMs": {
+      "median": 0.697,
+      "min": 0.604,
+      "max": 0.707
+     },
+     "flushes": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "ticks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    },
+    "v0.9.0 (0.9 syntax, every new feature)": {
+     "scriptMs": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "taskMs": {
+      "median": 0.702,
+      "min": 0.471,
+      "max": 0.703
+     },
+     "flushes": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "ticks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    }
+   }
+  },
+  "memory": {
+   "10,000 components mounted, then 10 × 1,000 mount/unmount": {
+    "v0.8.1 (0.8 syntax)": {
+     "mountedMB": {
+      "median": 16.74,
+      "min": 16.74,
+      "max": 16.75
+     },
+     "retainedMB": {
+      "median": 1.223,
+      "min": 1.22,
+      "max": 1.224
+     },
+     "bindings": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "states": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    },
+    "v0.9.0-rc1 (0.9 syntax)": {
+     "mountedMB": {
+      "median": 16.9,
+      "min": 16.9,
+      "max": 16.9
+     },
+     "retainedMB": {
+      "median": 1.227,
+      "min": 1.227,
+      "max": 1.228
+     },
+     "bindings": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "states": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    },
+    "v0.9.0 (0.8 syntax)": {
+     "mountedMB": {
+      "median": 16.9,
+      "min": 16.9,
+      "max": 16.9
+     },
+     "retainedMB": {
+      "median": 1.227,
+      "min": 1.224,
+      "max": 1.227
+     },
+     "bindings": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "states": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    },
+    "v0.9.0 (0.9 syntax)": {
+     "mountedMB": {
+      "median": 16.9,
+      "min": 16.9,
+      "max": 16.9
+     },
+     "retainedMB": {
+      "median": 1.228,
+      "min": 1.224,
+      "max": 1.228
+     },
+     "bindings": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "states": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    }
+   }
+  },
+  "live": {
+   "live(random(), 200ms) on 10,000 elements, 3 s": {
+    "v0.8.1": {
+     "frameMedian": {
+      "median": 16.7,
+      "min": 16.7,
+      "max": 16.7
+     },
+     "frameP95": {
+      "median": 16.8,
+      "min": 16.7,
+      "max": 16.8
+     },
+     "heapMB": {
+      "median": 8.329,
+      "min": 6.382,
+      "max": 8.455
+     }
+    },
+    "v0.9.0-rc1": {
+     "frameMedian": {
+      "median": 16.7,
+      "min": 16.7,
+      "max": 16.7
+     },
+     "frameP95": {
+      "median": 16.7,
+      "min": 16.7,
+      "max": 16.8
+     },
+     "heapMB": {
+      "median": 8.388,
+      "min": 6.663,
+      "max": 8.587
+     }
+    },
+    "v0.9.0": {
+     "frameMedian": {
+      "median": 16.7,
+      "min": 16.7,
+      "max": 16.7
+     },
+     "frameP95": {
+      "median": 16.8,
+      "min": 16.7,
+      "max": 16.8
+     },
+     "heapMB": {
+      "median": 8.477,
+      "min": 8.344,
+      "max": 8.537
+     }
+    }
+   }
+  },
+  "compile": {
+   "500 event rules": {
+    "v0.8.1 (on:)": {
+     "compileMs": {
+      "median": 4.6,
+      "min": 4.6,
+      "max": 5
+     },
+     "taskMs": {
+      "median": 18.99,
+      "min": 18.81,
+      "max": 19.35
+     },
+     "replaceMs": {
+      "median": 9.8,
+      "min": 9.7,
+      "max": 10.1
+     }
+    },
+    "v0.9.0 (on:)": {
+     "compileMs": {
+      "median": 4.8,
+      "min": 4.6,
+      "max": 5.3
+     },
+     "taskMs": {
+      "median": 19.15,
+      "min": 18.81,
+      "max": 19.57
+     },
+     "replaceMs": {
+      "median": 10.1,
+      "min": 9.8,
+      "max": 10.3
+     }
+    },
+    "v0.9.0-rc1 (:on())": {
+     "compileMs": {
+      "median": 6.3,
+      "min": 6.2,
+      "max": 6.4
+     },
+     "taskMs": {
+      "median": 20.36,
+      "min": 20.3,
+      "max": 20.8
+     },
+     "replaceMs": {
+      "median": 11.9,
+      "min": 9.5,
+      "max": 12.3
+     }
+    },
+    "v0.9.0 (:on())": {
+     "compileMs": {
+      "median": 6.2,
+      "min": 6.1,
+      "max": 6.3
+     },
+     "taskMs": {
+      "median": 20.21,
+      "min": 19.83,
+      "max": 20.54
+     },
+     "replaceMs": {
+      "median": 11.2,
+      "min": 10.2,
+      "max": 12.1
+     }
+    }
+   },
+   "2000 :when() selectors": {
+    "v0.8.1": {
+     "compileMs": {
+      "median": 10.3,
+      "min": 10.1,
+      "max": 10.7
+     },
+     "taskMs": {
+      "median": 42.51,
+      "min": 41.2,
+      "max": 43.17
+     },
+     "replaceMs": {
+      "median": 40.3,
+      "min": 40.2,
+      "max": 46.2
+     }
+    },
+    "v0.9.0-rc1": {
+     "compileMs": {
+      "median": 10.8,
+      "min": 10.2,
+      "max": 11.1
+     },
+     "taskMs": {
+      "median": 41.84,
+      "min": 41.61,
+      "max": 43.54
+     },
+     "replaceMs": {
+      "median": 41.8,
+      "min": 39.6,
+      "max": 43.1
+     }
+    },
+    "v0.9.0": {
+     "compileMs": {
+      "median": 10.6,
+      "min": 10.4,
+      "max": 11
+     },
+     "taskMs": {
+      "median": 41.93,
+      "min": 41.52,
+      "max": 42.48
+     },
+     "replaceMs": {
+      "median": 43.1,
+      "min": 42,
+      "max": 48.7
+     }
+    }
+   },
+   "5000 native rules + one reactive rule": {
+    "v0.8.1": {
+     "compileMs": {
+      "median": 24.5,
+      "min": 24.1,
+      "max": 24.6
+     },
+     "taskMs": {
+      "median": 53.8,
+      "min": 53.55,
+      "max": 54.34
+     },
+     "replaceMs": {
+      "median": 53,
+      "min": 44.5,
+      "max": 54
+     }
+    },
+    "v0.9.0-rc1": {
+     "compileMs": {
+      "median": 26.5,
+      "min": 26,
+      "max": 26.8
+     },
+     "taskMs": {
+      "median": 56.52,
+      "min": 56,
+      "max": 58.15
+     },
+     "replaceMs": {
+      "median": 54.5,
+      "min": 54.1,
+      "max": 55.5
+     }
+    },
+    "v0.9.0": {
+     "compileMs": {
+      "median": 26.1,
+      "min": 25.9,
+      "max": 26.5
+     },
+     "taskMs": {
+      "median": 55.87,
+      "min": 55.36,
+      "max": 56.38
+     },
+     "replaceMs": {
+      "median": 54.1,
+      "min": 53.6,
+      "max": 55
+     }
+    }
+   },
+   "5000 native rules only (the pre-filter path)": {
+    "v0.8.1": {
+     "compileMs": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "taskMs": {
+      "median": 15.53,
+      "min": 13.58,
+      "max": 15.58
+     },
+     "replaceMs": {
+      "median": 5.7,
+      "min": 5.4,
+      "max": 6.1
+     }
+    },
+    "v0.9.0-rc1": {
+     "compileMs": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "taskMs": {
+      "median": 15.64,
+      "min": 15.36,
+      "max": 15.88
+     },
+     "replaceMs": {
+      "median": 6.1,
+      "min": 5.9,
+      "max": 6.2
+     }
+    },
+    "v0.9.0": {
+     "compileMs": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "taskMs": {
+      "median": 15.6,
+      "min": 15.4,
+      "max": 15.65
+     },
+     "replaceMs": {
+      "median": 6.4,
+      "min": 3.6,
+      "max": 6.5
+     }
+    }
+   }
+  },
+  "input": {
+   "100 characters typed into a bound field with a live preview": {
+    "v0.8.1 (bind:, text:)": {
+     "scriptMsPerInput": {
+      "median": 0.00783,
+      "min": 0.00768,
+      "max": 0.00833
+     },
+     "taskMsPerInput": {
+      "median": 0.08025,
+      "min": 0.07988,
+      "max": 0.0835
+     }
+    },
+    "v0.9.0 (bind:, text:)": {
+     "scriptMsPerInput": {
+      "median": 0.008,
+      "min": 0.0079,
+      "max": 0.00919
+     },
+     "taskMsPerInput": {
+      "median": 0.0815,
+      "min": 0.07662,
+      "max": 0.08563
+     }
+    },
+    "v0.9.0-rc1 (:on(input), event(value), bind(value))": {
+     "scriptMsPerInput": {
+      "median": 0.02614,
+      "min": 0.02424,
+      "max": 0.02701
+     },
+     "taskMsPerInput": {
+      "median": 0.1294,
+      "min": 0.1243,
+      "max": 0.1327
+     }
+    },
+    "v0.9.0 (:on(input), event(value), bind(value))": {
+     "scriptMsPerInput": {
+      "median": 0.02594,
+      "min": 0.02263,
+      "max": 0.02731
+     },
+     "taskMsPerInput": {
+      "median": 0.13,
+      "min": 0.1095,
+      "max": 0.1334
+     }
+    },
+    "plain JavaScript": {
+     "scriptMsPerInput": {
+      "median": 0.00559,
+      "min": 0.00514,
+      "max": 0.00579
+     },
+     "taskMsPerInput": {
+      "median": 0.09152,
+      "min": 0.08461,
+      "max": 0.09509
+     }
+    }
+   },
+   "mousemove snapshot, one element": {
+    "v0.9.0-rc1 :on(mousemove)": {
+     "scriptMsPerS": {
+      "median": 10.24,
+      "min": 6.879,
+      "max": 10.4
+     },
+     "taskMsPerS": {
+      "median": 58.49,
+      "min": 38.3,
+      "max": 58.87
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    },
+    "v0.9.0 :on(mousemove)": {
+     "scriptMsPerS": {
+      "median": 8.491,
+      "min": 6.005,
+      "max": 10.95
+     },
+     "taskMsPerS": {
+      "median": 48.77,
+      "min": 33.74,
+      "max": 61.92
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    },
+    "plain JavaScript": {
+     "scriptMsPerS": {
+      "median": 1.976,
+      "min": 1.807,
+      "max": 2.579
+     },
+     "taskMsPerS": {
+      "median": 28.62,
+      "min": 26.72,
+      "max": 38.2
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "scroll snapshot (200 wheel steps)": {
+    "v0.9.0-rc1 :on(scroll)": {
+     "scriptMsPerS": {
+      "median": 5.301,
+      "min": 4.884,
+      "max": 6.922
+     },
+     "taskMsPerS": {
+      "median": 25.04,
+      "min": 22.72,
+      "max": 33.42
+     }
+    },
+    "v0.9.0 :on(scroll)": {
+     "scriptMsPerS": {
+      "median": 5.931,
+      "min": 5.236,
+      "max": 7.039
+     },
+     "taskMsPerS": {
+      "median": 29,
+      "min": 23.73,
+      "max": 33.98
+     }
+    },
+    "plain JavaScript": {
+     "scriptMsPerS": {
+      "median": 1.123,
+      "min": 1.074,
+      "max": 1.294
+     },
+     "taskMsPerS": {
+      "median": 14.6,
+      "min": 13.84,
+      "max": 17.53
+     }
+    }
+   }
+  },
+  "render": {
+   "click → first observation (ms, median of 40 clicks)": {
+    "v0.8.1 (0.8 syntax)": {
+     "styleMs": {
+      "median": 15.6,
+      "min": 15.4,
+      "max": 15.9
+     },
+     "textMs": {
+      "median": 0.4,
+      "min": 0.3,
+      "max": 0.5
+     },
+     "attrMs": {
+      "median": 0.4,
+      "min": 0.3,
+      "max": 0.5
+     },
+     "focusMs": {
+      "median": 0.5,
+      "min": 0.4,
+      "max": 0.6
+     },
+     "focusCount": {
+      "median": 20,
+      "min": 20,
+      "max": 20
+     }
+    },
+    "v0.9.0-rc1 (0.9 syntax)": {
+     "styleMs": {
+      "median": 15.5,
+      "min": 14.7,
+      "max": 15.8
+     },
+     "textMs": {
+      "median": 0.4,
+      "min": 0.3,
+      "max": 0.5
+     },
+     "attrMs": {
+      "median": 0.4,
+      "min": 0.3,
+      "max": 0.5
+     },
+     "focusMs": {
+      "median": 0.5,
+      "min": 0.4,
+      "max": 0.6
+     },
+     "focusCount": {
+      "median": 20,
+      "min": 20,
+      "max": 20
+     }
+    },
+    "v0.9.0 (0.8 syntax)": {
+     "styleMs": {
+      "median": 15.8,
+      "min": 15.4,
+      "max": 16
+     },
+     "textMs": {
+      "median": 0.3,
+      "min": 0.2,
+      "max": 0.4
+     },
+     "attrMs": {
+      "median": 0.3,
+      "min": 0.2,
+      "max": 0.4
+     },
+     "focusMs": {
+      "median": 0.4,
+      "min": 0.3,
+      "max": 0.5
+     },
+     "focusCount": {
+      "median": 20,
+      "min": 20,
+      "max": 20
+     }
+    },
+    "v0.9.0 (0.9 syntax)": {
+     "styleMs": {
+      "median": 15.7,
+      "min": 15,
+      "max": 15.9
+     },
+     "textMs": {
+      "median": 0.3,
+      "min": 0.2,
+      "max": 0.6
+     },
+     "attrMs": {
+      "median": 0.3,
+      "min": 0.2,
+      "max": 0.6
+     },
+     "focusMs": {
+      "median": 0.5,
+      "min": 0.3,
+      "max": 0.8
+     },
+     "focusCount": {
+      "median": 20,
+      "min": 20,
+      "max": 20
+     }
+    }
+   }
+  },
+  "lifecycle": {
+   "100 × mount/unmount of 500 components": {
+    "v0.8.1 (0.8 syntax)": {
+     "retainedMB": {
+      "median": 0.456,
+      "min": 0.4407,
+      "max": 0.4563
+     },
+     "bindings": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "states": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    },
+    "v0.9.0-rc1 (0.9 syntax)": {
+     "retainedMB": {
+      "median": 0.445,
+      "min": 0.445,
+      "max": 0.445
+     },
+     "bindings": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "states": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    },
+    "v0.9.0 (0.9 syntax)": {
+     "retainedMB": {
+      "median": 0.4444,
+      "min": 0.4444,
+      "max": 0.4444
+     },
+     "bindings": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "states": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "100 drags (50 persisted draggables)": {
+    "v0.9.0-rc1": {
+     "retainedMBAfter100Drags": {
+      "median": 0.5206,
+      "min": 0.5206,
+      "max": 0.522
+     }
+    },
+    "v0.9.0": {
+     "retainedMBAfter100Drags": {
+      "median": 0.5211,
+      "min": 0.5208,
+      "max": 0.5214
+     }
+    }
+   },
+   "100 stylesheet replacements (200 components)": {
+    "v0.8.1 (0.8 syntax)": {
+     "retainedMB": {
+      "median": 0.4823,
+      "min": 0.4823,
+      "max": 0.4823
+     },
+     "sheets": {
+      "median": 1,
+      "min": 1,
+      "max": 1
+     },
+     "bindings": {
+      "median": 400,
+      "min": 400,
+      "max": 400
+     }
+    },
+    "v0.9.0-rc1 (0.9 syntax)": {
+     "retainedMB": {
+      "median": 0.6073,
+      "min": 0.6054,
+      "max": 0.6073
+     },
+     "sheets": {
+      "median": 1,
+      "min": 1,
+      "max": 1
+     },
+     "bindings": {
+      "median": 800,
+      "min": 800,
+      "max": 800
+     }
+    },
+    "v0.9.0 (0.9 syntax)": {
+     "retainedMB": {
+      "median": 0.6181,
+      "min": 0.6181,
+      "max": 0.6181
+     },
+     "sheets": {
+      "median": 1,
+      "min": 1,
+      "max": 1
+     },
+     "bindings": {
+      "median": 800,
+      "min": 800,
+      "max": 800
+     }
+    }
+   }
+  }
+ },
+ "sections": {
+  "startup": {
+   "date": "2026-10-21T22:53:43.970Z",
+   "runs": 5
+  },
+  "click": {
+   "date": "2026-10-21T22:53:43.970Z",
+   "runs": 5
+  },
+  "pointer": {
+   "date": "2026-10-21T22:53:43.970Z",
+   "runs": 5
+  },
+  "drag": {
+   "date": "2026-10-21T22:53:43.970Z",
+   "runs": 5
+  },
+  "idle": {
+   "date": "2026-10-21T22:53:43.970Z",
+   "runs": 5
+  },
+  "memory": {
+   "date": "2026-10-21T22:53:43.970Z",
+   "runs": 5
+  },
+  "live": {
+   "date": "2026-10-21T22:53:43.970Z",
+   "runs": 5
+  },
+  "compile": {
+   "date": "2026-10-21T22:53:43.970Z",
+   "runs": 5
+  },
+  "input": {
+   "date": "2026-10-21T22:53:43.970Z",
+   "runs": 5
+  },
+  "render": {
+   "date": "2026-10-21T22:53:43.970Z",
+   "runs": 5
+  },
+  "lifecycle": {
+   "date": "2026-10-21T22:53:43.970Z",
+   "runs": 5
+  }
+ }
+}

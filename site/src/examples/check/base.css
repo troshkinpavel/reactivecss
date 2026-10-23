@@ -1,0 +1,6 @@
+.tasks { width: 100%; max-width: 280px; display: flex; flex-direction: column; gap: 4px; }
+.task { display: flex; align-items: center; gap: 12px; min-height: 44px; font-size: 15.5px; cursor: pointer; }
+.task input { width: 18px; height: 18px; margin: 0; accent-color: oklch(0.21 0.01 80); }
+.task span { display: inline-block; transform-origin: left center; transition: opacity 200ms; }
+@keyframes pop { 50% { scale: 1.06; } }
+@keyframes settle { 50% { translate: 3px 0; } }

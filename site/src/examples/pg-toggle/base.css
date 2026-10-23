@@ -1,0 +1,15 @@
+.switch { position: relative; width: 76px; height: 42px; padding: 0; border: none; border-radius: 42px; background: #d9d5cf; }
+.switch::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.18);
+  /* The knob follows the state too: --on is 1 or 0. */
+  translate: calc(var(--on) * 34px) 0;
+  transition: translate 200ms cubic-bezier(0.2, 0, 0, 1);
+}

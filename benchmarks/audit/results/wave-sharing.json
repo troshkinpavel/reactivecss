@@ -1,0 +1,69 @@
+{
+ "date": "2026-10-18T18:01:34.317Z",
+ "browser": "156.0.8078.4",
+ "rows": [
+  {
+   "n": 100,
+   "mode": "per-element",
+   "styleMsPerS": 82.8,
+   "taskMsPerS": 128.9,
+   "recalcsPerS": 60
+  },
+  {
+   "n": 100,
+   "mode": "ancestor",
+   "styleMsPerS": 23.8,
+   "taskMsPerS": 54.9,
+   "recalcsPerS": 60
+  },
+  {
+   "n": 100,
+   "mode": "keyframes",
+   "styleMsPerS": 0,
+   "taskMsPerS": 0.6,
+   "recalcsPerS": 0
+  },
+  {
+   "n": 1000,
+   "mode": "per-element",
+   "styleMsPerS": 163.3,
+   "taskMsPerS": 260.8,
+   "recalcsPerS": 60
+  },
+  {
+   "n": 1000,
+   "mode": "ancestor",
+   "styleMsPerS": 100.9,
+   "taskMsPerS": 205.4,
+   "recalcsPerS": 60
+  },
+  {
+   "n": 1000,
+   "mode": "keyframes",
+   "styleMsPerS": 0,
+   "taskMsPerS": 0.6,
+   "recalcsPerS": 0
+  },
+  {
+   "n": 10000,
+   "mode": "per-element",
+   "styleMsPerS": 538,
+   "taskMsPerS": 1004.7,
+   "recalcsPerS": 30.2
+  },
+  {
+   "n": 10000,
+   "mode": "ancestor",
+   "styleMsPerS": 256.5,
+   "taskMsPerS": 520.7,
+   "recalcsPerS": 60
+  },
+  {
+   "n": 10000,
+   "mode": "keyframes",
+   "styleMsPerS": 0,
+   "taskMsPerS": 0.2,
+   "recalcsPerS": 0
+  }
+ ]
+}

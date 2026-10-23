@@ -1,0 +1,25 @@
+---
+// A homepage code panel: the site's CSS highlighter, one row per line with a gutter, and an
+// optional live chip after a line. The chip's text is written by the Reactive CSS runtime
+// (`content: var(--x)` rules in public/home/home.css, keyed by its class).
+import { highlightCss } from '~/lib/code/css';
+
+interface Props {
+  code: string;
+  /** Zero-based line → [chip class, text before the runtime starts]. */
+  chips?: Record<number, [string, string]>;
+  class?: string;
+  label?: string;
+}
+const { code, chips = {}, class: cls = '', label } = Astro.props;
+const lines = highlightCss(code);
+---
+<div class={`hv-code ${cls}`} role="group" aria-label={label ?? 'CSS'}>
+  {lines.map((toks, i) => (
+    <div class="hv-ln">
+      <span class="hv-gut" aria-hidden="true">{i + 1}</span>
+      <span class="hv-src">{toks.length ? toks.map((t) => <span class={`t-${t.k}`}>{t.t}</span>) : ' '}</span>
+      {chips[i] && <span class={`hv-chip ${chips[i]![0]}`} aria-hidden="true">{chips[i]![1]}</span>}
+    </div>
+  ))}
+</div>

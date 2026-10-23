@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shopping cart — Reactive CSS example</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Shopping cart</h1>
+    <p class="note">A local UI example: no checkout, no network requests, nothing is stored. Prices are whole US dollars.</p>
+
+    <section class="cart" aria-labelledby="cart-title">
+      <h2 id="cart-title">Your cart</h2>
+      <ul class="lines">
+        <li class="line l1">
+          <span class="name">Notebook</span> <span class="price">$12</span>
+          <span class="qty-controls" role="group" aria-label="Notebook quantity">
+            <button type="button" class="minus" aria-label="Remove one notebook">−</button>
+            <span class="qty">1</span>
+            <button type="button" class="plus" aria-label="Add one notebook">+</button>
+          </span>
+          <span class="sub">$<span class="n">12</span></span>
+          <button type="button" class="remove">Remove</button>
+        </li>
+        <li class="line l2">
+          <span class="name">Backpack</span> <span class="price">$30</span>
+          <span class="qty-controls" role="group" aria-label="Backpack quantity">
+            <button type="button" class="minus" aria-label="Remove one backpack">−</button>
+            <span class="qty">0</span>
+            <button type="button" class="plus" aria-label="Add one backpack">+</button>
+          </span>
+          <span class="sub">$<span class="n">0</span></span>
+          <button type="button" class="remove">Remove</button>
+        </li>
+        <li class="line l3">
+          <span class="name">Pen set</span> <span class="price">$8</span>
+          <span class="qty-controls" role="group" aria-label="Pen set quantity">
+            <button type="button" class="minus" aria-label="Remove one pen set">−</button>
+            <span class="qty">2</span>
+            <button type="button" class="plus" aria-label="Add one pen set">+</button>
+          </span>
+          <span class="sub">$<span class="n">16</span></span>
+          <button type="button" class="remove">Remove</button>
+        </li>
+      </ul>
+      <p class="totals" aria-live="polite">Items: <span class="items">3</span> · Total: $<span class="total">28</span></p>
+      <p class="empty">Your cart is empty.</p>
+      <button type="button" class="checkout">Checkout</button>
+      <button type="button" class="clear">Empty cart</button>
+    </section>
+  </main>
+</body>
+</html>

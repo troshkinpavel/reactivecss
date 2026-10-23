@@ -1,0 +1,2461 @@
+[
+  {
+    "id": "on",
+    "name": "on:",
+    "category": "Legacy",
+    "features": [
+      "declaration:on"
+    ],
+    "summary": "Connects triggers to the actions they run. A normal declaration: specificity, source order, @media and :hover decide which one applies. 0.8 syntax, still supported in 0.9.",
+    "signature": "on: <trigger>(<action>#)#;",
+    "params": [
+      {
+        "name": "trigger",
+        "type": "`click()`, `change()`, `input()`, `pointerenter()`, `pointerleave()`, `focus()`, `blur()`; since 0.5.1 `focusin()`, `focusout()`, `reset()`, `animationend()`, `animationcancel()`, `transitionend()`, `transitioncancel()`; and `key()`, `outside()`",
+        "required": "one or more",
+        "description": "Each trigger lists the actions to run. See [Triggers](/docs/reference/triggers/) and [Lifecycle triggers](/docs/reference/lifecycle-triggers/)."
+      },
+      {
+        "name": "action",
+        "type": "`set()`, `toggle()`, `increment()`, `decrement()`, `cycle()`, `prevent()` (experimental)",
+        "required": "one or more",
+        "description": "Applied in order. Each state action may end with an optional `closest(selector)` scope; `prevent()` takes no arguments."
+      }
+    ],
+    "returns": "No value. One delegated listener per event type runs the actions of the `on:` that currently applies to the element.",
+    "example": {
+      "id": "switch",
+      "size": "standard"
+    },
+    "behavior": [
+      "**0.9.** The new form is one [`:on()`](/docs/reference/on-rule/) rule per trigger: `.b:on(click) { --open: toggle(); }`. `on:` keeps working in 0.9 with its 0.8 behavior: its actions run one after another, so two `increment()` of one shared state in one event give +2, where two `:on()` mutations give +1. `on:` is still the way to target an explicit owner with [`closest()`](/docs/reference/closest/).",
+      "When the event fires, the computed `on:` of the candidate elements is read, so the cascade, `:hover` and `@media` are respected at that moment.",
+      "Only one `on:` value applies per element. Put every trigger for an element in one declaration.",
+      "A single unconditional `on:` rule is checked against its sheet’s `disabled` state and `media` before running.",
+      "Actions change state; one action, [`prevent()`](/docs/reference/prevent/), cancels the event's native default instead (experimental, `click()` and `key()` only)."
+    ],
+    "contexts": [
+      "Element rules in inline or same-origin stylesheets.",
+      "Ignored, with a warning, in cross-origin sheets, and in `<style>` when `trustInlineStyles` is `false`."
+    ],
+    "limits": [
+      "Can change only declared state cells: no DOM, network, storage or script.",
+      "Needs `CSS.registerProperty()` (Chrome 78+, Firefox 128+, Safari 16.4+).",
+      "State values cannot contain commas.",
+      "If styles are dirty when the event fires, reading the computed value forces a style recalculation."
+    ],
+    "related": [
+      "reference/prevent",
+      "reference/triggers",
+      "reference/set",
+      "reference/toggle",
+      "reference/on-value",
+      "events",
+      "reference/on-rule",
+      "migration"
+    ]
+  },
+  {
+    "id": "bind",
+    "name": "bind:",
+    "category": "Legacy",
+    "features": [
+      "declaration:bind"
+    ],
+    "summary": "Connects a native form control two-way with the nearest state of that name.",
+    "signature": "bind: <custom-property> closest(<selector>)?;",
+    "params": [
+      {
+        "name": "custom-property",
+        "type": "`<dashed-ident>`",
+        "required": "required",
+        "description": "A state declared on the control or an ancestor."
+      },
+      {
+        "name": "closest()",
+        "type": "`closest(<selector>)`",
+        "required": "optional",
+        "description": "Bind to the state owned by exactly this ancestor."
+      }
+    ],
+    "returns": "No value. The control writes the state on `input` or `change`, and setting the state updates the control.",
+    "example": {
+      "id": "form",
+      "size": "compact"
+    },
+    "behavior": [
+      "**0.9.** `bind:` is not deprecated. It is still the way to bind a control to a state owned by an ancestor, as a radio group does with `fieldset { --size: state(\"m\"); } input { bind: --size; }`. For a control bound to its own state, 0.9 adds [`state(v, bind(value))`](/docs/reference/bind-state/).",
+      "State-first initialization, except that a control already differing from its HTML default (autofill, restored state) wins.",
+      "Typing never rewrites the field; caret and selection stay. IME composition updates at the end.",
+      "Form reset restores the state’s CSS initial value.",
+      "Strings read as quoted CSS strings, booleans as `1`/`0`."
+    ],
+    "contexts": [
+      "Text-like inputs and `<textarea>` (string), number and range (number or dimension), checkbox (boolean), radio groups and single `<select>` (string, keyword or number).",
+      "Unconditional rules only."
+    ],
+    "limits": [
+      "Never binds password, one-time-code or payment fields.",
+      "Multiple selects, file, date and color inputs are not supported yet.",
+      "Changes only the bound control’s own value."
+    ],
+    "related": [
+      "reference/state",
+      "reference/closest",
+      "binding",
+      "reference/bind-state"
+    ],
+    "demos": []
+  },
+  {
+    "id": "text",
+    "name": "text:",
+    "category": "Legacy",
+    "features": [
+      "declaration:text"
+    ],
+    "summary": "Writes one reactive value into the element’s own DOM text: a real text node, never HTML.",
+    "signature": "text: <string> | <number> | <keyword> | var(<state>) | previous(<state>) | direction(<state>) | when(…);",
+    "params": [
+      {
+        "name": "value",
+        "type": "one scalar",
+        "required": "required",
+        "description": "A literal, `var()`, `previous()`, `direction()` or `when()` (a native `if()` also works). Other functions are compile errors."
+      }
+    ],
+    "returns": "No value. The element’s text node is set with `Text.data`: selectable, copyable and in the accessibility tree.",
+    "example": {
+      "label": "score.css",
+      "code": "@property --delta { syntax: \"<integer>\"; inherits: true; initial-value: 0; }\n\n.score { --points: state(0); --delta: calc(var(--points) - previous(--points)); }\n.score .current { text: var(--points); }\n.score .prev    { text: previous(--points); }\n.score .delta   { text: var(--delta); }\n.score:when(direction(--points) > 0) .direction { text: \"▲ up\"; }"
+    },
+    "behavior": [
+      "**0.9.** The new form is [`content`](/docs/reference/content/): `.v { content: var(--n); }`, under its eligibility rules. `text:` keeps working in 0.9, and it is still the way to write a literal string as DOM text.",
+      "The cascade picks the winning `text:` declaration per element, like any property (it compiles to a registered, non-inherited `--rcss-text`).",
+      "When no declaration applies (rule unmatched, condition false, sheet removed), the original HTML text is restored, so the markup is the fallback before the script runs.",
+      "If something else changes the text or the children, the binding yields with a diagnostic and never writes again.",
+      "Updated in the late phase of the frame, after state, `previous()` and `:when()` are current.",
+      "For numbers from math, register the property with `@property` so the browser computes it, then read it with `var()`."
+    ],
+    "contexts": [
+      "Elements that are empty or hold exactly one text node. Elements with child elements are never touched.",
+      "Trusted stylesheets only, like `on:` and `bind:`."
+    ],
+    "limits": [
+      "One value per element: not a template language.",
+      "A value that is not one scalar (two strings, an unresolved `calc()`) is reported and not shown.",
+      "Never parses HTML."
+    ],
+    "related": [
+      "reference/attr-declaration",
+      "reference/state",
+      "reference/previous",
+      "reference/direction",
+      "reference/content"
+    ]
+  },
+  {
+    "id": "attr-declaration",
+    "name": "attr:",
+    "category": "Legacy",
+    "features": [
+      "declaration:attr"
+    ],
+    "summary": "Derives one allowlisted HTML attribute of the matched element, such as `disabled` or `aria-expanded`, from a reactive value.",
+    "signature": "attr: <attribute> <value>;",
+    "params": [
+      {
+        "name": "attribute",
+        "type": "allowlisted name",
+        "required": "required",
+        "description": "`aria-expanded`, `aria-pressed`, `aria-selected`, `aria-current`, `aria-disabled` (0.6), `aria-hidden`, `aria-busy`, `aria-invalid`, `aria-checked` (`true`, `false` or `mixed`), `aria-valuenow`, `aria-label` and `aria-valuetext` (0.9), `disabled`, `hidden`, `required`, `tabindex` with `0`/`-1` (0.6), or `data-*`."
+      },
+      {
+        "name": "value",
+        "type": "one scalar",
+        "required": "required",
+        "description": "A literal, `var()`, `previous()`, `direction()` or `when()`. `when(condition)` without branches gives `true`/`false`."
+      }
+    ],
+    "returns": "No value. The attribute is written in the same task as the action that changed the state, so a derived `disabled` stops the next click.",
+    "example": {
+      "label": "stepper.css",
+      "code": ".stepper { --qty: state(1); }\n.stepper .plus  { on: click(increment(--qty)); attr: disabled when(--qty >= 10); }\n.stepper .minus { on: click(decrement(--qty)); attr: disabled when(--qty <= 1); }\n.menu > button  { attr: aria-expanded var(--open); }"
+    },
+    "behavior": [
+      "**0.9.** The new form is [`--attr-*`](/docs/reference/attr-property/): `--attr-aria-expanded: var(--open)`, with the same semantics and runtime. `attr:` keeps working in 0.9.",
+      "Each attribute is its own property: `attr:` declarations for different attributes combine, and the cascade picks the winner for each attribute separately.",
+      "Boolean attributes are present or removed (never `disabled=\"false\"`); ARIA states are written as `\"true\"`/`\"false\"`; `aria-current` takes its tokens; `data-*` is written as text.",
+      "With no winning declaration the attribute returns to its original value. If something else changed it, the binding yields.",
+      "`disabled` and `required` are only written where HTML gives them a meaning (warning otherwise)."
+    ],
+    "contexts": [
+      "Any element a rule matches; the value usually reads state owned by an ancestor.",
+      "Trusted stylesheets only."
+    ],
+    "limits": [
+      "Handlers, URLs, `style`, `class`, `id`, `name`, `value`, `role` and ID references such as `aria-describedby` are rejected.",
+      "A `state(…, bind())` of the same attribute on the same element wins.",
+      "`aria-disabled` does not block events: pair it with a conditional `on:` rule.",
+      "Setting attributes does not make a component accessible by itself."
+    ],
+    "related": [
+      "reference/state",
+      "reference/text",
+      "reference/focus-declaration",
+      "reference/when",
+      "reference/attr-property"
+    ]
+  },
+  {
+    "id": "bind-state",
+    "name": "bind() in state()",
+    "category": "DOM Integration",
+    "features": [
+      "declaration:bind()"
+    ],
+    "readiness": "stable",
+    "summary": "`state(v, bind(value))` and `state(v, bind(checked))` keep a form control and its own state equal in both directions. `bind(<attribute>)` reflects a state into one of its owner’s attributes.",
+    "signature": "--<state>: state(<initial>, bind(value | checked));\n--<state>: state(<initial>, bind(<attribute>));",
+    "params": [
+      {
+        "name": "bind(value)",
+        "type": "two-way",
+        "required": "one of",
+        "description": "Text-like inputs and `<textarea>` hold a string; number and range inputs a number or dimension; a single `<select>` a string, keyword or number."
+      },
+      {
+        "name": "bind(checked)",
+        "type": "two-way",
+        "required": "one of",
+        "description": "A checkbox, with a boolean state."
+      },
+      {
+        "name": "bind(<attribute>)",
+        "type": "one-way, state → attribute",
+        "required": "one of",
+        "description": "`aria-expanded`, `aria-pressed`, `aria-selected`, `aria-disabled`, `aria-hidden`, `aria-busy`, `aria-invalid`, `aria-checked`, `aria-current`, `aria-valuenow`, `aria-label`, `aria-valuetext`, `disabled`, `hidden`, `required`, `tabindex` (`0` or `-1`) or `data-*`."
+      }
+    ],
+    "returns": "No value. With `value` or `checked`, the control writes the state on `input` or `change`, and a mutation of the state updates the control. With an attribute, every change of the state is written to the owner’s attribute.",
+    "example": {
+      "id": "docs-form",
+      "size": "standard"
+    },
+    "behavior": [
+      "**Release status.** The 0.9.0 release recommendation (hardening report, section H) lists `bind(value)` and `bind(checked)` in `state()` as stable, so this page does not mark it experimental. The runtime's `describe()` still reports `experimental` until the registry is updated. `bind(<attribute>)` has been experimental since 0.5.2.",
+      "**The control is the owner.** The state belongs to the control the rule matches. Only that control and its descendants can read it: a label, an output or any other sibling cannot. For a state that other elements read, declare it on a shared ancestor and copy the value up at event time with `input:on(input) { --q: set(event(value)); }`, as the example does.",
+      "**Initialization.** A valid [persisted](/docs/reference/persist/) value first; otherwise the control’s value if the user or the browser already edited it (autofill, a restored form); otherwise the initial value. The result is then written to the control.",
+      "Typing never rewrites the field, so the caret and the selection stay. Form reset restores the initial value.",
+      "**bind(<attribute>)** reflects the state into the owner’s attribute with HTML semantics: boolean attributes present or removed (never `disabled=\"false\"`), ARIA states as `\"true\"` or `\"false\"`, `data-*` as text. A valid attribute value in the HTML initializes the state once, unless a persisted value exists. Later changes made by scripts are not read back.",
+      "The modifiers come in either order, each at most once: `state(\"\", bind(value), persist(\"name\"))` equals `state(\"\", persist(\"name\"), bind(value))`. A state has one `bind()`."
+    ],
+    "contexts": [
+      "Unconditional rules only: no `@media`, `@supports`, `@container`, `:hover`, `:focus` or `:when()`, because a binding lasts as long as the element matches.",
+      "Trusted stylesheets only."
+    ],
+    "limits": [
+      "`state(bind(aria-expanded))`, a `bind()` without an initial value, is rejected: write `state(false, bind(aria-expanded))`.",
+      "`bind(checked)` needs a boolean state; `bind(value)` needs a string or number state.",
+      "Never binds password, one-time-code or payment fields.",
+      "Multiple selects, file, date and color inputs are not supported."
+    ],
+    "related": [
+      "reference/state",
+      "reference/persist",
+      "reference/event",
+      "reference/attr-property",
+      "binding"
+    ],
+    "usage": [
+      {
+        "title": "Reflect a toggle into aria-pressed",
+        "verdict": "correct",
+        "label": "toggle.css",
+        "code": ".toggle { --on: state(false, bind(aria-pressed)); }\n.toggle:on(click) { --on: toggle(); }\n.toggle .label { content: when(--on, \"On\", \"Off\"); }",
+        "note": "The button’s `aria-pressed` follows the state. If the HTML says `aria-pressed=\"true\"`, the state starts as true."
+      },
+      {
+        "title": "A sibling reading the field’s own state",
+        "verdict": "incorrect",
+        "label": "field.css",
+        "code": ".field input { --q: state(\"\", bind(value)); }\n.field output { content: var(--q); }",
+        "note": "This compiles, but the `output` never sees `--q`: the state is owned by the input, and the output is not inside it. Declare `--q: state(\"\")` on `.field` and use `.field input:on(input) { --q: set(event(value)); }`."
+      },
+      {
+        "title": "bind() as the initial value",
+        "verdict": "incorrect",
+        "label": "menu.css",
+        "code": ".menu > button { --open: state(bind(aria-expanded)); }",
+        "note": "A compile error: the state needs an initial value for the case where the attribute is missing or invalid.",
+        "diagnostic": "state() needs an initial value first"
+      }
+    ],
+    "demos": [
+      "form-mirror"
+    ]
+  },
+  {
+    "id": "attr-property",
+    "name": "--attr-*",
+    "category": "DOM Integration",
+    "features": [
+      "declaration:--attr-*"
+    ],
+    "summary": "`--attr-<name>: <value>` writes one allowlisted HTML attribute of the matched element from a reactive value: ARIA states such as `aria-expanded`, `aria-checked` or `aria-disabled`, `disabled`, `hidden`, `tabindex` or `data-*`. The only custom-property namespace with DOM semantics.",
+    "signature": "--attr-<attribute>: <value>;",
+    "params": [
+      {
+        "name": "attribute",
+        "type": "lower-case allowlisted name",
+        "required": "required",
+        "description": "`aria-expanded`, `aria-pressed`, `aria-selected`, `aria-disabled`, `aria-hidden`, `aria-busy`, `aria-invalid`, `aria-checked`, `aria-current`, `aria-valuenow`, `aria-label`, `aria-valuetext`, `disabled`, `hidden`, `required`, `tabindex` (`0` or `-1`) or `data-*`."
+      },
+      {
+        "name": "value",
+        "type": "one scalar",
+        "required": "required",
+        "description": "A literal, `var()`, `previous()`, `direction()` or `when()`; a native `if()` also works. `when(condition)` without branches gives `true` or `false`."
+      }
+    ],
+    "returns": "No value. The attribute is written in the same task as the action that changed the state, so a derived `disabled` is in place before the next click.",
+    "example": {
+      "id": "docs-attr",
+      "size": "compact"
+    },
+    "behavior": [
+      "Experimental as a namespace; the attribute semantics have been tested since 0.5.3.",
+      "**Reserved namespace.** Every custom property named `--attr-*` is claimed by Reactive CSS. An allowlisted name writes that attribute; any other name gives a diagnostic and stays a plain custom property. Without the prefix, names such as `--disabled` or `--aria-expanded` have no DOM effect. A state cannot be named `--attr-*`.",
+      "**Values.** HTML boolean attributes (`disabled`, `hidden`, `required`): `true` sets the attribute and `false` removes it; a boolean state’s `1` and `0` work too. ARIA booleans are written as `\"true\"` or `\"false\"`; `aria-checked` also takes `mixed`; `aria-current` takes `page`, `step`, `location`, `date`, `time`, `true` or `false`; `aria-valuenow` a number; `aria-label`, `aria-valuetext` and `data-*` any text. Other values are reported and not written.",
+      "**Restore.** With no applicable declaration, or a missing or empty winning value, the attribute returns to what it was before the first write. If something else changed it in the meantime, the binding yields and writes no more.",
+      "**One property per attribute.** Declarations for different attributes combine, and the cascade picks the winner for each attribute separately.",
+      "**No loops.** Attributes written this way never re-match reactive rules, and attributes never feed state.",
+      "`disabled` and `required` are written only where HTML gives them a meaning (a warning otherwise)."
+    ],
+    "contexts": [
+      "Style rules in trusted stylesheets, on any element a rule matches. The value usually reads state owned by an ancestor.",
+      "Not inside `:on()` rules: an attribute follows a state, it does not happen at an event."
+    ],
+    "limits": [
+      "**Compatibility warning.** A stylesheet that already uses `--attr-*` custom properties for something else now writes attributes when the name is allowlisted: `--attr-hidden: 1` hides the element, `--attr-data-x` writes `data-x`. Rename such properties before upgrading. This is the one change in 0.9 that can alter a working 0.8 page; see [Migration](/docs/migration/).",
+      "Never writable: event handlers (`on*`), URL attributes (`href`, `src`, `action`, `formaction`, `srcset`, `xlink:href`), `style`, `id`, `class`, `name` and `value`, as well as `role` and ID references such as `aria-describedby`.",
+      "The suffix must be lower case. Custom property names are case-sensitive, so `--attr-aria-Expanded` is a diagnostic and nothing is written.",
+      "A `state(…, bind(<attribute>))` on the same element owns that attribute; an `--attr-*` declaration for it is ignored with a diagnostic.",
+      "Setting attributes does not make a component accessible by itself."
+    ],
+    "related": [
+      "reference/bind-state",
+      "reference/content",
+      "reference/when",
+      "binding",
+      "migration"
+    ],
+    "usage": [
+      {
+        "title": "Disable a button at a limit",
+        "verdict": "correct",
+        "label": "counter.css",
+        "code": ".counter { --count: state(0); }\n.counter .dec:on(click) { --count: decrement(1); }\n.counter .dec { --attr-disabled: when(--count <= 0); }",
+        "note": "The `disabled` attribute is present while the count is 0 or less and removed otherwise, so the button cannot take the count below zero."
+      },
+      {
+        "title": "A state name as a data attribute",
+        "verdict": "correct",
+        "label": "panel.css",
+        "code": ".panel {\n  --open: state(false);\n  --attr-data-state: when(--open, \"open\", \"closed\");\n}",
+        "note": "Writes `data-state=\"open\"` or `data-state=\"closed\"` for other CSS or scripts to read."
+      },
+      {
+        "title": "A URL attribute",
+        "verdict": "incorrect",
+        "label": "link.css",
+        "code": ".link { --attr-href: \"/next\"; }",
+        "note": "URL attributes are never writable, so nothing is written and the declaration stays a plain custom property.",
+        "diagnostic": "--attr-href: only"
+      },
+      {
+        "title": "An upper-case suffix",
+        "verdict": "incorrect",
+        "label": "menu.css",
+        "code": ".menu { --open: state(false); }\n.menu > button { --attr-aria-Expanded: var(--open); }",
+        "note": "Custom property names are case-sensitive, attribute names are not. Write `--attr-aria-expanded`.",
+        "diagnostic": "write the attribute in lower case"
+      }
+    ],
+    "demos": [
+      "attribute-sync",
+      "state-toggle"
+    ]
+  },
+  {
+    "id": "content",
+    "name": "content (DOM text)",
+    "category": "DOM Integration",
+    "features": [
+      "declaration:content"
+    ],
+    "summary": "On elements, a `content` value that reads state also becomes the element’s DOM text: a real text node, never HTML. The native declaration is kept as written.",
+    "signature": "content: var(<state>) | when(<condition>, <a>, <b>) | previous(<state>) | direction(<state>);",
+    "params": [
+      {
+        "name": "value",
+        "type": "one scalar that reads state",
+        "required": "required",
+        "description": "Must contain `var()`, `when()`, `previous()` or `direction()`, and no `url()`, `image-set()`, gradient or `attr()`. Other values stay plain CSS."
+      }
+    ],
+    "returns": "No value. The element’s text node is set with `Text.data`: selectable, copyable and in the accessibility tree as ordinary text.",
+    "example": {
+      "label": "cart.css",
+      "code": "/* <span class=\"count\">0</span> <span class=\"unit\">items</span> */\n.cart { --items: state(0); }\n.cart .add:on(click) { --items: increment(1); }\n.cart .count { content: var(--items); }\n.cart .unit { content: when(--items == 1, \"item\", \"items\"); }"
+    },
+    "behavior": [
+      "Experimental.",
+      "**When it applies.** All of these must hold: the rule targets elements (no selector in its list has a pseudo-element); the value reads state through `var()`, `when()`, `previous()` or `direction()`; it contains no image or `attr()`; and the stylesheet is trusted. Every other `content` declaration is plain CSS and is left alone: `::before { content: var(--n) }`, `content: \"x\"` and `content: url(a.png)` keep their native meaning.",
+      "**The native declaration is kept.** Reactive CSS adds a text binding next to it. On elements, strings and numbers in `content` render nothing in Chromium and WebKit, so what you see is the DOM text.",
+      "**Text only.** It writes one Text node, never markup, and only into an element that is empty or holds exactly one text node. An element with child elements is never emptied; a diagnostic is given instead.",
+      "**Yields and restores.** If something else changes the text, the binding yields. When no declaration applies, the original HTML text comes back, so the markup is the fallback before the script runs.",
+      "**Accessibility.** Unlike generated content in `::before` or `::after`, the text is part of the document: assistive technology reads it as ordinary text, and it can be selected, copied and found with in-page search.",
+      "A value that resolves to an image at run time (a `var()` holding `url()`) is left to the browser."
+    ],
+    "contexts": [
+      "Elements that are empty or hold one text node.",
+      "Trusted stylesheets only."
+    ],
+    "limits": [
+      "Not a template language and not a general replacement for `textContent`: one value per element.",
+      "Firefox is not verified: how it renders `content` strings on elements has not been tested."
+    ],
+    "related": [
+      "reference/attr-property",
+      "reference/state",
+      "reference/previous",
+      "binding"
+    ],
+    "usage": [
+      {
+        "title": "Generated content stays native",
+        "verdict": "correct",
+        "label": "badge.css",
+        "code": ".cart { --items: state(0); }\n.cart .badge::after { content: var(--items); }",
+        "note": "A pseudo-element is not DOM text, so this is native generated content: it shows a number from a state but is not part of the document."
+      },
+      {
+        "title": "An element with child elements",
+        "verdict": "incorrect",
+        "label": "card.css",
+        "code": "/* <div class=\"card\"><h2>…</h2><p>…</p></div> */\n.card { --title: state(\"Hello\"); }\n.card { content: var(--title); }",
+        "note": "This compiles, but the binding never empties an element with children: at run time it gives a diagnostic and leaves the markup. Target the `h2` instead."
+      }
+    ],
+    "demos": [
+      "counter",
+      "form-mirror"
+    ]
+  },
+  {
+    "id": "focus-declaration",
+    "name": "focus:",
+    "category": "DOM Integration",
+    "features": [
+      "declaration:focus"
+    ],
+    "summary": "Moves focus to the matched element when its value goes from false to true because of a user action. In 0.9 this declaration is the focus request: `focus: when(--open)`.",
+    "signature": "focus: when(<condition>) | var(<boolean state>) | true | false;",
+    "params": [
+      {
+        "name": "value",
+        "type": "boolean",
+        "required": "required",
+        "description": "Usually `when(<condition>)`, which gives `true` or `false`. Or `false` in a base rule and `true` in a rule for the active item."
+      }
+    ],
+    "returns": "No value. Focus moves once per false → true transition; a value that stays true never refocuses.",
+    "example": {
+      "id": "docs-focus",
+      "size": "compact"
+    },
+    "behavior": [
+      "**0.9.** There is no functional `:focus(…)`: `.field:focus(when(--open)) {}` is rejected with a diagnostic, so write `focus: when(--open)` in the rule. Native `:focus`, `:focus-visible` and `:focus-within` are untouched.",
+      "Only state changes made during a trusted `click`, `keydown`, `input` or `change` arm a transition, and since 0.9 also `pointerup` and `submit`, which covers `:on(pointerup)`, `:on(submit)` and the end of a drag.",
+      "Never on page load, insertion, scripts, timers, form reset, focus events, pointer enter/leave or `outside()`.",
+      "Never overrides focus the user moved since the event, focus already inside the target, or an open `<dialog>` or popover that does not contain the target.",
+      "Resolved after the state’s CSS and the `--attr-*` and `content` writes; the first eligible target in document order wins.",
+      "After the `keydown` of Enter or a printable key, focus moves once the key press has finished (next frame), so Enter in a field never also clicks the button that receives focus."
+    ],
+    "contexts": [
+      "Targets must be rendered, not disabled or `inert`, and focusable. A non-focusable target is reported; the library never adds `tabindex`.",
+      "Trusted stylesheets only.",
+      "In a [custom bundle](/docs/custom-bundles/): the `focus` feature, which adds `events`. `focus: when(…)` also needs `conditions` for `when()`, which the analyzer adds; `focus: var(--open)`, `true` and `false` do not."
+    ],
+    "limits": [
+      "Not verified with screen readers.",
+      "No `focus(selector)` action.",
+      "Several events before one frame are judged by the final value only."
+    ],
+    "related": [
+      "reference/nth-var",
+      "reference/blur",
+      "focus"
+    ],
+    "usage": [
+      {
+        "title": "Focus the heading of the active step",
+        "verdict": "correct",
+        "label": "wizard.css",
+        "code": "/* <h2 tabindex=\"-1\"> in the HTML */\n.wizard { --step: state(1); }\n.wizard .panel > h2 { focus: false; }\n.wizard .panel:nth-var(--step) > h2 { focus: true; }",
+        "note": "The `true` declaration moves from one heading to the next as `--step` changes, and each change is a false → true transition for the new heading. The library never adds `tabindex`, so the HTML provides it."
+      },
+      {
+        "title": "A functional :focus()",
+        "verdict": "incorrect",
+        "label": "dialog.css",
+        "code": ".dialog { --open: state(false); }\n.dialog input:focus(when(--open)) {}",
+        "note": "Rejected: `:focus` is the native pseudo-class and takes no arguments. Write `.dialog input { focus: when(--open); }`.",
+        "diagnostic": ":focus() takes no arguments"
+      }
+    ],
+    "demos": [
+      "focus-blur",
+      "context-menu"
+    ]
+  },
+  {
+    "id": "state",
+    "name": "state()",
+    "category": "State",
+    "features": [
+      "function:state"
+    ],
+    "summary": "Makes each matching element the owner of an independent state with an initial value.",
+    "signature": "--name: state(<value> [, bind(…)] [, persist(…)]);",
+    "params": [
+      {
+        "name": "value",
+        "type": "`true` / `false`, `<number>`, `<dimension>`, keyword or color, `<string>`, `attr()` or `pick()`",
+        "required": "required",
+        "description": "The initial value. It also works without JavaScript, as the native `var()` fallback. `attr(name, fallback)` reads the owner’s attribute once; since 0.9 a non-string fallback, as in `state(attr(aria-expanded, false))`, parses the attribute as that type."
+      },
+      {
+        "name": "bind()",
+        "type": "`bind(value)`, `bind(checked)` or `bind(<attribute>)`",
+        "required": "optional",
+        "description": "`bind(value)` and `bind(checked)` (0.9) bind the owner, a form control, in both directions: see [bind() in state()](/docs/reference/bind-state/). `bind(<attribute>)` (experimental, 0.5.2) reflects the state into the owner’s attribute (`aria-expanded`, `aria-pressed`, `aria-selected`, `aria-current`, `aria-disabled`, `aria-hidden`, `aria-busy`, `aria-invalid`, `aria-checked`, `aria-valuenow`, `aria-label`, `aria-valuetext`, `disabled`, `hidden`, `required`, `tabindex`, `data-*`), which initializes it once."
+      },
+      {
+        "name": "persist()",
+        "type": "`persist(\"<key>\" [, local | session])`",
+        "required": "optional, experimental (0.9)",
+        "description": "Keeps the state across reloads: see [persist()](/docs/reference/persist/)."
+      }
+    ],
+    "returns": "The current state. Booleans read as `1`/`0` through `var()`, strings as quoted CSS strings.",
+    "example": {
+      "id": "counter",
+      "size": "standard"
+    },
+    "behavior": [
+      "Consumers use the nearest owner: the element itself, then its ancestors. Inner owners shadow outer ones.",
+      "Created when the element starts matching a `state()` rule, disposed when it stops matching or is removed.",
+      "Re-inserting an element starts over at the initial value. CSS recalculation never resets a state.",
+      "Generated properties are registered with `inherits: false`, so nested owners stay isolated.",
+      "The two modifiers, `bind()` and `persist()`, come in either order, each at most once: `state(\"\", persist(\"q\"), bind(value))`."
+    ],
+    "contexts": [
+      "Only as the whole value of a custom property."
+    ],
+    "limits": [
+      "Memory only unless it has [`persist()`](/docs/reference/persist/): it resets on reload and when the stylesheet is edited.",
+      "Existing states don’t pick up initial-value changes that come only from media queries.",
+      "If a non-state declaration of the same property wins the cascade, `var()` shows that value, while conditions and actions keep using the state."
+    ],
+    "related": [
+      "reference/set",
+      "reference/toggle",
+      "reference/when",
+      "state",
+      "reference/bind-state",
+      "reference/persist",
+      "reference/on-rule"
+    ],
+    "demos": [
+      "counter",
+      "conditional-state"
+    ]
+  },
+  {
+    "id": "persist",
+    "name": "persist()",
+    "category": "State",
+    "features": [
+      "declaration:persist"
+    ],
+    "summary": "Keeps a state across reloads, in localStorage or, for the tab’s session, in sessionStorage, under a key you choose.",
+    "signature": "--<state>: state(<initial>, persist(\"<key>\" [, local | session]));",
+    "params": [
+      {
+        "name": "key",
+        "type": "quoted `<string>`",
+        "required": "required",
+        "description": "1 to 64 characters from `A–Z`, `a–z`, `0–9`, `_`, `.`, `:` and `-`. Stored as `rcss:<key>`."
+      },
+      {
+        "name": "storage",
+        "type": "`local` or `session`",
+        "required": "optional",
+        "description": "Default `local` (localStorage). `session` uses sessionStorage."
+      }
+    ],
+    "returns": "No value. The state starts from its stored value, and later changes are stored.",
+    "example": {
+      "id": "docs-persist",
+      "size": "compact"
+    },
+    "behavior": [
+      "Experimental: storage policies such as Safari’s private mode and partitioned storage in iframes still need manual testing.",
+      "**In this site’s previews storage is unavailable**, because they run in sandboxed iframes. The example works but starts over on reload. Copy it into a page of your own to see the value kept.",
+      "**Initialization.** A valid stored value first; otherwise the DOM source of a `bind()` (a valid attribute, or a control the user or the browser already edited); otherwise the declared initial value. The result is then written to the bound attribute or control.",
+      "**Typed validation.** Values are stored as JSON, `{\"t\":type,\"v\":value,\"u\":unit}`. A stored value is used only if it fits the declared type, and keywords must be identifiers or `#hex` colors, so stored text can never become `url()` or extra declarations. Anything else is ignored, with one note.",
+      "**Coalesced writes.** At most one `setItem` per key every 250 ms, and the last value always wins. Pending writes are flushed when the page is hidden (`visibilitychange`) or left (`pagehide`). A drag that updates a persisted position writes about 4 times per second.",
+      "**Shared keys.** States with the same key and storage share one value in the page. With localStorage, other tabs of the same origin follow through the `storage` event; applying such a change never writes back.",
+      "**Failures.** Unavailable storage (sandboxed iframes, some privacy modes), quota errors and unreadable values give one note. The state keeps working, without persistence.",
+      "With `bind()`, in either order, each at most once: `state(\"\", bind(value), persist(\"name\"))`."
+    ],
+    "contexts": [
+      "A modifier of `state()`, wherever `state()` is allowed. A custom bundle needs the `persist` feature."
+    ],
+    "limits": [
+      "Kept per browser profile and origin. It never synchronizes across devices or browsers.",
+      "A state bound to a password, one-time-code or payment field is never persisted (one diagnostic).",
+      "The library never clears storage: a key stays after its rule is removed. Remove it with `localStorage.removeItem(\"rcss:<key>\")`.",
+      "Only declared states are stored. Nothing is read from the DOM on its own."
+    ],
+    "related": [
+      "reference/state",
+      "reference/bind-state",
+      "persistence"
+    ],
+    "usage": [
+      {
+        "title": "A counter kept for the tab’s session, shared by two widgets",
+        "verdict": "correct",
+        "label": "count.css",
+        "code": ".pc { --n: state(0, persist(\"visits\", session)); }\n.pc .inc:on(click) { --n: increment(1); }\n.pc .v { content: var(--n); }",
+        "note": "Every `.pc` on the page owns its own state, but they share the key, so a click in one updates the others."
+      },
+      {
+        "title": "A key with a space",
+        "verdict": "incorrect",
+        "label": "theme.css",
+        "code": ".prefs { --theme: state(light, persist(\"my theme\")); }",
+        "note": "A compile error: keys use letters, digits and `_ . : -` only.",
+        "diagnostic": "expected persist(\"key\") or persist(\"key\", local | session)"
+      }
+    ],
+    "demos": [
+      "persistent-preference"
+    ]
+  },
+  {
+    "id": "typed",
+    "name": "typed()",
+    "category": "State",
+    "features": [
+      "function:typed"
+    ],
+    "summary": "Registers a custom property with a type, so it animates and computes as that type.",
+    "signature": "--name: typed(<value>, \"<syntax>\"?);",
+    "params": [
+      {
+        "name": "value",
+        "type": "number, length, percentage, angle, time, resolution or color",
+        "required": "required",
+        "description": "The initial value. The syntax is inferred from it."
+      },
+      {
+        "name": "syntax",
+        "type": "`<string>`",
+        "required": "optional",
+        "description": "An explicit syntax such as `\"<length>\"`, as in `@property`."
+      }
+    ],
+    "returns": "The value. Under the hood it is `CSS.registerProperty({ syntax, inherits: true, initialValue })`.",
+    "example": {
+      "label": "angle.css",
+      "code": ".dial {\n  --angle: typed(0deg);\n  rotate: var(--angle);\n  transition: --angle 400ms;\n}\n\n.dial:hover {\n  --angle: 90deg;\n}"
+    },
+    "behavior": [
+      "Never overrides a native `@property` for the same name in a readable stylesheet.",
+      "Without `CSS.registerProperty`, the property stays a plain, unregistered custom property."
+    ],
+    "contexts": [
+      "Only as the whole value of a custom property."
+    ],
+    "limits": [
+      "Experimental.",
+      "Registrations are document-wide and permanent; the platform cannot remove them.",
+      "Native rules in cross-origin sheets can’t be seen, so a conflict there isn’t detected."
+    ],
+    "related": [
+      "reference/state",
+      "geometry"
+    ]
+  },
+  {
+    "id": "on-rule",
+    "name": ":on()",
+    "category": "Events",
+    "features": [
+      "rule:on"
+    ],
+    "readiness": "stable",
+    "summary": "An event rule: when the event happens on the matched element (or inside it, for bubbling events), the rule’s state mutations run. The cascade picks one winning mutation per state, per trigger and per element.",
+    "signature": "<selector>:on(<trigger> [, prevent()] [, stop()]) {\n  --<state>: set(<expr>) | toggle() | increment(<step>?) | decrement(<step>?) | cycle(<value>#);\n}",
+    "params": [
+      {
+        "name": "trigger",
+        "type": "an event name, `keydown(<key>)`, `keyup(<key>)`, `outside(click | pointerdown | focusin)` or `drag`",
+        "required": "required",
+        "description": "Events: `click`, `dblclick`, `contextmenu`, `pointerdown`, `pointerup`, `pointermove`, `pointerenter`, `pointerleave`, `pointercancel`, `mousedown`, `mouseup`, `mousemove`, `mouseenter`, `mouseleave`, `input`, `change`, `submit`, `reset`, `keydown`, `keyup`, `focus`, `blur`, `focusin`, `focusout`, `animationstart`, `animationend`, `animationcancel`, `transitionend`, `transitioncancel`, `scroll`, `scrollend` (where the browser has it) and `toggle`. An unknown name is a compile error that lists them. For `drag`, see [`:on(drag)`](/docs/reference/drag/)."
+      },
+      {
+        "name": "prevent()",
+        "type": "modifier",
+        "required": "optional",
+        "description": "Calls `preventDefault()` during dispatch. Only for cancelable triggers: `click`, `dblclick`, `contextmenu`, `mousedown`, `pointerdown`, `keydown`, `keyup`, `submit` and `drag`. With any other trigger, and with `outside()`, it is a compile error."
+      },
+      {
+        "name": "stop()",
+        "type": "modifier",
+        "required": "optional",
+        "description": "`:on()` rules on the element’s ancestors do not run for this event, and its native propagation stops at the element. A compile error with `outside()` and `drag`."
+      },
+      {
+        "name": "mutations",
+        "type": "`--<state>: <action>`",
+        "required": "zero or more",
+        "description": "The custom property on the left names the state; the action is [`set()`](/docs/reference/set/), [`toggle()`](/docs/reference/toggle/), [`increment()`](/docs/reference/increment/), [`decrement()`](/docs/reference/decrement/) or [`cycle()`](/docs/reference/cycle/), optionally with `!important`. A rule with modifiers and no declarations is valid."
+      }
+    ],
+    "returns": "No value. On each event, the winning mutations of every element on the event path change the nearest owner of each named state.",
+    "example": {
+      "id": "docs-modifiers",
+      "size": "standard"
+    },
+    "behavior": [
+      "**Release status.** The 0.9.0 release recommendation (hardening report, section H) lists `:on()` and its mutations as stable, so this page does not mark it experimental. The runtime's `describe()` still reports `experimental` until the registry is updated.",
+      "**Bubbling or target only.** For bubbling events (`click`, `input`, `change`, `submit`, `reset`, `keydown`, `keyup`, `focusin`, `focusout` and the `pointer*` and `mouse*` events except enter and leave), rules run on the target and its ancestors, innermost first. `pointerenter`, `pointerleave`, `mouseenter`, `mouseleave`, `focus`, `blur`, `scroll`, `scrollend`, `toggle` and the animation and transition events run on the target only: a child’s animation does not trigger its parent.",
+      "**Keys.** `keydown(Escape)` and `keyup(ctrl+k)` take a key name with optional modifiers, which must match exactly. Keyboard events follow the focus path. A bare `:on(keydown)` runs for every key; read the key with [`event(key)`](/docs/reference/event/).",
+      "**Outside.** `outside(click)`, `outside(pointerdown)` and `outside(focusin)` run on matched elements that the event happened outside of, such as an open menu.",
+      "**The state on the left.** `--count: increment(1)` changes the nearest `--count` owner: the matched element itself, else its closest ancestor with `--count: state(…)`. Without an owner nothing changes and one diagnostic is given. There is no `closest()` in `:on()`: give the state to the element whose rules should change it, or to an ancestor of both.",
+      "**One winner per state, per trigger, per element.** With `.button:on(click) { --count: increment(1) }` and `.primary.button:on(click) { --count: increment(2) }`, a click on a `.primary.button` adds 2, not 3: both rules fill the same slot, and the browser’s cascade (origin, `!important`, layers, specificity, then order) picks the winner. A plain `.button` still adds 1. Different states never conflict: a rule for `--a` and another rule for `--b` on the same element both run.",
+      "**Conditions.** `@media`, `@supports`, `@container`, `@layer`, `:hover` and `:when()` decide which rule wins at the moment of each event.",
+      "**One transaction per event.** Every winning mutation on the path is evaluated against the values from before the event, then all writes are committed: innermost element first, and in source order within an element. So `.swap:on(click) { --a: set(var(--b)); --b: set(var(--a)); }` swaps the two values. If an inner and an outer rule write the same state, the outer write wins and is applied once: two `increment(1)` give +1.",
+      "**Evaluated at the event.** Inside a mutation, `mouse()`, `element()`, `viewport()`, `attr()`, `pick()` and `random()` are read once, when the event fires, and [`event()`](/docs/reference/event/) reads the event’s own fields. Outside mutations these functions keep their live behavior.",
+      "**prevent().** Runs in the library’s capturing listener during dispatch, so the browser sees the cancellation in time. The element gets it when any applicable rule for that trigger has it. See [`prevent()` and `stop()`](/docs/reference/prevent/). A form control keeps its own keys unless it carries the rule itself, and a non-cancelable event gives one diagnostic.",
+      "**stop().** Ancestors’ `:on()` rules do not run, and `stopPropagation()` is called when the event reaches the element, so the page’s listeners on ancestors do not see it either. The element itself and listeners on its descendants still receive the event, and the capture phase is never stopped.",
+      "**Cleanup.** One capturing document listener exists per event type while at least one rule uses that type. It is passive unless a live rule uses `prevent()` for that type, and it is removed with the last rule that needs it."
+    ],
+    "contexts": [
+      "Style rules in trusted stylesheets: inline `<style>` and same-origin sheets. Event rules from cross-origin sheets are dropped as untrusted.",
+      "`:on()` goes in the subject (last) compound of the selector, once per selector, never inside `:not()`, `:is()`, `:where()` or `:has()`. Nesting works: `&:on(click)`.",
+      "In a selector list, every item must use `:on()` with the same trigger and modifiers: `.a:on(click), .b` is an error. Write one rule per trigger.",
+      "Only mutations are allowed inside. Plain values (`--x: 5`), native properties, `--attr-*`, nested rules and at-rules are dropped with a warning, because the rule describes a moment, not a style."
+    ],
+    "limits": [
+      "**Minifiers delete empty rules.** A rule with only modifiers, such as `a:on(click, prevent()) {}`, is empty. esbuild with `minify` or `minifySyntax`, csso and Lightning CSS remove it silently; whitespace-only minification (esbuild `minifyWhitespace`) keeps it. Nothing preserves these rules automatically, and the runtime cannot see a rule removed before it loaded, so minify stylesheets with Reactive CSS for whitespace only. Rules with declarations survive all three.",
+      "There is no `once` modifier. For a change that happens once, guard the rule with a state: `.b:when(not --done):on(click) { --done: set(true) }`.",
+      "Stylesheets in shadow roots and `@import`ed sheets are not compiled.",
+      "The browser itself drops `:on()` selectors as invalid. Reactive CSS compiles from the stylesheet’s source text, which is why it needs `<style>` elements or same-origin `<link>` sheets it can read.",
+      "A conditional rule, or several candidate rules for one element, costs one computed-style read per element per event; a single unconditional rule needs none."
+    ],
+    "related": [
+      "reference/event",
+      "reference/drag",
+      "reference/set",
+      "reference/increment",
+      "events",
+      "migration"
+    ],
+    "usage": [
+      {
+        "title": "Override a mutation through the cascade",
+        "verdict": "correct",
+        "label": "buttons.css",
+        "code": ".counter { --count: state(0); }\n.counter .button:on(click) { --count: increment(1); }\n.counter .primary.button:on(click) { --count: increment(2); }",
+        "note": "A click on `.primary.button` adds 2. The second selector is more specific, so its mutation wins the `--count` slot for that element; the first rule does not also run."
+      },
+      {
+        "title": "Swap two states in one event",
+        "verdict": "correct",
+        "label": "swap.css",
+        "code": ".swap { --a: state(1); --b: state(2); }\n.swap:on(click) {\n  --a: set(var(--b));\n  --b: set(var(--a));\n}",
+        "note": "Both mutations read the values from before the click, so the order of the declarations does not matter."
+      },
+      {
+        "title": "Close a menu from outside and with Escape",
+        "verdict": "correct",
+        "label": "menu.css",
+        "code": ".menu { --open: state(false); }\n.menu > button:on(click) { --open: toggle(); }\n.menu:on(outside(click)) { --open: set(false); }\n.menu:on(keydown(Escape)) { --open: set(false); }",
+        "note": "One rule per trigger. For popups, the native `popover` attribute already gives light dismiss: prefer it where it fits."
+      },
+      {
+        "title": "A style declaration in an event rule",
+        "verdict": "incorrect",
+        "label": "card.css",
+        "code": ".card { --open: state(false); }\n.card:on(click) {\n  --open: toggle();\n  color: red;\n}",
+        "note": "The mutation runs, but `color: red` is dropped with a warning: an `:on()` rule describes a moment. Style the result with `.card:when(--open) { color: red; }`.",
+        "diagnostic": "an :on() rule contains only state changes"
+      },
+      {
+        "title": "prevent() with an event that cannot be cancelled",
+        "verdict": "incorrect",
+        "label": "field.css",
+        "code": ".field { --dirty: state(false); }\n.field input:on(input, prevent()) { --dirty: set(true); }",
+        "note": "A compile error: `input` events are not cancelable, so the rule is left unchanged and nothing runs.",
+        "diagnostic": "prevent() needs a cancelable event"
+      },
+      {
+        "title": ":on() inside :has()",
+        "verdict": "incorrect",
+        "label": "list.css",
+        "code": ".list { --n: state(0); }\n.list:has(.item:on(click)) { --n: increment(1); }",
+        "note": "A compile error. Put `:on()` on the subject instead: `.list .item:on(click) { --n: increment(1); }` changes the list’s state, because the nearest owner is used.",
+        "diagnostic": ":on() cannot be inside :not(), :is(), :where() or :has()"
+      }
+    ],
+    "demos": [
+      "counter",
+      "state-toggle",
+      "click-coordinates",
+      "context-menu"
+    ]
+  },
+  {
+    "id": "event",
+    "name": "event()",
+    "category": "Events",
+    "features": [
+      "expression:event"
+    ],
+    "readiness": "stable",
+    "summary": "Inside a mutation of an `:on()` rule: one field of the current event, such as `event(local-x)`, `event(key)` or `event(value)`, read once as a typed value.",
+    "signature": "--<state>: set(event(<field>));",
+    "params": [
+      {
+        "name": "field",
+        "type": "one of 32 field names (see Behavior)",
+        "required": "required",
+        "description": "Checked at compile time against the rule’s trigger. A field that the trigger does not provide is a compile error that lists the fields it does provide."
+      }
+    ],
+    "returns": "A typed value: px lengths for coordinates and distances, numbers, booleans or strings. A field with no value for this event, such as `value-as-number` of a field that holds no number, writes nothing.",
+    "example": {
+      "id": "docs-event-data",
+      "size": "compact"
+    },
+    "behavior": [
+      "**Release status.** The 0.9.0 release recommendation (hardening report, section H) lists the pointer, keyboard and form fields as stable, so this page does not mark `event()` experimental. The **drag fields stay experimental**. The runtime’s `describe()` still reports the whole function as `experimental`.",
+      "**A snapshot, not a JavaScript `Event`.** `event()` copies one value when the event fires. There is no property access, no `target` or `currentTarget`, and no script.",
+      "**General**, every trigger: `type`, the DOM event type (`drag` for drag phases). `.log:on(click) { --last: set(event(type)); }`",
+      "**Pointer**, for `click`, `contextmenu`, the `pointer*` events, the `mouse*` events and `dblclick`: `client-x` and `client-y` (viewport), `page-x` and `page-y` (document), `local-x` and `local-y` (from the border box of the element the rule matched), `button`, `buttons`, `alt-key`, `ctrl-key`, `shift-key` and `meta-key`. `click`, `contextmenu` and the `pointer*` events also give `pointer-id`, `pressure` and `pointer-type` (`mouse`, `pen` or `touch`); the `mouse*` events and `dblclick` do not. `.pad:on(pointerdown) { --x: set(event(local-x)); }`",
+      "**Keyboard**, for `keydown` and `keyup`: `key`, `code`, `repeat` and the four modifier keys. `.pad:on(keydown) { --key: set(event(key)); }`",
+      "**Form**, for `input` and `change`: `value` (a string), `value-as-number` and `checked`, read from `event.target`, which must be an input, select or textarea. Password, one-time-code and payment fields give `\"\"`. `.signup input:on(input) { --greeting: set(event(value)); }`",
+      "**Drag** (experimental), for [`:on(drag)`](/docs/reference/drag/) and its phases, in addition to the pointer fields: `x` and `y` (the mutated state at drag start plus the distance moved), `delta-x` and `delta-y` (total distance since the start), `movement-x` and `movement-y` (since the previous drag event), and `start-x` and `start-y` (viewport coordinates of the press). `.card:on(drag) { --x: set(event(x)); }`",
+      "**Scroll**, for `scroll` and `scrollend`: `scroll-top` and `scroll-left` of the element the rule matched. `.feed:on(scroll) { --top: set(event(scroll-top)); }`",
+      "Focus, submit, reset, toggle, animation and transition triggers provide only `type`. `outside(…)` provides the fields of its event.",
+      "**Compared with other functions.** Outside mutations, `mouse(x)` is a live value that follows the pointer; inside a mutation it is the event’s client coordinate, and `mouse(x, local)` is `event(local-x)`. `element(width)` in a mutation is the border-box width of the element the rule matched, at the event, and `attr(data-id)` reads that element’s attribute at the event. Keys, form values and drag distances exist only through `event()`."
+    ],
+    "contexts": [
+      "Only inside `set()`, `increment()` and `decrement()` of a mutation in an `:on()` rule. Elsewhere there is no event: Reactive CSS does not evaluate `event()`, and the browser ignores the declaration as invalid.",
+      "Combines with the typed math of mutations: `set(clamp(0px, event(x), 200px))`, `set(round(event(local-x), 10px))`."
+    ],
+    "limits": [
+      "Only the fields listed here. `target`, `currentTarget`, `detail` and other event properties are not exposed.",
+      "`value` and `checked` read the control the event happened on. A bubbling `:on(input)` rule on an ancestor reads whichever field changed.",
+      "Coordinates are px. They need a pointer or drag trigger; `mouse()` in a mutation has the same rule."
+    ],
+    "related": [
+      "reference/on-rule",
+      "reference/drag",
+      "reference/mouse",
+      "reference/set",
+      "event-data"
+    ],
+    "usage": [
+      {
+        "title": "Record where a press happened",
+        "verdict": "correct",
+        "label": "pad.css",
+        "code": ".pad { --x: state(0px); --y: state(0px); }\n.pad:on(pointerdown) {\n  --x: set(event(local-x));\n  --y: set(event(local-y));\n}\n.pad .dot { translate: var(--x) var(--y); }",
+        "note": "The values are read once, at the press. The dot stays where the press happened until the next one."
+      },
+      {
+        "title": "Copy a field’s value to a shared owner",
+        "verdict": "correct",
+        "label": "search.css",
+        "code": ".search { --q: state(\"\"); }\n.search input:on(input) { --q: set(event(value)); }\n.search .echo { content: var(--q); }",
+        "note": "The state lives on `.search`, so the field and the `.echo` element both see it."
+      },
+      {
+        "title": "A keyboard field on a click",
+        "verdict": "incorrect",
+        "label": "pad.css",
+        "code": ".pad { --key: state(\"\"); }\n.pad:on(click) { --key: set(event(key)); }",
+        "note": "A compile error: `click` has no `key`. The message lists the fields that `click` provides.",
+        "diagnostic": "event(key) is not available for click"
+      }
+    ],
+    "demos": [
+      "click-coordinates",
+      "draggable-card",
+      "form-mirror"
+    ]
+  },
+  {
+    "id": "drag",
+    "name": ":on(drag)",
+    "category": "Events",
+    "features": [
+      "rule:drag"
+    ],
+    "summary": "Pointer drag gestures as event rules: `:on(drag)` runs on every move, `drag(start)`, `drag(end)` and `drag(cancel)` at the edges. `event(x)` and `event(y)` give positions that continue across drags.",
+    "signature": "<selector>:on(drag | drag(start | move | end | cancel) [, prevent()]) {\n  --<state>: set(event(x));\n}",
+    "params": [
+      {
+        "name": "phase",
+        "type": "`start`, `move`, `end` or `cancel`",
+        "required": "optional",
+        "description": "`:on(drag)` is `:on(drag(move))`."
+      },
+      {
+        "name": "prevent()",
+        "type": "modifier",
+        "required": "optional",
+        "description": "Cancels the default of the `pointerdown` that starts the gesture. `stop()` is a compile error with drag."
+      }
+    ],
+    "returns": "No value. Each phase runs the rule’s mutations, as any `:on()` rule does.",
+    "example": {
+      "id": "docs-drag",
+      "size": "standard"
+    },
+    "behavior": [
+      "Experimental: no real touch or pen hardware has been tested yet.",
+      "**Arming.** A press with the primary button arms a gesture on the innermost element on the path that a drag rule matches, unless it is `:disabled`, inside `[inert]` or already being dragged. The gesture starts after 3 CSS px of movement. Below that, the press and the click stay native and no phase runs.",
+      "**Phases.** `start` runs once, then `move` (`:on(drag)`) on each pointer move. Moves run synchronously; state writes are coalesced into one style write per frame, and the last position is never dropped. `pointerup` runs `end`. `pointercancel` or a lost pointer capture runs `cancel`, then `end`, so `--dragging: set(false)` in `drag(end)` always runs.",
+      "**Positions continue.** `event(x)` is the value of the mutated state when the drag started, plus the pointer distance on that axis. `.card:on(drag) { --x: set(event(x)); }` therefore moves the card on from where it was, over any number of drags, and never jumps back to the pointer. For raw displacement use `event(delta-x)`; `event(movement-x)` is the distance since the previous move and `event(start-x)` the press position in viewport coordinates. See [`event()`](/docs/reference/event/).",
+      "**Pointer capture.** The element captures the pointer, so moves keep arriving when the pointer leaves it. Each gesture follows its own pointer: concurrent pointers drag different elements independently, and a second pointer on an element that is already being dragged is ignored.",
+      "**Fields inside.** A press on an `input`, `textarea`, `select` or editable element inside the draggable never starts a drag, so selecting text and moving sliders keep working. Buttons and links inside can start one.",
+      "**The click after a drag** does not run `:on(click)` rules on that element or its ancestors. The native click is not changed.",
+      "**DOM changes.** Moving the element to another parent during a drag makes the browser release the capture, so the gesture is cancelled: `cancel`, then `end`. Removing the element, or a class change that makes it stop matching, ends the gesture without running any phase; a state set in `drag(start)` keeps its value.",
+      "**Cleanup.** One capturing `pointerdown` listener exists while drag rules exist. Move listeners exist only during a gesture, and the capture is released at its end. `ReactiveCSS.stop()` ends every gesture."
+    ],
+    "contexts": [
+      "Give the draggable element `touch-action: none`, or touch scrolling takes over the gesture.",
+      "The same placement rules as [`:on()`](/docs/reference/on-rule/). A custom bundle needs the `gestures` feature."
+    ],
+    "limits": [
+      "**Accessibility.** A drag has no keyboard equivalent by itself. Change the same state from the keyboard as well, as the example does with `:on(keydown(ArrowRight), prevent())` rules, or offer a native range input.",
+      "Not HTML drag and drop: no `dragstart` or `drop`, no sortable lists and no drop targets.",
+      "There is no `drag(x)` value function; `event(x)` covers it.",
+      "Touch and pen are covered by synthetic events only. Real devices are on the manual test list."
+    ],
+    "related": [
+      "reference/on-rule",
+      "reference/event",
+      "drag",
+      "reference/state"
+    ],
+    "usage": [
+      {
+        "title": "A slider thumb clamped to its track",
+        "verdict": "correct",
+        "label": "slider.css",
+        "code": ".slider { --v: state(0px); }\n.slider .thumb {\n  translate: var(--v) 0;\n  touch-action: none;\n}\n.slider .thumb:on(drag) { --v: set(clamp(0px, event(x), 200px)); }\n.slider .thumb:on(keydown(ArrowRight), prevent()) { --v: set(min(var(--v) + 10px, 200px)); }\n.slider .thumb:on(keydown(ArrowLeft), prevent()) { --v: set(max(var(--v) - 10px, 0px)); }",
+        "note": "The state lives on the track. `event(x)` starts from the current `--v` at each drag, and the arrow keys change the same state. The thumb needs `tabindex=\"0\"` in the HTML to receive keys."
+      },
+      {
+        "title": "stop() in a drag rule",
+        "verdict": "incorrect",
+        "label": "card.css",
+        "code": ".card { --x: state(0px); }\n.card:on(drag, stop()) { --x: set(event(x)); }",
+        "note": "A compile error: a drag is not a bubbling DOM event, so there is nothing to stop.",
+        "diagnostic": "stop() has no meaning for drag"
+      }
+    ],
+    "demos": [
+      "draggable-card"
+    ]
+  },
+  {
+    "id": "set",
+    "name": "set()",
+    "category": "Actions",
+    "features": [
+      "action:set"
+    ],
+    "summary": "Sets a state to a value. In an `:on()` rule it is a mutation of the state on the left, `--x: set(5)`, with typed expressions.",
+    "signature": "--<state>: set(<expr>);",
+    "params": [
+      {
+        "name": "expr",
+        "type": "typed expression",
+        "required": "required",
+        "description": "A literal, `var(--name, fallback?)`, typed `calc()`, `min()`, `max()`, `clamp()`, `round()` and `abs()`, the operators `+ - * /`, [`event()`](/docs/reference/event/), and one-time `mouse()`, `element()`, `viewport()`, `random()`, `pick()`, `attr()`, `sibling-index()` and `sibling-count()`."
+      }
+    ],
+    "returns": "No value. Subscribers of the state re-evaluate in the urgent lane.",
+    "example": {
+      "label": "level.css",
+      "code": ".dial { --level: state(5); }\n.dial .reset:on(click) { --level: set(5); }\n.dial .max:on(click) { --level: set(10); }\n.dial .half:on(click) { --level: set(round(var(--level) / 2)); }\n.dial .value { content: var(--level); }"
+    },
+    "behavior": [
+      "**A mutation of the state on the left.** In an [`:on()`](/docs/reference/on-rule/) rule, `--x: set(<expr>)` changes the nearest `--x` owner of the element the rule matched. `set()`, `toggle()`, `increment()`, `decrement()` and `cycle()` share one model: one winner per state through the cascade, and one transaction per event, read against the values from before it.",
+      "**Typed values.** Booleans count as 1 or 0 in arithmetic, dimensions convert within a unit family (`px` and `cm`, `deg` and `turn`, `s` and `ms`), and percentages are their own unit. As in CSS, `+` and `-` need spaces around them. Mixing incompatible units (`10px + 5%`), dividing by zero or comparing strings with numbers is an event-time error: one diagnostic and no write.",
+      "**At the event.** `mouse()`, `element()`, `viewport()`, `random()`, `pick()` and `attr()` are read once, when the event fires; they are snapshots, not subscriptions.",
+      "A value that the state’s type cannot hold is reported once and ignored. A unitless `0` can be stored in a dimension state, and `0` and `1` in a boolean state.",
+      "A write that keeps the same value is a no-op: no subscribers run and `:changed()` doesn’t match."
+    ],
+    "contexts": [
+      "As a mutation in an `:on()` rule."
+    ],
+    "limits": [
+      "Not a general-purpose language: no comparisons, no `when()` and no string functions in the expression.",
+      "Units that need layout (`em`, `vw`) are not resolved: use `element()` or `viewport()`.",
+      "`attr()` reads the attribute of the element the rule matched, at event time; see [`attr()`](/docs/reference/attr/)."
+    ],
+    "related": [
+      "reference/toggle",
+      "reference/increment",
+      "reference/cycle",
+      "reference/on-rule",
+      "reference/event"
+    ],
+    "demos": [
+      "click-coordinates",
+      "persistent-preference"
+    ]
+  },
+  {
+    "id": "toggle",
+    "name": "toggle()",
+    "category": "Actions",
+    "features": [
+      "action:toggle"
+    ],
+    "summary": "Flips a boolean state. In an `:on()` rule it is the mutation `--open: toggle()`.",
+    "signature": "--<state>: toggle();",
+    "params": [],
+    "returns": "No value. In `:on()` it takes no arguments: the state is the custom property on the left.",
+    "example": {
+      "id": "docs-toggle",
+      "size": "compact"
+    },
+    "behavior": [
+      "**A mutation of the state on the left.** In an [`:on()`](/docs/reference/on-rule/) rule, `--x: toggle()` changes the nearest `--x` owner of the element the rule matched. `set()`, `toggle()`, `increment()`, `decrement()` and `cycle()` share one model: one winner per state through the cascade, and one transaction per event, read against the values from before it.",
+      "Conceptually, `--open: toggle()` sets the opposite of the value from before the event. It needs a boolean state.",
+      "Never registered as a value function, so the CSS Values 5 `toggle()` value function keeps working elsewhere."
+    ],
+    "contexts": [
+      "As a mutation in an `:on()` rule."
+    ],
+    "limits": [
+      "Booleans only. Use `cycle()` for more than two values.",
+      "By itself it doesn’t update `aria-pressed`: add `bind(aria-pressed)` to the state, as in the example, or an `--attr-aria-pressed` declaration."
+    ],
+    "related": [
+      "reference/set",
+      "reference/cycle",
+      "reference/when",
+      "reference/on-rule",
+      "reference/bind-state"
+    ],
+    "demos": [
+      "state-toggle",
+      "attribute-sync"
+    ]
+  },
+  {
+    "id": "increment",
+    "name": "increment()",
+    "category": "Actions",
+    "features": [
+      "action:increment"
+    ],
+    "summary": "Adds a step to a number or dimension state. In an `:on()` rule it is the mutation `--count: increment(1)`.",
+    "signature": "--<state>: increment(<step>?);",
+    "params": [
+      {
+        "name": "step",
+        "type": "number, dimension or typed expression",
+        "required": "optional",
+        "description": "Default 1, in the state’s unit. In `:on()` it can be an expression: `increment(var(--step))`, `increment(event(movement-x))`."
+      }
+    ],
+    "returns": "No value.",
+    "example": {
+      "id": "docs-counter",
+      "size": "compact"
+    },
+    "behavior": [
+      "**A mutation of the state on the left.** In an [`:on()`](/docs/reference/on-rule/) rule, `--x: increment(1)` changes the nearest `--x` owner of the element the rule matched. `set()`, `toggle()`, `increment()`, `decrement()` and `cycle()` share one model: one winner per state through the cascade, and one transaction per event, read against the values from before it.",
+      "Conceptually, `--count: increment(1)` is `--count: set(calc(var(--count) + 1))`: both read the value from before the event and write once. One difference: a unitless step is taken in the state’s unit, so `increment(1)` adds `1px` to a `px` state.",
+      "`increment(40px)` adds 40px to a dimension state."
+    ],
+    "contexts": [
+      "As a mutation in an `:on()` rule."
+    ],
+    "limits": [
+      "No minimum or maximum. Clamp in the mutation: `--qty: set(min(var(--qty) + 1, 10))`."
+    ],
+    "related": [
+      "reference/decrement",
+      "reference/set",
+      "reference/direction",
+      "reference/on-rule"
+    ],
+    "demos": [
+      "counter"
+    ]
+  },
+  {
+    "id": "decrement",
+    "name": "decrement()",
+    "category": "Actions",
+    "features": [
+      "action:decrement"
+    ],
+    "summary": "Subtracts a step from a number or dimension state. In an `:on()` rule it is the mutation `--count: decrement(1)`.",
+    "signature": "--<state>: decrement(<step>?);",
+    "params": [
+      {
+        "name": "step",
+        "type": "number, dimension or typed expression",
+        "required": "optional",
+        "description": "Default 1, in the state’s unit. In `:on()` it can be an expression: `decrement(var(--step))`, `decrement(event(movement-x))`."
+      }
+    ],
+    "returns": "No value.",
+    "example": {
+      "label": "stock.css",
+      "code": ".stock {\n  --left: state(10);\n}\n\n.stock .take:on(click) {\n  --left: decrement(1);\n}\n\n.stock:when(--left <= 0) .take {\n  display: none;\n}"
+    },
+    "behavior": [
+      "**A mutation of the state on the left.** In an [`:on()`](/docs/reference/on-rule/) rule, `--x: decrement(1)` changes the nearest `--x` owner of the element the rule matched. `set()`, `toggle()`, `increment()`, `decrement()` and `cycle()` share one model: one winner per state through the cascade, and one transaction per event, read against the values from before it.",
+      "Conceptually, `--left: decrement(1)` is `--left: set(calc(var(--left) - 1))`, with a unitless step taken in the state’s unit.",
+      "Goes below zero unless you hide or disable the control, as in the example, or clamp: `--left: set(max(var(--left) - 1, 0))`."
+    ],
+    "contexts": [
+      "As a mutation in an `:on()` rule."
+    ],
+    "limits": [
+      "No minimum or maximum of its own."
+    ],
+    "related": [
+      "reference/increment",
+      "reference/when-selector",
+      "reference/on-rule"
+    ],
+    "demos": [
+      "counter"
+    ]
+  },
+  {
+    "id": "cycle",
+    "name": "cycle()",
+    "category": "Actions",
+    "features": [
+      "action:cycle"
+    ],
+    "summary": "Moves a state to the next value in a list, wrapping around. In an `:on()` rule it is the mutation `--mode: cycle(light, dark)`.",
+    "signature": "--<state>: cycle(<value>#);",
+    "params": [
+      {
+        "name": "values",
+        "type": "two or more literals",
+        "required": "required",
+        "description": "The list. If the current value isn’t listed, the state moves to the first."
+      }
+    ],
+    "returns": "No value.",
+    "example": {
+      "label": "speed.css",
+      "code": "/* <button class=\"speed\">Speed <span class=\"value\">1</span>×</button> */\n.player { --speed: state(1); }\n.player .speed:on(click) { --speed: cycle(1, 1.5, 2); }\n.player .speed .value { content: var(--speed); }"
+    },
+    "behavior": [
+      "**A mutation of the state on the left.** In an [`:on()`](/docs/reference/on-rule/) rule, `--x: cycle(a, b, …)` changes the nearest `--x` owner of the element the rule matched. `set()`, `toggle()`, `increment()`, `decrement()` and `cycle()` share one model: one winner per state through the cascade, and one transaction per event, read against the values from before it.",
+      "The values are literals, not expressions. Keywords compare case-insensitively and strings exactly."
+    ],
+    "contexts": [
+      "As a mutation in an `:on()` rule."
+    ],
+    "limits": [
+      "A value-function `cycle()` was rejected: use `@keyframes` with `steps()`."
+    ],
+    "related": [
+      "reference/set",
+      "reference/toggle",
+      "reference/when-selector",
+      "reference/on-rule"
+    ],
+    "demos": [
+      "conditional-state"
+    ]
+  },
+  {
+    "id": "closest",
+    "since": "0.3",
+    "name": "closest()",
+    "category": "Legacy",
+    "features": [
+      "scope:closest"
+    ],
+    "summary": "An optional last argument for actions and bind: that targets the state owned by exactly one ancestor.",
+    "signature": "<action>(…, closest(<selector>))",
+    "params": [
+      {
+        "name": "selector",
+        "type": "`<complex-selector>`",
+        "required": "required",
+        "description": "Which ancestor owns the state, like `Element.closest()`."
+      }
+    ],
+    "returns": "No value. It changes which state cell the action or binding uses.",
+    "example": {
+      "label": "tabs.css",
+      "code": ".tab {\n  on: click(set(--active, sibling-index(), closest(.tabs)));\n}\n\n.form input {\n  bind: --name closest(.form);\n}"
+    },
+    "behavior": [
+      "Without it, the nearest owner is used. With it, the state must be owned by exactly that ancestor.",
+      "**No 0.9 form.** A mutation in an `:on()` rule always changes the nearest owner. For an explicit owner, keep `on:` with `closest()`, which is supported in 0.9."
+    ],
+    "contexts": [
+      "Last argument of `set()`, `toggle()`, `increment()`, `decrement()`, `cycle()`; after the name in `bind:`."
+    ],
+    "limits": [
+      "Ancestors only."
+    ],
+    "related": [
+      "reference/set",
+      "reference/bind",
+      "state",
+      "reference/on-rule"
+    ]
+  },
+  {
+    "id": "prevent",
+    "name": "prevent() and stop()",
+    "category": "Events",
+    "features": [
+      "action:prevent"
+    ],
+    "summary": "Event modifiers for `:on()`: `prevent()` cancels the browser's default for the event, `stop()` ends the event at the element so ancestors do not see it.",
+    "signature": ":on(<event>, prevent());\n:on(<event>, stop());\n:on(<event>, prevent(), stop());",
+    "params": [],
+    "returns": "No value. `prevent()` calls `event.preventDefault()` synchronously while the event is dispatched. `stop()` calls `event.stopPropagation()` when the event reaches the element.",
+    "example": {
+      "label": "tabs.css",
+      "code": ".tabs {\n  --active: state(1);\n}\n\n.tabs [role=tablist]:on(keydown(ArrowRight), prevent()) {\n  --active: cycle(1, 2, 3);\n}"
+    },
+    "behavior": [
+      "**Modifiers, not actions.** They follow the event in the selector, as functions: `:on(click, prevent())`, `:on(keydown(Escape), prevent(), stop())`. A bare `prevent` or `stop` is a compile error that asks for the function form. The rule's declarations hold only state mutations; a modifier-only rule such as `a.confirm:on(click, prevent()) {}` is allowed.",
+      "**Why `prevent()` exists.** A handled key, such as an arrow key in a tab list, would also scroll the page, and a click on a link would also navigate. `prevent()` cancels that native default for the event the rule handles, and only that one.",
+      "**Synchronous.** The browser decides the default while the event is dispatched, so a cancellation in the next frame would be too late. `prevent()` runs inside the library's delegated listener, during dispatch. That listener is non-passive only for event types that a live rule cancels; pages without `prevent()` keep passive listeners.",
+      "**Any rule wins.** The element gets `prevent()` if any rule that applies to it for that trigger has it, with conditions that are current for every event.",
+      "**`stop()`.** `:on()` rules on the element's ancestors do not run for this event; the element's own rules still run. The native propagation stops at the element too, with `stopPropagation()` (never `stopImmediatePropagation()`), so ancestors' listeners do not see the event. Listeners on the element and its descendants still receive it, and the capture phase is never stopped. `outside()` rules elsewhere are not affected.",
+      "**Form controls keep their keys.** A key pressed in an `input`, `textarea`, `select` or editable element is not cancelled by a rule on an ancestor. A rule on the control itself can cancel it.",
+      "**Non-cancelable events.** If `event.cancelable` is false (for example a script-created event without `cancelable: true`), nothing is cancelled and a warning is logged."
+    ],
+    "contexts": [
+      "`prevent()`: `click`, `dblclick`, `contextmenu`, `mousedown`, `pointerdown`, `keydown`, `keyup`, `submit` and `drag` (where it cancels the `pointerdown`). Anywhere else it is a compile error, and `outside()` never accepts it.",
+      "`stop()`: every `:on()` event except `outside()` and drag, where it is a compile error.",
+      "Trusted stylesheets only, like every `:on()` rule."
+    ],
+    "limits": [
+      "Each modifier appears at most once, in either order, and takes no arguments: `prevent(1)` and a repeated `stop()` are compile errors.",
+      "There is no `once` modifier: guard the rule with a state, `.b:when(not --done):on(click) { --done: set(true); }`.",
+      "A `click` rule with `prevent()` on a container also cancels clicks on links, buttons and form controls inside it (see the incorrect example above).",
+      "Minifiers that remove empty rules (esbuild `minify` or `minifySyntax`, csso, Lightning CSS) delete modifier-only rules such as `a:on(click, prevent()) {}`. Use whitespace-only minification.",
+      "Firefox has no automated test run; see [Browser compatibility](/docs/compat/) for the manual, user-reported pass."
+    ],
+    "related": [
+      "reference/on-rule",
+      "reference/outside",
+      "reference/event",
+      "events"
+    ],
+    "usage": [
+      {
+        "title": "Handle the arrow keys of a tab list, leave every other key alone",
+        "verdict": "correct",
+        "label": "tabs.css",
+        "code": ".tabs { --active: state(1); }\n\n.tabs [role=tablist]:on(keydown(ArrowRight), prevent()) {\n  --active: cycle(1, 2, 3);\n}\n\n.tabs [role=tablist]:on(keydown(ArrowLeft), prevent()) {\n  --active: cycle(3, 2, 1);\n}",
+        "note": "Only ArrowRight and ArrowLeft are cancelled, so the page does not scroll while they move the selection. Tab, Space and PageDown keep their native behavior."
+      },
+      {
+        "title": "Ask before a link navigates",
+        "verdict": "correct",
+        "label": "delete.css",
+        "code": ".delete { --asking: state(false); }\n\n.delete a:on(click, prevent()) {\n  --asking: set(true);\n}",
+        "note": "The link does not navigate; the state can show a confirmation. Without the script, the link works as a normal link."
+      },
+      {
+        "title": "Keep a click inside a card",
+        "verdict": "correct",
+        "label": "card.css",
+        "code": ".list { --selected: state(0); }\n.card { --open: state(false); }\n\n.list .card:on(click) { --selected: set(sibling-index()); }\n.card .more:on(click, stop()) { --open: toggle(); }",
+        "note": "A click on `.more` opens the card without selecting it: `stop()` keeps the event from the ancestor's rule."
+      },
+      {
+        "title": "Cancel only while a condition holds",
+        "verdict": "correct",
+        "label": "reader.css",
+        "code": ".reader { --locked: state(false); }\n\n.reader .page:on(keydown(PageDown)) {\n  --locked: toggle();\n}\n\n.reader:when(--locked) .page:on(keydown(PageDown), prevent()) {}",
+        "note": "An element gets `prevent()` when any rule that applies to it for that event has it, and `:when()` is current for every event. PageDown scrolls while `--locked` is false and is cancelled while it is true. The rule with only a modifier is empty on purpose: keep it through minification."
+      },
+      {
+        "title": "A click rule on a container",
+        "verdict": "incorrect",
+        "label": "card.css",
+        "code": ".card { --open: state(false); }\n\n.card:on(click, prevent()) {\n  --open: toggle();\n}",
+        "note": "This compiles, but it cancels the default of every click inside `.card`: links stop navigating, submit buttons stop submitting, checkboxes stop toggling and `<summary>` stops opening. Put the rule on the element whose default you mean to cancel."
+      },
+      {
+        "title": "prevent() on an event that cannot be cancelled",
+        "verdict": "incorrect",
+        "label": "search.css",
+        "code": ".search { --typing: state(false); }\n\n.search input:on(input, prevent()) {\n  --typing: set(true);\n}",
+        "note": "A compile error: `input` events are not cancelable, so the rule is ignored.",
+        "diagnostic": "prevent() needs a cancelable event"
+      },
+      {
+        "title": "A bare modifier",
+        "verdict": "incorrect",
+        "label": "link.css",
+        "code": "a.confirm:on(click, prevent) {\n  --asking: set(true);\n}",
+        "note": "A compile error that asks for the function form, `prevent()`.",
+        "diagnostic": "write the modifier as a function: prevent()"
+      }
+    ],
+    "demos": [
+      "accessible-tabs",
+      "keyboard-navigation",
+      "keyboard-playground",
+      "context-menu"
+    ]
+  },
+  {
+    "id": "triggers",
+    "name": "Triggers",
+    "category": "Legacy",
+    "features": [
+      "trigger:click",
+      "trigger:change",
+      "trigger:input",
+      "trigger:pointerenter",
+      "trigger:pointerleave",
+      "trigger:focus",
+      "trigger:blur"
+    ],
+    "summary": "The events on: can listen for: click(), change(), input(), pointerenter(), pointerleave(), focus() and blur(), plus key() and outside().",
+    "signature": "on: click(<action>#), focus(<action>#), …;",
+    "params": [
+      {
+        "name": "click() change() input()",
+        "type": "event",
+        "required": "bubbling",
+        "description": "Run on the target and its ancestors, innermost first."
+      },
+      {
+        "name": "pointerenter() pointerleave() focus() blur()",
+        "type": "event",
+        "required": "target only",
+        "description": "Run on the target element only."
+      }
+    ],
+    "returns": "Each trigger runs its actions when the event fires.",
+    "example": {
+      "id": "tabs",
+      "size": "compact"
+    },
+    "behavior": [
+      "**0.9.** Each trigger becomes an [`:on()`](/docs/reference/on-rule/) rule: `.tab:on(click) { --active: set(sibling-index()); }`. `:on()` accepts 32 events, among them `dblclick`, `pointerdown`, `keyup`, `submit` and `scroll`. These `on:` triggers keep working in 0.9.",
+      "Keyboard activation of a `<button>` fires `click`, so buttons work with Enter and Space.",
+      "Label clicks, Space and mouse clicks all fire `change` on checkboxes."
+    ],
+    "contexts": [
+      "Inside `on:`."
+    ],
+    "limits": [
+      "Only these events are supported by `on:`. The `on()` value function accepts a longer list."
+    ],
+    "related": [
+      "reference/prevent",
+      "reference/on",
+      "reference/key",
+      "reference/outside",
+      "reference/on-value",
+      "reference/on-rule"
+    ]
+  },
+  {
+    "id": "key",
+    "name": "key()",
+    "category": "Legacy",
+    "features": [
+      "trigger:key"
+    ],
+    "summary": "Runs actions on keydown while focus is on or inside the element.",
+    "signature": "key(<key>, <action>#)",
+    "params": [
+      {
+        "name": "key",
+        "type": "`Escape`, `ArrowRight`, `ctrl+k`, `shift+Tab` …",
+        "required": "required",
+        "description": "A key name, optionally with modifiers. Modifiers must match exactly."
+      },
+      {
+        "name": "actions",
+        "type": "`<action>#`",
+        "required": "one or more",
+        "description": "Actions to run."
+      }
+    ],
+    "returns": "A trigger for `on:`.",
+    "example": {
+      "id": "dropdown",
+      "size": "compact"
+    },
+    "behavior": [
+      "**0.9.** The new form is `.dialog:on(keydown(Escape)) { --open: set(false); }`, and `keyup(Escape)` exists there too. `key()` in `on:` keeps working in 0.9.",
+      "When nothing is focused, the element last pressed with the pointer receives keys.",
+      "Character keys never fire while typing in a field.",
+      "To stop the key's native default, such as scrolling on an arrow key, add [`prevent()`](/docs/reference/prevent/) to the action list: `key(ArrowDown, prevent(), increment(--n))`."
+    ],
+    "contexts": [
+      "Inside `on:`."
+    ],
+    "limits": [
+      "Doesn’t prevent the key’s default action unless `prevent()` is in the action list."
+    ],
+    "related": [
+      "reference/prevent",
+      "reference/outside",
+      "reference/on",
+      "events",
+      "reference/on-rule"
+    ],
+    "demos": [
+      "draggable-card",
+      "keyboard-playground"
+    ]
+  },
+  {
+    "id": "outside",
+    "name": "outside()",
+    "category": "Events",
+    "features": [
+      "trigger:outside"
+    ],
+    "summary": "An event for `:on()` that happens outside the matched element: a click, a pointer press or focus moving elsewhere on the page.",
+    "signature": ":on(outside(click | pointerdown | focusin)) { --state: <mutation>; }",
+    "params": [
+      {
+        "name": "event",
+        "type": "`click`, `pointerdown` or `focusin`",
+        "required": "required",
+        "description": "The event to watch on the rest of the page."
+      }
+    ],
+    "returns": "An event for an `:on()` rule. The rule's mutations run when the event's target is outside the matched element.",
+    "example": {
+      "label": "menu.css",
+      "code": ".dropdown {\n  --open: state(false);\n}\n\n.dropdown:on(outside(click)) {\n  --open: set(false);\n}\n\n.dropdown:on(keydown(Escape)) {\n  --open: set(false);\n}"
+    },
+    "behavior": [
+      "Shadow DOM aware.",
+      "`stop()` on an element inside the matched one does not affect it.",
+      "Costs about 0.35 µs per component per outside click in the 0.3 benchmark."
+    ],
+    "contexts": [
+      "As the event of an [`:on()`](/docs/reference/on-rule/) rule."
+    ],
+    "limits": [
+      "Doesn’t move focus. For popups, the native `popover` attribute already does light dismiss: prefer it.",
+      "[`prevent()` and `stop()`](/docs/reference/prevent/) are compile errors with `outside()`."
+    ],
+    "related": [
+      "reference/on-rule",
+      "reference/prevent",
+      "reference/set",
+      "events"
+    ],
+    "demos": [
+      "context-menu"
+    ]
+  },
+  {
+    "id": "lifecycle-triggers",
+    "name": "Focus, reset, animation and transition triggers",
+    "category": "Legacy",
+    "features": [
+      "trigger:focusin",
+      "trigger:focusout",
+      "trigger:reset",
+      "trigger:animationend",
+      "trigger:animationcancel",
+      "trigger:transitionend",
+      "trigger:transitioncancel"
+    ],
+    "summary": "Seven more events for `on:`: focusin(), focusout(), reset(), animationend(), animationcancel(), transitionend() and transitioncancel().",
+    "signature": "on: focusin(<action>#), animationend(<action>#), …;",
+    "params": [
+      {
+        "name": "focusin() focusout() reset()",
+        "type": "event",
+        "required": "bubbling",
+        "description": "Run on the target and its ancestors: a wrapper sees focus enter and leave."
+      },
+      {
+        "name": "animationend() animationcancel() transitionend() transitioncancel()",
+        "type": "event",
+        "required": "target only",
+        "description": "Run only for the element’s own animations and transitions; a child’s animation does not trigger the parent."
+      }
+    ],
+    "returns": "Each trigger runs its actions when the event fires.",
+    "example": {
+      "label": "toast.css",
+      "code": "@keyframes fade { to { opacity: 0; } }\n\n.toast { --shown: state(true); }\n.toast:when(--shown) { animation: fade 2s forwards; }\n.toast { on: animationend(set(--shown, false)); }\n.toast:when(not --shown) { display: none; }"
+    },
+    "behavior": [
+      "**0.9.** The new form is an [`:on()`](/docs/reference/on-rule/) rule such as `.toast:on(animationend) { --shown: set(false); }`. `:on()` also has `submit`, `animationstart`, `dblclick` and `keyup`. These `on:` triggers keep working in 0.9.",
+      "No name filter: any animation or transition of the element runs the actions.",
+      "One `transitionend` per transitioning property.",
+      "`animationcancel` fires only for animations that had started (native behavior).",
+      "`reset` runs after the native reset."
+    ],
+    "contexts": [
+      "Inside `on:`."
+    ],
+    "limits": [
+      "In `on:`, `submit`, `animationstart`, `animationiteration`, `transitionrun`, `transitionstart`, `dblclick` and `keyup` are not supported. `:on()` has `submit`, `animationstart`, `dblclick` and `keyup`.",
+      "Each used event type adds one delegated listener."
+    ],
+    "related": [
+      "reference/triggers",
+      "reference/on",
+      "reference/on-rule"
+    ]
+  },
+  {
+    "id": "when",
+    "name": "when()",
+    "category": "Conditions",
+    "features": [
+      "function:when"
+    ],
+    "summary": "Picks one of two values from a condition. Boolean conditions compile to native if() where supported.",
+    "signature": "when(<condition>[, <if-true>[, <if-false>]])",
+    "params": [
+      {
+        "name": "condition",
+        "type": "states, comparisons, `and` / `or` / `not`",
+        "required": "required",
+        "description": "See [Conditions](/docs/conditions/). A bare state must be a boolean."
+      },
+      {
+        "name": "if-true",
+        "type": "`<declaration-value>`",
+        "required": "optional",
+        "description": "Used while the condition is true. Without any value, `when(condition)` gives `true` or `false` (0.5.3)."
+      },
+      {
+        "name": "if-false",
+        "type": "`<declaration-value>`",
+        "required": "optional",
+        "description": "Used while the condition is false. Without it, the value is empty while the condition is false."
+      }
+    ],
+    "returns": "One of the values, `true` / `false` when no values are given, or nothing (`unset`) while the condition is unknown.",
+    "example": {
+      "id": "pricing",
+      "size": "standard"
+    },
+    "behavior": [
+      "Subscribes only to the state cells it reads.",
+      "Compiles to native `if()` for conditions of boolean states with `and` / `or` / `not` and static values.",
+      "The result is a normal computed value, so transitions on that property run."
+    ],
+    "contexts": [
+      "The value of any property, including custom properties and inside `calc()`."
+    ],
+    "limits": [
+      "Not in at-rule conditions such as `@media`.",
+      "A missing state or impossible comparison is unknown, not false.",
+      "On the native `if()` path, a missing state logs no warning."
+    ],
+    "related": [
+      "reference/when-selector",
+      "reference/state",
+      "reference/previous",
+      "conditions"
+    ],
+    "demos": [
+      "conditional-state"
+    ]
+  },
+  {
+    "id": "when-selector",
+    "name": ":when()",
+    "category": "Conditions",
+    "features": [
+      "selector:when"
+    ],
+    "summary": "Matches elements for which the condition is true, with states resolved from that element.",
+    "signature": "selector:when(<condition>) { … }",
+    "params": [
+      {
+        "name": "condition",
+        "type": "same as `when()`",
+        "required": "required",
+        "description": "States, comparisons and logical operators."
+      }
+    ],
+    "returns": "A pseudo-class, compiled to `[data-rcss-when-N]`. Same specificity as one pseudo-class.",
+    "example": {
+      "id": "accordion",
+      "size": "compact"
+    },
+    "behavior": [
+      "Unknown conditions don’t match and log a warning."
+    ],
+    "contexts": [
+      "Any selector."
+    ],
+    "limits": [
+      "Not in at-rule conditions."
+    ],
+    "related": [
+      "reference/when",
+      "reference/nth-var",
+      "conditions"
+    ],
+    "demos": [
+      "state-toggle",
+      "conditional-state"
+    ]
+  },
+  {
+    "id": "previous",
+    "name": "previous()",
+    "category": "History",
+    "features": [
+      "function:previous"
+    ],
+    "summary": "The value of a state before its last effective change.",
+    "signature": "previous(<custom-property>)",
+    "params": [
+      {
+        "name": "custom-property",
+        "type": "`<dashed-ident>`",
+        "required": "required",
+        "description": "A state name."
+      }
+    ],
+    "returns": "The previous value. The initial value until the first change.",
+    "example": {
+      "id": "history",
+      "size": "compact"
+    },
+    "behavior": [
+      "Updates when the state changes. Shares the state’s history, with no extra storage.",
+      "Usable as a condition operand: `when(--count > previous(--count), …)`."
+    ],
+    "contexts": [
+      "Any value or condition."
+    ],
+    "limits": [
+      "One step only. A bounded `history()` is planned, not shipped."
+    ],
+    "related": [
+      "reference/direction",
+      "reference/changed",
+      "history"
+    ],
+    "demos": [
+      "state-history"
+    ]
+  },
+  {
+    "id": "direction",
+    "name": "direction()",
+    "category": "History",
+    "features": [
+      "function:direction"
+    ],
+    "summary": "Whether the last change of a number or dimension state went up, nowhere or down.",
+    "signature": "direction(<custom-property>)",
+    "params": [
+      {
+        "name": "custom-property",
+        "type": "`<dashed-ident>`",
+        "required": "required",
+        "description": "A number or dimension state."
+      }
+    ],
+    "returns": "`1`, `0` or `-1`. Unknown for other types.",
+    "example": {
+      "label": "direction.css",
+      "code": ".slides:changed(--index) .slide {\n  animation-name: when(\n    direction(--index) > 0,\n    from-right,\n    from-left\n  );\n}"
+    },
+    "behavior": [
+      "`0` until the first change."
+    ],
+    "contexts": [
+      "Any value or condition."
+    ],
+    "limits": [
+      "Numbers and dimensions only."
+    ],
+    "related": [
+      "reference/previous",
+      "reference/changed",
+      "history"
+    ],
+    "demos": [
+      "state-history"
+    ]
+  },
+  {
+    "id": "changed",
+    "name": ":changed()",
+    "category": "History",
+    "features": [
+      "selector:changed"
+    ],
+    "summary": "Matches briefly after an observed change of the nearest state, until the animations it started have finished.",
+    "signature": "selector:changed(<custom-property>) { … }",
+    "params": [
+      {
+        "name": "custom-property",
+        "type": "`<dashed-ident>`",
+        "required": "required",
+        "description": "The state to watch."
+      }
+    ],
+    "returns": "A pseudo-class, compiled to `[data-rcss-changed-N]`.",
+    "example": {
+      "label": "changed.css",
+      "code": ".counter:changed(--count) .num {\n  animation: flash 300ms;\n}"
+    },
+    "behavior": [
+      "From the frame after the change until the animations and transitions it started in the subtree finish, or one frame if none started. It started the animations named, and the transitions of properties set, in its rules; other animations starting in the same frame do not hold it (if its rules set custom properties, every animation that starts counts).",
+      "Never on load or after a no-op. A new change restarts it."
+    ],
+    "contexts": [
+      "Any selector."
+    ],
+    "limits": [
+      "An infinite animation keeps it matching until the next change.",
+      "Finding started animations calls `document.getAnimations()` once per frame with markers; in Chromium this costs roughly running animations × page size."
+    ],
+    "related": [
+      "reference/previous",
+      "reference/direction",
+      "reference/just-checked"
+    ],
+    "demos": [
+      "state-history"
+    ]
+  },
+  {
+    "id": "nth-var",
+    "name": ":nth-var()",
+    "category": "Selectors",
+    "features": [
+      "selector:nth-var"
+    ],
+    "summary": "Matches the sibling whose one-based index equals the integer value of a custom property or state, read on the parent.",
+    "signature": "selector:nth-var(<custom-property>) { … }",
+    "params": [
+      {
+        "name": "custom-property",
+        "type": "`<dashed-ident>`",
+        "required": "required",
+        "description": "A `state()` or a plain custom property computing to an integer literal."
+      }
+    ],
+    "returns": "A pseudo-class, compiled to `[data-rcss-nth-N]`. Same specificity as `:nth-child()`.",
+    "example": {
+      "id": "tabs",
+      "size": "compact"
+    },
+    "behavior": [
+      "With a state, the cell is read directly and only the old and new active element are touched.",
+      "With a plain property, groups are re-checked on child, attribute and ancestor changes."
+    ],
+    "contexts": [
+      "Any selector."
+    ],
+    "limits": [
+      "Doesn’t see changes that come only from media or container queries, animations or stylesheet edits. Call `ReactiveCSS.refresh()`.",
+      "For `calc()` values, register the property as `<integer>`."
+    ],
+    "related": [
+      "reference/set",
+      "reference/when-selector",
+      "selectors"
+    ],
+    "demos": [
+      "accessible-tabs"
+    ]
+  },
+  {
+    "id": "just-checked",
+    "name": ":just-checked",
+    "category": "Selectors",
+    "features": [
+      "selector:just-checked"
+    ],
+    "summary": "Matches a checkbox or radio after an observed unchecked → checked change, until its next change.",
+    "signature": "input:just-checked { … }",
+    "params": [],
+    "returns": "A pseudo-class, compiled to `[data-rcss-just-checked]`.",
+    "example": {
+      "id": "check",
+      "size": "compact"
+    },
+    "behavior": [
+      "Never matches on page load.",
+      "Markers swap on each change, so the animation restarts. There are no timers.",
+      "Keyboard, label clicks and mouse clicks all count, as does `form.reset()`."
+    ],
+    "contexts": [
+      "Checkboxes and radio buttons."
+    ],
+    "limits": [
+      "Non-animation declarations stay applied until the next change; use `:checked` for those.",
+      "A script setting `checked` directly fires no event: dispatch `change` or call `refresh()`."
+    ],
+    "related": [
+      "reference/just-unchecked",
+      "reference/changed",
+      "selectors"
+    ]
+  },
+  {
+    "id": "just-unchecked",
+    "name": ":just-unchecked",
+    "category": "Selectors",
+    "features": [
+      "selector:just-unchecked"
+    ],
+    "summary": "Matches a checkbox or radio after an observed checked → unchecked change, until its next change.",
+    "signature": "input:just-unchecked { … }",
+    "params": [],
+    "returns": "A pseudo-class, compiled to `[data-rcss-just-unchecked]`.",
+    "example": {
+      "label": "icons.css",
+      "code": "input:just-checked + .icon {\n  animation: check-in 300ms;\n}\n\ninput:just-unchecked + .icon {\n  animation: check-out 300ms;\n}"
+    },
+    "behavior": [
+      "Includes a radio that loses its state when another radio in its group is selected."
+    ],
+    "contexts": [
+      "Checkboxes and radio buttons."
+    ],
+    "limits": [
+      "Same lifecycle as `:just-checked`."
+    ],
+    "related": [
+      "reference/just-checked",
+      "reference/changed"
+    ]
+  },
+  {
+    "id": "blur",
+    "name": ":blur",
+    "category": "Selectors",
+    "features": [
+      "selector:blur"
+    ],
+    "readiness": "stable",
+    "summary": "Matches an element from a genuine focus loss until it is focused again. Unlike `:not(:focus)`, it never matches on page load.",
+    "signature": "selector:blur { … }",
+    "params": [],
+    "returns": "A pseudo-class, compiled to the marker attribute `[data-rcss-blur]`, which the element’s own `blur` event sets and its next `focus` event removes.",
+    "example": {
+      "label": "field.css",
+      "code": "@keyframes shake {\n  25% { translate: -4px 0; }\n  75% { translate: 4px 0; }\n}\n\ninput:blur:invalid {\n  animation: shake 250ms;\n  outline: 2px solid orange;\n}"
+    },
+    "behavior": [
+      "**Release status.** The 0.9.0 release recommendation (hardening report, section H) lists `:blur` as stable, so this page does not mark it experimental. The runtime's `describe()` still reports `experimental` until the registry is updated.",
+      "**From a real focus loss.** It never matches an element that has not been focused, so a form shows no errors before the user has visited a field.",
+      "**Retriggers.** Each focus removes the marker and the next blur sets it again, so `animation: shake 250ms` plays once per blur. With fast focus and blur, the last event wins.",
+      "**Nested elements.** Only the element that lost focus matches. For a container, use `:has(:blur)`: a bare `:blur` there marks any element that loses focus while such a rule exists, as in `.form:has(:blur:invalid) .hint { display: block; }`.",
+      "**Cleanup.** The marker goes with the element, and is removed when no `:blur` rule matches the element any more."
+    ],
+    "contexts": [
+      "Any selector compound, and bare inside `:has()`."
+    ],
+    "limits": [
+      "Not a replacement for `:not(:focus)`: it never matches before the first focus, and stops matching at the next one.",
+      "For plain focus styling, prefer native `:focus-visible` and transitions. Use `:blur` for something that should happen once, after the user leaves.",
+      "`:blur(when(…))`, `:just-focused` and `:just-blurred` do not exist."
+    ],
+    "related": [
+      "reference/focus-declaration",
+      "reference/just-checked",
+      "focus",
+      "selectors"
+    ],
+    "demos": [
+      "focus-blur"
+    ]
+  },
+  {
+    "id": "random",
+    "name": "random()",
+    "category": "Values",
+    "features": [
+      "function:random"
+    ],
+    "summary": "A random value between min and max. The browser’s native `random()` handles the calls it supports; Reactive CSS runs the rest, and rolls a new value at each event inside a mutation.",
+    "signature": "random(<key>?, <min>, <max>, <step>?)             /* native syntax */\nrandom(element-shared?, <min>, <max>, by <step>?)  /* Reactive CSS syntax */",
+    "params": [
+      {
+        "name": "min, max",
+        "type": "numbers, dimensions or percentages of one unit",
+        "required": "required",
+        "description": "A unitless `0` adopts the other unit. Mixed units, `var()` or `calc()` are allowed without a step."
+      },
+      {
+        "name": "step",
+        "type": "`<value>` or `by <value>`",
+        "required": "optional",
+        "description": "Round to multiples of the step. A plain third value is the native syntax; `by <step>` is the earlier draft’s, which only Reactive CSS reads."
+      },
+      {
+        "name": "key",
+        "type": "`auto`, `--name`, `element-scoped`, `property-scoped`, `fixed <n>`, or `element-shared`",
+        "required": "optional",
+        "description": "The native keys are left to the browser. `element-shared` is Reactive CSS’s own: one value for all elements, never re-rolled."
+      }
+    ],
+    "returns": "A value of the input type. With mixed units: `calc(min + (max - min) * r)`.",
+    "example": {
+      "label": "scatter.css",
+      "code": ".star {\n  translate: random(0px, 400px) random(0px, 200px);\n  rotate: random(-30deg, 30deg, 15deg);\n}\n\n.die { --face: state(1); }\n.die:on(click) { --face: set(random(1, 6, 1)); }"
+    },
+    "behavior": [
+      "**Native first.** A top-level call that the browser supports as written is left to it, when a probe confirms that it gives per-element values, whatever its units or step. Chromium 156 and WebKit 27.2 implement the 2026 CSS Values 5 draft this way; where the browser cannot evaluate a call, Reactive CSS’s polyfill does.",
+      "**Native-only keys** (`--name`, `element-scoped`, `property-scoped`, `fixed`) are never taken over. A browser that supports them handles them; without support, one diagnostic is given.",
+      "**Reactive CSS runs** `by <step>` and `element-shared`, calls inside `live()` or `on()`, calls inside mutations, and every call the browser cannot evaluate. The polyfill follows the 2026 draft for the plain step: a zero or negative step is ignored, and max < min gives min.",
+      "**In a mutation**, `--face: set(random(1, 6, 1))` rolls a new value at each event. Both step forms work there.",
+      "**Custom properties differ.** A natively handled `--r: random(…)` keeps the call as text, so each `var(--r)` user rolls its own value. The polyfill gives one value per declaring element, which descendants inherit.",
+      "Static unless inside `live()`, `on()` or a mutation."
+    ],
+    "contexts": [
+      "Any value, and the expression of an `:on()` mutation."
+    ],
+    "limits": [
+      "Native support differs between browsers, so a natively handled custom property can behave differently from the polyfill, as described above."
+    ],
+    "related": [
+      "reference/pick",
+      "reference/live",
+      "reference/on-value",
+      "reactive-values",
+      "reference/on-rule",
+      "compat"
+    ],
+    "demos": [
+      "random-colors",
+      "live-values"
+    ]
+  },
+  {
+    "id": "pick",
+    "name": "pick()",
+    "category": "Values",
+    "features": [
+      "function:pick"
+    ],
+    "summary": "One of its values at random, per element.",
+    "signature": "pick(<value>, <value>, …)",
+    "params": [
+      {
+        "name": "values",
+        "type": "comma-free values",
+        "required": "one or more",
+        "description": "Values can contain reactive calls."
+      }
+    ],
+    "returns": "One of the values.",
+    "example": {
+      "id": "dice",
+      "size": "compact"
+    },
+    "behavior": [
+      "Static unless inside `live()`, `on()` or an `:on()` mutation, where a new value is picked at each event (see [`pick()` in state()](/docs/reference/pick-expression/))."
+    ],
+    "contexts": [
+      "Any value."
+    ],
+    "limits": [
+      "Values can’t contain top-level commas."
+    ],
+    "related": [
+      "reference/random",
+      "reference/live"
+    ],
+    "demos": [
+      "random-colors"
+    ]
+  },
+  {
+    "id": "live",
+    "name": "live()",
+    "category": "Values",
+    "features": [
+      "function:live"
+    ],
+    "summary": "Re-evaluates an expression on an interval.",
+    "signature": "live(<expression>, <interval>?)",
+    "params": [
+      {
+        "name": "expression",
+        "type": "any value",
+        "required": "required",
+        "description": "`random()` and `pick()` inside it re-roll each time."
+      },
+      {
+        "name": "interval",
+        "type": "`ms` or `s`",
+        "required": "optional",
+        "description": "Default `1s`, minimum `50ms`; smaller values are raised with a warning."
+      }
+    ],
+    "returns": "The value of the expression.",
+    "example": {
+      "label": "blink.css",
+      "code": ".light {\n  background: live(pick(#f2542d, #57534e), 800ms);\n  transition: background 300ms;\n}"
+    },
+    "behavior": [
+      "One shared timer per distinct interval; a 2 s interval wakes 0.5 times per second.",
+      "Missed ticks are skipped, and periodic work stops while the tab is hidden."
+    ],
+    "contexts": [
+      "Any value."
+    ],
+    "limits": [],
+    "related": [
+      "reference/random",
+      "reference/pick",
+      "reference/on-value"
+    ],
+    "demos": [
+      "live-values"
+    ]
+  },
+  {
+    "id": "on-value",
+    "name": "on()",
+    "category": "Values",
+    "features": [
+      "function:on"
+    ],
+    "summary": "Re-evaluates an expression each time an event fires on the element. The value function, not the `:on()` event rule.",
+    "signature": "on(<event>, <expression>)",
+    "params": [
+      {
+        "name": "event",
+        "type": "`click`, `pointerdown`, `keyup`, `animationend`, `transitionend`, `toggle` …",
+        "required": "required",
+        "description": "From an allowlist of 21 DOM events."
+      },
+      {
+        "name": "expression",
+        "type": "any value",
+        "required": "required",
+        "description": "Evaluated once when bound, then again on each event."
+      }
+    ],
+    "returns": "The value of the expression.",
+    "example": {
+      "id": "dice",
+      "size": "compact"
+    },
+    "behavior": [
+      "One listener per bound element."
+    ],
+    "contexts": [
+      "Any value."
+    ],
+    "limits": [
+      "Listens on the element with the declaration only. To change state, use an [`:on()`](/docs/reference/on-rule/) rule with mutations."
+    ],
+    "related": [
+      "reference/random",
+      "reference/live"
+    ]
+  },
+  {
+    "id": "mouse",
+    "name": "mouse()",
+    "category": "Values",
+    "features": [
+      "function:mouse"
+    ],
+    "summary": "The pointer position in px, in viewport coordinates or relative to the element.",
+    "signature": "mouse(x | y, viewport | local?)",
+    "params": [
+      {
+        "name": "axis",
+        "type": "`x` or `y`",
+        "required": "required",
+        "description": "Which coordinate."
+      },
+      {
+        "name": "mode",
+        "type": "`viewport` (default) or `local`",
+        "required": "optional",
+        "description": "`local` measures from the top-left corner of the element’s border box."
+      }
+    ],
+    "returns": "A length in px. `0px` before the first pointer move.",
+    "example": {
+      "id": "pointer",
+      "size": "compact"
+    },
+    "behavior": [
+      "Updates at most once per frame, only for the axis that changed.",
+      "Viewport mode is a shared source: one listener and one write per declaration, not per element.",
+      "**Inside a mutation** of an `:on()` rule, `mouse()` is a snapshot of the event: `mouse(x)` is its client x, and `mouse(x, local)` is `event(local-x)`, relative to the element the rule matched. There it needs a pointer or drag trigger."
+    ],
+    "contexts": [
+      "Any value, and the expression of an `:on()` mutation (read once, at the event)."
+    ],
+    "limits": [
+      "`local` does not update on scroll alone, and needs a layout read per element per frame.",
+      "Pointer only: provide a non-pointer alternative."
+    ],
+    "related": [
+      "reference/element",
+      "reference/visible",
+      "geometry",
+      "reference/event"
+    ],
+    "demos": [
+      "mouse-tracker"
+    ]
+  },
+  {
+    "id": "visible",
+    "name": "visible()",
+    "category": "Values",
+    "features": [
+      "function:visible"
+    ],
+    "summary": "1 while at least the threshold of the element intersects the viewport, else 0.",
+    "signature": "visible(<threshold>?)",
+    "params": [
+      {
+        "name": "threshold",
+        "type": "`<number>` from 0 to 1",
+        "required": "optional",
+        "description": "Default 0."
+      }
+    ],
+    "returns": "`1` or `0`. `0` until the first observation.",
+    "example": {
+      "label": "reveal.css",
+      "code": ".card {\n  opacity: calc(0.2 + visible(0.3) * 0.8);\n  transition: opacity 400ms;\n}"
+    },
+    "behavior": [
+      "One shared `IntersectionObserver` per threshold."
+    ],
+    "contexts": [
+      "Any value."
+    ],
+    "limits": [
+      "For scroll progress rather than a visible/hidden state, use native scroll-driven animations."
+    ],
+    "related": [
+      "reference/mouse",
+      "reference/element"
+    ]
+  },
+  {
+    "id": "viewport",
+    "name": "viewport()",
+    "category": "Values",
+    "features": [
+      "function:viewport"
+    ],
+    "summary": "Compiles to native 100dvw or 100dvh. No runtime.",
+    "signature": "viewport(width | height)",
+    "params": [
+      {
+        "name": "dimension",
+        "type": "`width` or `height`",
+        "required": "required",
+        "description": "Same as `innerWidth` / `innerHeight`, scrollbars included."
+      }
+    ],
+    "returns": "`100dvw` or `100dvh`. Inside a mutation, `innerWidth` or `innerHeight` in px at the event.",
+    "example": {
+      "label": "spread.css",
+      "code": ".dot {\n  translate: random(0px, viewport(width)) 0;\n}"
+    },
+    "behavior": [
+      "Updated natively by the browser.",
+      "**Inside a mutation** of an `:on()` rule, it is a snapshot in px: `--w: set(viewport(width))` stores the width at the moment of the event."
+    ],
+    "contexts": [
+      "Any value, typically nested in another function.",
+      "The expression of an `:on()` mutation."
+    ],
+    "limits": [
+      "On its own, writing `100dvw` directly is the same."
+    ],
+    "related": [
+      "reference/random",
+      "reference/element"
+    ]
+  },
+  {
+    "id": "element",
+    "name": "element()",
+    "category": "Geometry & motion",
+    "features": [
+      "function:element"
+    ],
+    "summary": "The element’s own border-box width or height in px, from one shared ResizeObserver.",
+    "signature": "element(width | height)",
+    "params": [
+      {
+        "name": "axis",
+        "type": "`width` or `height`",
+        "required": "required",
+        "description": "Physical width or height, correct in vertical writing modes. Only these two forms belong to Reactive CSS."
+      }
+    ],
+    "returns": "A `<length>` in px. No value (`unset`) until the first measurement, so a `var()` fallback applies: the browser measures before the element's first paint, and the value is written in the next frame. `display: none` measures `0px`.",
+    "example": {
+      "id": "geometry",
+      "size": "standard"
+    },
+    "behavior": [
+      "Updates on resize, at most once per frame, written in the next frame: one frame of lag.",
+      "Feedback loops (`width: calc(element(width) + 10px)`) are detected and frozen with a warning. A transition or drag that keeps resizing the element is not mistaken for a loop.",
+      "The shared observer disconnects when nothing uses it.",
+      "In the 0.4.0 benchmark (1,000 elements resized every frame) it used 43 ms/s of script and 49 ms/s of layout, against 31 and 79 for one hand-written `ResizeObserver`.",
+      "**Inside a mutation** of an `:on()` rule, `element(width)` is read once, at the event: the border-box size of the element the rule matched (`offsetWidth` and `offsetHeight`, or `getBBox()` for SVG). `.box:on(click) { --w: set(element(width)); }`"
+    ],
+    "contexts": [
+      "Any value, typically a custom property read by `calc()`.",
+      "The expression of an `:on()` mutation, as a snapshot."
+    ],
+    "limits": [
+      "Experimental: the name could change if a spec gives `element()` keyword arguments.",
+      "`element(#id)`, the CSS Images 4 image function, is left to the browser.",
+      "Measuring another element is deferred: use container units or `anchor-size()`.",
+      "Falls back to the content box where `borderBoxSize` is missing."
+    ],
+    "related": [
+      "reference/mouse",
+      "geometry",
+      "reference/event"
+    ],
+    "demos": [
+      "element-size"
+    ]
+  },
+  {
+    "id": "wave",
+    "name": "wave()",
+    "category": "Geometry & motion",
+    "features": [
+      "function:wave"
+    ],
+    "summary": "Smooth periodic motion between two values, run by the browser as a native animation with no JavaScript per frame.",
+    "signature": "wave(<min>, <max>, <duration>)",
+    "params": [
+      {
+        "name": "min, max",
+        "type": "numbers, lengths, percentages, angles or times of one type",
+        "required": "required",
+        "description": "A unitless `0` adopts the other type; percentages mix with lengths."
+      },
+      {
+        "name": "duration",
+        "type": "`<time>`",
+        "required": "required",
+        "description": "One full cycle: min → max → min."
+      }
+    ],
+    "returns": "A value of the same type as min and max, sine-shaped over time.",
+    "example": {
+      "label": "floating.css",
+      "code": "/* wave() is removed. The native replacement: */\n@property --y { syntax: \"<length>\"; inherits: false; initial-value: 0px; }\n@keyframes y { from { --y: -8px; } to { --y: 8px; } }\n.floating {\n  translate: 0 var(--y);\n  animation: y 1.5s ease-in-out infinite alternate;\n}"
+    },
+    "behavior": [
+      "Each call site registers one typed property and one shared keyframe list; each element gets a Web Animations animation.",
+      "Does not use the `animation` property, so your own `animation`, `transition`, `transform` and `translate` keep working.",
+      "Elements bound together share the phase.",
+      "`prefers-reduced-motion: reduce` gives the midpoint and no animation, and preference changes apply live."
+    ],
+    "contexts": [
+      "Any animatable value, including inside `calc()`."
+    ],
+    "limits": [
+      "Experimental.",
+      "Arguments must be plain values: no nested reactive functions, and it can’t be nested inside `live()`.",
+      "About 2× the style cost of a plain `@keyframes` animation of `translate`.",
+      "Several matching rules using `wave()` for the same property each run an animation, although only the winning one is visible.",
+      "Without `CSS.registerProperty`, shows the midpoint with one warning."
+    ],
+    "related": [
+      "geometry",
+      "reference/typed"
+    ],
+    "removal": "Removed in 0.5.0. `wave()` was a convenience over native `@property` and `@keyframes`, at a measured style cost of 171–181 ms per second for 1,000 animated elements, where a composited `@keyframes` animation of `translate` costs almost nothing. A `wave()` declaration is now left to the browser, which drops it as invalid. Use `@property` with `@keyframes`, or animate `translate` directly: see [Geometry & Animation](/docs/geometry/#wave-was-removed)."
+  },
+  {
+    "id": "attr",
+    "name": "attr()",
+    "category": "Expressions",
+    "features": [
+      "expression:attr"
+    ],
+    "summary": "In state() and in mutations: reads an HTML attribute into a state. Everywhere else attr() is the browser’s native function.",
+    "signature": "attr(<attribute-name>, <fallback>?)",
+    "params": [
+      {
+        "name": "name",
+        "type": "HTML attribute name",
+        "required": "required",
+        "description": "Read from the state owner in `state()`, and from the element the rule matched in a mutation."
+      },
+      {
+        "name": "fallback",
+        "type": "`<string>`, or since 0.9 a typed value",
+        "required": "optional",
+        "description": "Used when the attribute is missing. Default `\"\"`. With a non-string fallback, `state(attr(aria-expanded, false))`, the attribute is parsed as that type, and an invalid value gives the fallback."
+      }
+    ],
+    "returns": "A string, escaped into one CSS string, or a value of the fallback’s type. An empty attribute gives `\"\"`.",
+    "example": {
+      "label": "greeting.css",
+      "code": ".greeting {\n  --message: state(attr(data-message));\n  --open: state(attr(aria-expanded, false));\n}\n\n.choice:on(click) {\n  --message: set(attr(data-message));\n}"
+    },
+    "behavior": [
+      "`state(attr(name))` reads the owner’s attribute once, when the state is created. Changing the attribute later does not reset the state. For an attribute that should follow the state, use `bind(<attribute>)`.",
+      "In an `:on()` mutation, `attr(name)` reads the attribute of the element the rule matched, once, at the event.",
+      "Values are never parsed as CSS or as actions: quotes, backslashes and control characters are escaped."
+    ],
+    "contexts": [
+      "The initial value of `--x: state(…)`, the expression of an `:on()` mutation. Elsewhere, such as `content: attr(data-label)`, the browser’s `attr()` is untouched."
+    ],
+    "limits": [
+      "Experimental since 0.5.0.",
+      "No ancestor lookup and no native typed `attr(name type(…))`.",
+      "Trusted stylesheets only, like every event rule and binding. Password, one-time-code and payment fields are never read."
+    ],
+    "related": [
+      "reference/state",
+      "reference/set",
+      "reference/pick-expression",
+      "reference/split",
+      "reference/on-rule"
+    ]
+  },
+  {
+    "id": "pick-expression",
+    "name": "pick() in state()",
+    "category": "Expressions",
+    "features": [
+      "expression:pick"
+    ],
+    "summary": "In state() and in mutations: one value at random each time the expression is evaluated, once per owner in state(), at every event in set().",
+    "signature": "pick(<value>, …) | pick(split(<text>, \"<delimiter>\"))",
+    "params": [
+      {
+        "name": "values",
+        "type": "literals of one type, or `split(…)`",
+        "required": "one or more",
+        "description": "All values must have the same type."
+      }
+    ],
+    "returns": "One of the values. With nothing to pick, `set()` changes nothing and `state()` starts as `\"\"`.",
+    "example": {
+      "label": "dice.css",
+      "code": ".die {\n  --face: state(1);\n}\n\n.die:on(click) {\n  --face: set(pick(1, 2, 3, 4, 5, 6));\n}"
+    },
+    "behavior": [
+      "In `state()` each owner picks once, when its state is created.",
+      "In `set()` a new value is picked on every event.",
+      "In an `:on()` mutation, `--face: set(pick(1, 2, 3, 4, 5, 6))` picks a new value at each event."
+    ],
+    "contexts": [
+      "The initial value of `--x: state(…)`, the expression of an `:on()` mutation. In other declarations `pick()` is the stable value function: see [`pick()`](/docs/reference/pick/)."
+    ],
+    "limits": [
+      "Experimental since 0.5.0.",
+      "Values of one type only."
+    ],
+    "related": [
+      "reference/pick",
+      "reference/split",
+      "reference/attr",
+      "reference/set",
+      "reference/on-rule"
+    ]
+  },
+  {
+    "id": "split",
+    "name": "split()",
+    "category": "Expressions",
+    "features": [
+      "expression:split"
+    ],
+    "summary": "Splits a string into a list, only as the single argument of pick(). Entries are trimmed and empty entries dropped.",
+    "signature": "pick(split(<text>, \"<delimiter>\"))",
+    "params": [
+      {
+        "name": "text",
+        "type": "`<string>` or `attr()`",
+        "required": "required",
+        "description": "The text to split."
+      },
+      {
+        "name": "delimiter",
+        "type": "non-empty `<string>`",
+        "required": "required",
+        "description": "There is no escape for the delimiter itself: choose one that does not occur in the values."
+      }
+    ],
+    "returns": "A transient list for `pick()`. The list is never stored, so state stays one scalar value.",
+    "example": {
+      "label": "shuffle.css",
+      "code": ".shuffle {\n  --message: state(\"Hello\");\n}\n\n.shuffle:on(click) {\n  --message: set(pick(split(attr(data-greetings), \"|\")));\n}"
+    },
+    "behavior": [
+      "Entries are trimmed; empty entries are dropped."
+    ],
+    "contexts": [
+      "Only as the single argument of `pick()` inside `state()` or `set()`."
+    ],
+    "limits": [
+      "Experimental since 0.5.0.",
+      "No `slice()` or other list functions."
+    ],
+    "related": [
+      "reference/pick-expression",
+      "reference/attr"
+    ]
+  }
+]

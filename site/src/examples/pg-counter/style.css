@@ -1,0 +1,16 @@
+.counter {
+  --count: state(0);
+}
+
+.plus:on(click) {
+  --count: increment(1);
+}
+
+.minus:on(click) {
+  --count: decrement(1);
+}
+
+/* The number, as real DOM text in the output. */
+.counter output {
+  content: var(--count);
+}

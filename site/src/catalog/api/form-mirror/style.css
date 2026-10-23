@@ -1,0 +1,23 @@
+/* Form mirror */
+.mirror form { display: grid; gap: 12px; }
+.mirror .field { display: grid; gap: 4px; font-size: 14px; color: var(--ink-2); }
+.mirror .preview { margin: 0; font-size: 20px; }
+.mirror .name { font-weight: 600; color: var(--accent); }
+.mirror .clear { justify-self: start; }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+/* The state belongs to the section, which contains the form, the field and the preview. */
+.mirror { --name: state(""); }
+
+/* bind(value): the field and its own state stay equal, both ways. Only the field can read it. */
+.mirror input { --typed: state("", bind(value)); }
+.mirror input:when(--typed != "") { border-color: var(--accent); }
+
+/* Field → section: each keystroke copies the value up, so the preview beside the field can read it. */
+.mirror input:on(input) { --name: set(event(value)); }
+
+.mirror .name { content: when(--name == "", "stranger", ""); }
+.mirror:when(--name != "") .name { content: var(--name); }
+
+/* The Clear button resets the form natively; the reset rule clears the state with it. */
+.mirror:on(reset) { --name: set(""); }

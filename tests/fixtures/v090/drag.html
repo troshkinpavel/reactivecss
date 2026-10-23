@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Drag · 0.9 fixture</title>
+<script src="/dist/reactive-css.js" defer></script>
+<style>
+  body { font: 14px/1.4 system-ui, sans-serif; margin: 0; }
+  .stage { position: relative; height: 900px; }
+  /* 1. Draggable card: positions continue across drags (event(x) = state at drag start + distance). */
+  .card { --x: state(0px); --y: state(0px); --dragging: state(false); position: absolute; left: 20px; top: 20px; width: 80px; height: 60px;
+          background: #9cf; translate: var(--x) var(--y); touch-action: none; user-select: none; }
+  .card:on(drag(start)) { --dragging: set(true); }
+  .card:on(drag) { --x: set(event(x)); --y: set(event(y)); }
+  .card:on(drag(end)) { --dragging: set(false); }
+  .card:on(drag(cancel)) { --cancels: increment(1); }
+  .stage { --cancels: state(0); }
+  .card:when(--dragging) { cursor: grabbing; outline: 2px solid; }
+  .stage .cancels { content: var(--cancels); }
+  /* A keyboard alternative for the same state. */
+  .card:on(keydown(ArrowRight), prevent()) { --x: increment(10px); }
+
+  /* 2. Horizontal slider: the thumb position is clamped to the track. */
+  .hs { --v: state(0px); position: absolute; left: 20px; top: 200px; width: 200px; height: 10px; background: #ddd; }
+  .hs .thumb { position: absolute; left: -8px; top: -5px; width: 16px; height: 20px; background: #333; translate: var(--v) 0; touch-action: none; }
+  .hs .thumb:on(drag) { --v: set(clamp(0px, event(x), 200px)); }
+  .hs .out { position: absolute; top: 16px; content: var(--v); }
+
+  /* 3. Vertical slider. */
+  .vs { --v: state(100px); position: absolute; left: 300px; top: 200px; width: 10px; height: 100px; background: #ddd; }
+  .vs .thumb { position: absolute; left: -5px; top: -8px; width: 20px; height: 16px; background: #333; translate: 0 var(--v); touch-action: none; }
+  .vs .thumb:on(drag) { --v: set(clamp(0px, event(y), 100px)); }
+
+  /* 4. Split panel: the divider sets the left pane's width. */
+  .split { --w: state(150px); position: absolute; left: 20px; top: 360px; width: 400px; height: 80px; display: flex; border: 1px solid; }
+  .split .left { width: var(--w); background: #fec; }
+  .split .divider { width: 6px; background: #666; cursor: col-resize; touch-action: none; }
+  .split .divider:on(drag) { --w: set(clamp(50px, event(x), 350px)); }
+
+  /* 5. Many draggables, one state each. */
+  .many { position: absolute; left: 20px; top: 480px; }
+  .many i { --dx: state(0px); display: inline-block; width: 20px; height: 20px; margin: 2px; background: #c9f; translate: var(--dx) 0; touch-action: none; }
+  .many i:on(drag) { --dx: set(event(x)); }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="card" tabindex="0">Card</div>
+    <span class="cancels">0</span>
+    <div class="hs"><div class="thumb"></div><span class="out">0px</span></div>
+    <div class="vs"><div class="thumb"></div></div>
+    <div class="split"><div class="left">Left</div><div class="divider"></div><div class="right">Right</div></div>
+    <div class="many"></div>
+  </div>
+</body>
+</html>

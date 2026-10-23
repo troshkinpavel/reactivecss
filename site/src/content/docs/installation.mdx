@@ -1,0 +1,116 @@
+---
+title: "Installation"
+description: "Reactive CSS is a single script. Choose the full bundle, the compact one or a custom build, load it with defer, and it processes the document on its own. Sizes, the development build, npm and CDN status, and production notes."
+group: Start
+type: Guide
+order: 2
+---
+## Choose a distribution
+
+| Distribution | What it is | Use it when |
+| --- | --- | --- |
+| Full: `reactive-css.min.js` | Every feature, plus the complete feature registry that `describe()` returns: descriptions and examples of every API entry | You start, or size does not matter |
+| Compact: `reactive-css.compact.min.js` | The **same runtime** with every feature. Only `describe()` is shorter: name, kind, status, version and syntax, without descriptions or examples (those are in `dist/features.json`). It is not a feature selection | You want every feature in a smaller file |
+| Custom | Only the features you select. Unused capabilities are physically removed from the file | You know which features your stylesheets use: see [Custom bundles](/docs/custom-bundles/) and the [bundle builder](/bundle-builder/) |
+
+All three load the same way and behave the same for the features they contain. Prebuilt profile bundles are not distributed.
+
+Measured from the 0.9.0 build (minified, gzip level 9, brotli quality 11, in bytes):
+
+<Bundles part="sizes" />
+
+## Script tag
+```html index.html
+<link rel="stylesheet" href="style.css">
+<script src="reactive-css.min.js" defer></script>
+```
+
+That is all: the script processes the document by itself once it runs.
+
+### Development build and diagnostics
+- **`reactive-css.js`** is the same runtime, not minified. It logs a console warning with the full text of each problem.
+- **The minified bundles** (full, compact and custom) log one summary line instead, and report each problem as a stable code with its values, such as `RCSS-P001⟦:on()⟧⟦events⟧⟦events⟧`. `ReactiveCSS.diagnostics` lists every one.
+- **Decode a code offline** with `npx reactive-css explain "<message>"`, which needs no esbuild, or switch to `reactive-css.js` while you debug. The codes and their texts are in `dist/diagnostics.json`.
+
+## npm
+npm is the package's distribution channel once it is published. Until then, install it from a local pack of the library. The package as it is prepared:
+
+<Bundles part="package" />
+
+<Bundles part="install" />
+
+- **The runtime needs nothing.** Copy `node_modules/@reactivecss/core/dist/reactive-css.min.js` (or the compact file) to the folder your site serves, and load it with a script tag. Or import it, as below.
+- **esbuild is needed only to build custom bundles.** It is an optional peer dependency, so package managers do not install it for you: add it next to the package, as above, when you use the CLI.
+- **Install scripts.** Recent npm versions hold back esbuild's install script until you approve it (`npm install-scripts approve esbuild`). In the project's own test, the CLI built bundles without it, because esbuild's platform binary comes from an optional dependency.
+- **Imports:**
+  - `@reactivecss/core`: the ES module API;
+  - `@reactivecss/core/auto`: the full bundle (`dist/reactive-css.min.js`), which starts itself;
+  - `@reactivecss/core/bundle`: the bundle builder API (Node only);
+  - `@reactivecss/core/catalog.json`: the feature catalog.
+
+## CDN
+After publication, npm CDNs such as jsDelivr and unpkg serve the package's files directly. No CDN of the project's own is planned for the first release.
+
+<Bundles part="cdn" />
+
+For production:
+- **Pin an exact version.** Never use `@latest` or a version range: such a URL can start serving a new release without notice.
+- **Rely on version-pinned caching.** CDNs cache files of a pinned version for a long time, because they never change. Unpinned URLs are cached briefly and can change.
+- **Upgrade deliberately.** Read the changelog, change the version in the URL, and test your pages, then check `ReactiveCSS.diagnostics`.
+- **Self-host** for full control: the file is static and has no dependencies. Custom bundles are always self-hosted.
+- **Subresource Integrity.** With a pinned URL you can add an `integrity` hash computed from that exact published file, plus `crossorigin="anonymous"`. No hashes are given here: there is no published file to compute them from yet.
+
+## ES module
+For programmatic use, import the ESM build and start it yourself. With the package installed, a bundler resolves `@reactivecss/core` to `dist/index.js`; without one, import the file directly.
+
+```js main.js
+import { start, refresh, stop } from '@reactivecss/core';
+
+start();
+```
+
+The ES module keeps the full diagnostic text, and its type declarations resolve with `moduleResolution` set to `bundler`, `node16` or `nodenext`.
+
+| Export | Does |
+| --- | --- |
+| `start()` / `stop()` | Process the document / restore the original sheets and release everything. The browser build calls `start()` itself. |
+| `refresh()` | Read state again that has no change event, such as a programmatic `checked` change. |
+| `stats()` | Counters for sheets, bindings, subscriptions and observers. |
+| `diagnostics` | Every problem found, also when the console is quiet. In a custom bundle, also each syntax whose feature the bundle does not include, with the feature's ID. |
+| `compile(css)` | The pure compiler, without a document: returns the rewritten CSS and the rules it found, and reports problems in `diagnostics`. For tools and tests; this site uses it to check every snippet it shows. |
+| `version` | The library version, such as `"0.9.0"`. |
+| `FEATURES`, `KEEP_NATIVE` | The feature registry that `describe()` returns, and the list of native CSS features the library deliberately leaves to the browser. |
+| `defineFunction`, `defineSelector`, `defineAction` | Internal extension points, used by the library's own features. Not a stable plugin API yet. |
+| `describe()` | Every feature as data: syntax, arguments, status and native equivalent. Its `bundle` key lists the feature IDs the bundle contains: every one in the full and compact bundles, `null` when imported from source. A custom bundle's `features` lists only its own features, in compact form. |
+
+## Which stylesheets are read
+The browser drops syntax it does not understand, including selectors such as `:on(click)`, so the library reads the source text: inline `<style>` elements, and same-origin `<link rel="stylesheet">` files through `fetch()`, normally from the HTTP cache. Sheets without reactive syntax are skipped untouched.
+
+- Cross-origin sheets are skipped unless the `<link>` has `crossorigin` and the server sends CORS headers.
+- Cross-origin sheets are untrusted: their states work, but event rules, `bind()`, `--attr-*`, `focus:` and reactive `content` are ignored. Their `content` stays native.
+- `@import`ed sheets, `style=""` attributes and shadow DOM stylesheets are not processed. The native rules of an imported sheet still apply.
+
+## Minifiers
+Keep empty rules in stylesheets with Reactive CSS. A modifier-only event rule such as `a.confirm:on(click, prevent()) {}` is empty on purpose, and minifiers that remove empty rules delete it: esbuild with `minify` or `minifySyntax`, csso and Lightning CSS. Whitespace-only minification (esbuild `minifyWhitespace`) keeps it. Rules with declarations survive every one of them. Details: [Browser compatibility](/docs/compat/#build-tools-and-minifiers).
+
+## Content-Security-Policy
+Reactive CSS needs no `'unsafe-inline'`, hash or nonce of its own. It rewrites existing stylesheets in place through the CSSOM and never injects `<style>` elements or `style=""` attributes. Linked stylesheets must be readable with `fetch()`, so `connect-src` must allow their URL; `'self'` covers this.
+
+## Configuration
+Zero configuration is the default. Set options before the library script runs.
+
+```html index.html
+<script>window.ReactiveCSSConfig = { trustInlineStyles: false };</script>
+<script src="reactive-css.min.js" defer></script>
+```
+
+| Option | Default | Effect |
+| --- | --- | --- |
+| `trustInlineStyles` | `true` | `false`: inline `<style>` elements are untrusted, like cross-origin sheets, so event rules, bindings, attribute writes, `focus:` and reactive `content` are accepted only from same-origin `<link>` sheets. Use it if your pages render user-provided `<style>`. |
+| `native` | `true` | `false`: `when()` always uses the runtime instead of native `if()`. |
+
+## Browser targets
+The build targets Chrome and Edge 111+, Firefox 128+ and Safari 16.4+, because event rules need `CSS.registerProperty()`. These are targets, not verified versions. See [Browser Compatibility](/docs/compat/) for what has actually been tested.
+
+## First paint
+Keep `defer`. The first paint can happen before the script runs, so reactive values appear one script execution later, and transitions on reactive properties can play once on load. `state()` initial values are a native `var()` fallback and render immediately.

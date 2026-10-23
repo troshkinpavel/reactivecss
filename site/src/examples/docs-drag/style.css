@@ -1,0 +1,32 @@
+.card {
+  --x: state(0px);
+  --y: state(0px);
+  --dragging: state(false);
+  translate: var(--x) var(--y);
+  touch-action: none;
+}
+
+.card:on(drag(start)) {
+  --dragging: set(true);
+}
+
+/* event(x): the state at drag start plus the distance moved. */
+.card:on(drag) {
+  --x: set(clamp(-110px, event(x), 110px));
+  --y: set(clamp(-55px, event(y), 55px));
+}
+
+.card:on(drag(end)) {
+  --dragging: set(false);
+}
+
+.card:when(--dragging) {
+  cursor: grabbing;
+  scale: 1.05;
+}
+
+/* The same state from the keyboard. */
+.card:on(keydown(ArrowRight), prevent()) { --x: set(min(var(--x) + 10px, 110px)); }
+.card:on(keydown(ArrowLeft), prevent()) { --x: set(max(var(--x) - 10px, -110px)); }
+.card:on(keydown(ArrowDown), prevent()) { --y: set(min(var(--y) + 10px, 55px)); }
+.card:on(keydown(ArrowUp), prevent()) { --y: set(max(var(--y) - 10px, -55px)); }

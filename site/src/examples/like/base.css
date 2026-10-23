@@ -1,0 +1,10 @@
+.like {
+  height: 50px;
+  padding: 0 22px;
+  border: 1.5px solid currentColor;
+  border-radius: 3px;
+  background: transparent;
+  color: #57534e;
+  font-size: 18px;
+  font-weight: 600;
+}

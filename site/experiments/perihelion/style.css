@@ -1,0 +1,331 @@
+/* Perihelion: a collector card with a physical feel. Reactive CSS 0.9.0.
+   Reactive CSS supplies the pointer (mouse(x|y, local)), the card size (element()), the hover
+   state (:on(pointerenter) / :on(pointerleave)), the edition and the foil level. Native CSS renders
+   all of it: registered custom properties, 3D transforms, transitions, gradients, masks and blend
+   modes. Ported from the internal Visual Lab (0.8 syntax) without visual changes. */
+
+/* ---- Tokens: registered so the browser computes and interpolates them ---- */
+@property --nx { syntax: "<number>"; inherits: true; initial-value: 0; }   /* pointer, -1 (left) .. 1 (right) */
+@property --ny { syntax: "<number>"; inherits: true; initial-value: 0; }   /* pointer, -1 (top) .. 1 (bottom) */
+/* Derived values are registered too: before the runtime has compiled the sheet, var(--foil) and the
+   pointer values are invalid, and a registered property then takes its initial value (the rest pose)
+   instead of making opacity/translate fall back to 1/none and transition on load. */
+@property --gx { syntax: "<number>"; inherits: true; initial-value: -0.9; }  /* light position */
+@property --gy { syntax: "<number>"; inherits: true; initial-value: -1; }
+@property --act { syntax: "<number>"; inherits: true; initial-value: 0.12; } /* how much the foil catches the light */
+@property --foil-k { syntax: "<number>"; inherits: true; initial-value: 0.7; }
+@property --c-deep { syntax: "<color>"; inherits: true; initial-value: #140e3a; }
+@property --c-mid  { syntax: "<color>"; inherits: true; initial-value: #0f5368; }
+@property --c-sun  { syntax: "<color>"; inherits: true; initial-value: #ff9bc6; }
+@property --c-glow { syntax: "<color>"; inherits: true; initial-value: #8ff0ff; }
+@property --c-page { syntax: "<color>"; inherits: true; initial-value: #0f0b24; }
+
+:root {
+  color-scheme: dark;
+  --serif: Didot, "Bodoni 72", "Bodoni MT", "Noto Serif Display", "Times New Roman", serif;
+  --sans: "Avenir Next", Avenir, "Segoe UI", system-ui, sans-serif;
+  /* a damped spring: overshoots by ~6 %, then settles (return to neutral) */
+  --settle: linear(0, 0.18 6%, 0.5 14%, 0.8 23%, 0.98 32%, 1.05 41%, 1.06 48%, 1.03 60%, 1.005 75%, 1);
+  --follow: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: #0b0919; color: #ebe7fb; font: 15px/1.5 var(--sans); -webkit-font-smoothing: antialiased; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* ---- Stage ---- */
+.stage {
+  /* Aurora edition (default) */
+  --c-deep: #140e3a; --c-mid: #0f5368; --c-sun: #ff9bc6; --c-glow: #8ff0ff; --c-page: #0f0b24;
+  --bands: #ff6fd8, #ffd27a 8%, #7dffc6 16%, #6fb6ff 24%, #b98bff 32%, #ff6fd8 40%;
+  --ink: #f6f1ff;
+
+  --w-card: max(220px, min(380px, 100vw - 72px, (100svh - 290px) * 5 / 7));
+  position: relative; min-height: 100svh; overflow: hidden;
+  display: grid; justify-items: center; align-content: center; gap: clamp(36px, 7svh, 72px);
+  padding: clamp(40px, 9svh, 96px) 16px clamp(28px, 6svh, 64px);
+  background:
+    radial-gradient(60% 46% at 50% 40%, color-mix(in oklab, var(--c-mid) 38%, transparent), transparent 70%),
+    radial-gradient(130% 90% at 50% 0%, color-mix(in oklab, var(--c-deep) 70%, var(--c-page)), var(--c-page) 62%, color-mix(in oklab, var(--c-page) 55%, black));
+  transition: --c-deep 900ms ease, --c-mid 900ms ease, --c-sun 900ms ease, --c-glow 900ms ease, --c-page 900ms ease;
+}
+/* faint star field behind the card: two offset dot grids read as scattered points */
+.stage::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.5;
+  background:
+    radial-gradient(circle, rgb(255 255 255 / 0.55) 0 0.7px, transparent 1.2px) 0 0 / 97px 89px,
+    radial-gradient(circle, rgb(255 255 255 / 0.35) 0 0.6px, transparent 1.1px) 41px 23px / 61px 67px;
+  mask-image: radial-gradient(70% 60% at 50% 42%, transparent 20%, #000 75%);
+}
+
+/* The slot is the measured, never-transformed hit area: its box does not move when the card tilts. */
+.slot {
+  position: relative; width: var(--w-card); aspect-ratio: 5 / 7;
+  perspective: 1100px; touch-action: none; -webkit-tap-highlight-color: transparent;
+  --nx: 0; --ny: 0;                 /* neutral pose */
+  --gx: -0.9; --gy: -1;             /* resting highlight: just off the upper-left corner */
+  --act: 0.12;                      /* foil response at rest */
+  transition: --act 500ms ease;     /* the foil brightens a little after the tilt */
+}
+
+/* ---- Card ---- */
+.card {
+  appearance: none; margin: 0; padding: 0; border: 0; font: inherit; color: var(--ink); text-align: left; cursor: pointer;
+  position: absolute; inset: 0; display: block; border-radius: 18px; overflow: hidden; isolation: isolate;
+  container-type: size;
+  background: var(--c-deep);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.10), 0 1px 0 rgb(255 255 255 / 0.06);
+  transform: rotateX(0deg) rotateY(0deg); scale: 1;
+  transition: transform 1150ms var(--settle), scale 900ms var(--settle), outline-color 300ms;
+  will-change: transform;
+  outline: 2px solid transparent; outline-offset: 7px;
+}
+.face, .face > span, .gloss, .edge { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; }
+
+/* Procedural artwork: a sun at closest approach over a banded sea, rays and orbit lines. */
+.art {
+  inset: -5%;
+  background:
+    radial-gradient(circle at 50% 39%, #fff 0, color-mix(in oklab, var(--c-sun) 45%, white) 6cqw, var(--c-sun) 14.5cqw,
+      color-mix(in oklab, var(--c-sun) 50%, transparent) 15.2cqw, color-mix(in oklab, var(--c-sun) 16%, transparent) 26cqw, transparent 52cqw),
+    repeating-conic-gradient(from 2deg at 50% 39%, rgb(255 255 255 / 0.035) 0 0.8deg, transparent 0.8deg 6deg),
+    radial-gradient(80% 50% at 50% 39%, color-mix(in oklab, var(--c-mid) 70%, var(--c-sun) 30%), transparent 70%),
+    linear-gradient(to bottom, color-mix(in oklab, var(--c-deep) 80%, black) 0%, var(--c-deep) 24%, var(--c-mid) 66%, color-mix(in oklab, var(--c-deep) 60%, black) 100%);
+  translate: calc(var(--nx) * -7px) calc(var(--ny) * -7px);
+  transition: translate 1150ms var(--settle);
+}
+.orbits {
+  background:
+    radial-gradient(closest-side, transparent calc(100% - 1.5px), rgb(255 255 255 / 0.30) calc(100% - 1px), transparent 100%) 50% 38% / 92% 26% no-repeat,
+    radial-gradient(closest-side, transparent calc(100% - 1.5px), rgb(255 255 255 / 0.14) calc(100% - 1px), transparent 100%) 50% 38% / 128% 40% no-repeat;
+  translate: calc(var(--nx) * -3px) calc(var(--ny) * -3px);
+  transition: translate 1150ms var(--settle);
+}
+/* A dark planet rising from the bottom edge, lit along its limb by the sun. */
+.orbits::before {
+  content: ""; position: absolute; left: -45%; width: 190%; top: 66%; aspect-ratio: 1; border-radius: 50%;
+  background:
+    repeating-radial-gradient(circle at 50% 120%, transparent 0 9px, rgb(255 255 255 / 0.025) 9px 10px),
+    radial-gradient(circle at 50% -10%, color-mix(in oklab, var(--c-mid) 55%, black), color-mix(in oklab, var(--c-deep) 50%, black) 30%, #000 60%);
+  box-shadow:
+    inset 0 1.5px 0 color-mix(in oklab, var(--c-glow) 70%, white),
+    inset 0 10px 22px -6px color-mix(in oklab, var(--c-glow) 45%, transparent),
+    0 -6px 26px color-mix(in oklab, var(--c-glow) 30%, transparent);
+}
+
+/* Holographic foil: an oversized band layer slides under a fixed mask as the card turns. */
+.foil {
+  mix-blend-mode: hard-light;   /* color-dodge bands and clips in WebKit */
+  opacity: calc(var(--foil-k) * (0.1 + 0.9 * var(--act)));
+  mask-image:
+    repeating-conic-gradient(from 2deg at 50% 39%, #000 0 1.6deg, rgb(0 0 0 / 0.45) 1.6deg 6deg),
+    radial-gradient(85% 70% at 50% 40%, #000 20%, rgb(0 0 0 / 0.5) 100%),
+    linear-gradient(to bottom, #000 60%, rgb(0 0 0 / 0.22) 70%);
+  mask-composite: intersect;
+}
+.foil > span {
+  position: absolute; inset: -100%;
+  background: repeating-linear-gradient(118deg, var(--bands)) 0 0 / 100% 100%;
+  translate: calc(var(--nx) * -22%) calc(var(--ny) * -14%);
+  transition: translate 1150ms var(--settle);
+}
+.glitter {
+  background:
+    radial-gradient(circle, #fff 0 0.6px, transparent 1px) 0 0 / 7px 9px,
+    radial-gradient(circle, #fff 0 0.5px, transparent 1px) 3px 5px / 11px 13px;
+  mix-blend-mode: overlay;
+  opacity: calc(var(--foil-k) * (0.1 + 0.6 * var(--act)));
+}
+.frame {
+  inset: 11px; border-radius: 10px;
+  border: 1px solid color-mix(in oklab, var(--c-glow) 45%, rgb(255 255 255 / 0.35));
+  box-shadow: inset 0 0 0 4px rgb(0 0 0 / 0.18), inset 0 0 0 5px rgb(255 255 255 / 0.08);
+}
+
+/* Typographic symbol: Didot numerals in silhouette against the sun, an eclipse with a corona. */
+.glyph {
+  position: absolute; left: 0; right: 0; top: 38%; margin-top: -0.53em; text-align: center; pointer-events: none;
+  font: 400 31cqw/1 var(--serif); letter-spacing: -0.01em;
+  color: transparent;
+  background: linear-gradient(170deg, color-mix(in oklab, var(--c-deep) 55%, black), color-mix(in oklab, var(--c-deep) 85%, var(--c-sun)) 70%, color-mix(in oklab, var(--c-deep) 40%, black));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-stroke: 0.6px color-mix(in oklab, var(--c-sun) 55%, white);
+  filter: drop-shadow(0 0 6px color-mix(in oklab, var(--c-sun) 80%, white)) drop-shadow(0 0 22px var(--c-sun));
+  translate: calc(var(--nx) * 9px) calc(var(--ny) * 9px);
+  transition: translate 1150ms var(--settle);
+}
+/* Floating foreground detail: a small satellite, the layer with the most parallax. */
+.moon {
+  position: absolute; top: 10.5%; right: 13%; width: 9cqw; aspect-ratio: 1; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle at 35% 30%, #fff, color-mix(in oklab, var(--c-glow) 60%, white) 40%, color-mix(in oklab, var(--c-glow) 40%, var(--c-deep)) 100%);
+  box-shadow: 0 0 18px color-mix(in oklab, var(--c-glow) 70%, transparent), 0 8px 14px rgb(0 0 0 / 0.4);
+  translate: calc(var(--nx) * 18px) calc(var(--ny) * 18px);
+  transition: translate 1150ms var(--settle);
+}
+
+.meta {
+  position: absolute; inset: 0; display: grid; grid-template: auto 1fr auto / 1fr auto; padding: 8cqw 8.5cqw 7.5cqw;
+  pointer-events: none; text-shadow: 0 1px 8px rgb(0 0 0 / 0.5);
+  translate: calc(var(--nx) * 4px) calc(var(--ny) * 4px);
+  transition: translate 1150ms var(--settle);
+}
+.series { font: 600 3.6cqw/1 var(--sans); letter-spacing: 0.2em; opacity: 0.85; }
+.no { font: 500 3.6cqw/1 var(--sans); letter-spacing: 0.08em; opacity: 0.7; font-variant-numeric: tabular-nums; }
+.name { grid-column: 1 / -1; align-self: end; font: italic 400 11cqw/1 var(--serif); letter-spacing: -0.01em; }
+
+/* Specular highlight: an oversized radial light that travels with the pointer, a little late. */
+.gloss { mix-blend-mode: plus-lighter; opacity: 0.6; transition: opacity 600ms ease; }
+.gloss > span, .edge > span {
+  position: absolute; width: 200%; height: 200%; left: -50%; top: -50%;
+  translate: calc(var(--gx) * 25%) calc(var(--gy) * 25%);
+  transition: translate 1300ms var(--settle);
+}
+.gloss > span {
+  background:
+    radial-gradient(circle at 50% 50%, rgb(255 255 255 / 0.55) 0, rgb(255 255 255 / 0.24) 6%, rgb(255 255 255 / 0.07) 18%, transparent 34%),
+    linear-gradient(125deg, transparent 40%, rgb(255 255 255 / 0.07) 47%, rgb(255 255 255 / 0.1) 50%, transparent 58%);
+}
+/* Edge highlight: the same light, seen only through a 1.5 px ring. */
+.edge {
+  padding: 1.5px;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  background: rgb(255 255 255 / 0.12);
+}
+.edge > span { background: radial-gradient(circle at 50% 50%, #fff 0, color-mix(in oklab, var(--c-glow) 80%, white) 10%, transparent 30%); }
+
+.sweep {   /* three card widths; the bright band starts off the left edge and leaves off the right */
+  position: absolute; top: 0; bottom: 0; left: 0; width: 300%; pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.7) 48%, color-mix(in oklab, var(--c-glow) 60%, white) 52%, transparent 65%);
+  mix-blend-mode: overlay; opacity: 0;
+}
+
+/* Dynamic shadow on the floor, plus a coloured bounce light from the card. */
+.shadow {
+  position: absolute; left: 6%; right: 6%; top: 14%; bottom: -7%; border-radius: 40%; pointer-events: none;
+  background: radial-gradient(closest-side, rgb(0 0 0 / 0.72), rgb(0 0 0 / 0.3) 60%, transparent);
+  translate: calc(var(--nx) * -20px) calc(18px + var(--ny) * -16px); scale: 0.96; opacity: 0.85;
+  transition: translate 1150ms var(--settle), scale 900ms var(--settle), opacity 900ms ease;
+}
+.shadow::after {
+  content: ""; position: absolute; inset: -22% -30%; border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in oklab, var(--c-glow) 22%, transparent), transparent);
+}
+
+/* ---- Caption: aligned to the card's edges ---- */
+.caption {
+  position: relative; width: var(--w-card);
+  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 14px 16px;
+}
+.edition { grid-column: 1 / -1; margin: 0; font: italic 400 28px/1 var(--serif); }
+.ed-name { text-transform: capitalize; }
+.ed-word { font: 500 12px/1 var(--sans); font-style: normal; letter-spacing: 0.14em; opacity: 0.6; margin-left: 6px; }
+.pips { display: flex; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.pips li { width: 18px; height: 2px; border-radius: 1px; background: rgb(255 255 255 / 0.22); transition: background-color 400ms; }
+.foil-ctl { display: flex; align-items: center; gap: 10px; font: 500 12px/1 var(--sans); letter-spacing: 0.14em; opacity: 0.85; }
+.foil-range { width: 104px; margin: 0; accent-color: var(--c-glow); }
+.foil-range:focus-visible { outline: 2px solid var(--c-glow); outline-offset: 4px; border-radius: 2px; }
+.hint { grid-column: 1 / -1; margin: 2px 0 0; font-size: 13px; line-height: 1.5; color: rgb(235 231 251 / 0.55); }
+
+/* ===== Reactive CSS ===== */
+
+/* State: the edition (clicked, tapped, Enter/Space on the button) and the foil level (range).
+   Both belong to the stage, so the card, the caption and the range all reach them. */
+.stage { --edition: state(aurora); --foil: state(70); --foil-k: calc(var(--foil) / 100); }
+.card:on(click) { --edition: cycle(aurora, gilt, nocturne); }
+/* The range is a sibling of the card, so it writes the stage's state instead of owning one. */
+.foil-range:on(input) { --foil: set(event(value-as-number)); }
+.ed-name { content: var(--edition); }
+
+/* Hover as state, not :hover, so a touch tap never leaves a stuck tilt (pointerleave follows pointerup). */
+.slot {
+  --hot: state(false);
+  /* Pointer inside the untransformed slot, and its measured size. element() has no value in the first
+     frame: the fallback is the CSS width the slot is given, so even that frame normalises correctly. */
+  --mx: mouse(x, local); --my: mouse(y, local);
+  --w: element(width); --h: element(height);
+}
+.slot:on(pointerenter) { --hot: set(true); }
+.slot:on(pointerleave) { --hot: set(false); }
+.slot:when(--hot) {
+  --nx: calc(clamp(0, var(--mx) / var(--w, var(--w-card)), 1) * 2 - 1);
+  --ny: calc(clamp(0, var(--my) / var(--h, var(--w-card) * 1.4), 1) * 2 - 1);
+  --gx: var(--nx); --gy: var(--ny);
+  --act: max(var(--nx), -1 * var(--nx), var(--ny), -1 * var(--ny));
+}
+
+/* Tracking: short transitions that retarget every frame, so each layer trails a little. */
+.slot:when(--hot) .card {
+  transform: rotateX(calc(var(--ny) * -14deg)) rotateY(calc(var(--nx) * 18deg));
+  scale: 1.045;
+  transition: transform 170ms var(--follow), scale 450ms var(--follow), outline-color 300ms;
+}
+.slot:when(--hot) :is(.art, .orbits, .foil > span, .glyph, .moon, .meta) { transition: translate 200ms var(--follow); }
+.slot:when(--hot) :is(.gloss, .edge) > span { transition: translate 340ms var(--follow); }   /* the light lags the card */
+.slot:when(--hot) .gloss { opacity: 1; }
+.slot:when(--hot) .shadow {
+  translate: calc(var(--nx) * -26px) calc(30px + var(--ny) * -20px); scale: 1.06; opacity: 0.62;
+  transition: translate 240ms var(--follow), scale 450ms var(--follow), opacity 450ms ease;
+}
+
+/* Keyboard focus: a presentation pose, with a slow glint across the foil. */
+.card:focus-visible { outline-color: color-mix(in oklab, var(--c-glow) 80%, white); transform: rotateX(8deg) rotateY(-16deg); scale: 1.03; }
+.slot:where(:has(.card:focus-visible)) { --gx: -0.2; --gy: -0.45; --act: 0.7; }
+.slot:where(:has(.card:focus-visible)) .shadow { translate: 22px 30px; scale: 1.04; }
+.card:focus-visible .sweep { animation: glint 3.6s ease-in-out 400ms infinite; }
+
+/* Editions. Colours are registered, so the stage transitions them; the band list switches at once. */
+.stage:when(--edition == gilt) {
+  --c-deep: #2a0b12; --c-mid: #6b3414; --c-sun: #ffd889; --c-glow: #ffc768; --c-page: #140808;
+  --bands: #fff3c4, #e9b04a 9%, #8a5a1c 18%, #ffe6a0 27%, #c88a2e 36%, #fff3c4 45%;
+}
+.stage:when(--edition == nocturne) {
+  --c-deep: #0b1526; --c-mid: #2b4566; --c-sun: #e8eeff; --c-glow: #b9d6ff; --c-page: #070b14;
+  --bands: #ffffff, #9fb7d9 7%, #e8d9ff 14%, #a6f0ff 21%, #c9cfdc 28%, #ffffff 35%;
+}
+.stage:when(--edition == aurora) .pips li:nth-child(1),
+.stage:when(--edition == gilt) .pips li:nth-child(2),
+.stage:when(--edition == nocturne) .pips li:nth-child(3) { background: var(--c-glow); }
+
+/* After each edition change: one sweep of light across the card. */
+.stage:changed(--edition) .sweep { animation: flash 900ms cubic-bezier(0.3, 0.6, 0.2, 1); }
+
+/* translate and opacity only: both sweeps run on the compositor */
+@keyframes flash { from { opacity: 1; translate: -66.667% 0; } to { opacity: 1; translate: 0 0; } }
+@keyframes glint { 0%, 55% { opacity: 0; translate: -66.667% 0; } 60% { opacity: 0.8; } 100% { opacity: 0; translate: 0 0; } }
+
+/* Reduced motion: no tilt, no parallax, no sweeps. The light still follows the pointer, at once. */
+@media (prefers-reduced-motion: reduce) {
+  .card, .slot:when(--hot) .card, .card:focus-visible { transform: none; scale: 1; transition: outline-color 300ms; }
+  .art, .orbits, .foil > span, .glyph, .moon, .meta, .shadow,
+  .slot:when(--hot) :is(.art, .orbits, .foil > span, .glyph, .moon, .meta, .shadow),
+  .slot:where(:has(.card:focus-visible)) .shadow { translate: none; scale: none; transition: none; }
+  .slot:when(--hot) :is(.gloss, .edge) > span, :is(.gloss, .edge) > span { transition: none; }
+  .stage:changed(--edition) .sweep, .card:focus-visible .sweep { animation: none; }
+  .stage { transition: none; }
+}
+
+/* ===== Embedded on the website =====
+   The site's embed pages (generated from this folder by site/scripts/sync-runtime.mjs) set
+   data-embed on <html>. The page then has no background of its own (the site's dark stage
+   provides it) and sizes the card to the frame: with a one-row caption on the experiment's stage
+   (data-embed="stage"), or the card alone in the homepage and gallery previews (data-embed="card"). */
+:root[data-embed] { color-scheme: normal; }   /* a different scheme would give the frame an opaque canvas */
+:root[data-embed] body { background: transparent; }
+:root[data-embed] .stage {
+  --w-card: max(180px, min(460px, 72vw, (100svh - 200px) * 5 / 7));
+  background: none; padding: 64px 20px 56px; gap: 24px;
+}
+:root[data-embed] .stage::before { display: none; }
+:root[data-embed] .slot { touch-action: pan-y; }   /* a vertical swipe still scrolls the page around the frame */
+:root[data-embed] .caption { grid-template-columns: 1fr auto auto; gap: 12px 20px; }
+:root[data-embed] .edition { grid-column: auto; font-size: 22px; white-space: nowrap; }
+:root[data-embed] .hint { display: none; }
+:root[data-embed] .foil-range { color-scheme: dark; }
+@media (max-width: 479.98px) {   /* a narrow stage: the foil control takes its own row */
+  :root[data-embed] .caption { grid-template-columns: 1fr auto; }
+  :root[data-embed] .foil-ctl { grid-column: 1 / -1; }
+}
+:root[data-embed="card"] .stage { --w-card: max(160px, min(340px, 100vw - 56px, (100svh - 56px) * 5 / 7)); padding: 28px; }
+:root[data-embed="card"] .caption { display: none; }
+:root[data-embed="card"] .shadow::after { inset: -8% -12%; }   /* keep the bounce light inside a small frame */

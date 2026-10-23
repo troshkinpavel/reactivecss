@@ -1,0 +1,130 @@
+---
+// One experiment (design: Experiment.dc.html): the live stage first, then what it uses. "Full
+// screen" is a presentation mode of the same stage, not the Fullscreen API: it covers the window,
+// keeps Close and Source in the corners, and has a shareable URL (#present). A small script
+// toggles it; the experiment itself runs in its own frame.
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { SearchDialog } from '~/components/navigation/SearchDialog';
+import { SiteFooter } from '~/components/navigation/SiteFooter';
+import { SiteHeader, SiteMenu } from '~/components/navigation/SiteHeader';
+import ExperimentFrame from '~/components/experiments/ExperimentFrame.astro';
+import Orbits from '~/components/experiments/Orbits.astro';
+import SourceLink from '~/components/experiments/SourceLink.astro';
+import { EXPERIMENTS, REPOSITORY_PUBLIC, experimentHref, type Experiment } from '~/lib/content/experiments';
+import { FOOTER_GROUPS, HOME_LINKS, SUGGESTED } from '~/lib/content/site';
+import { INSTALL_TAG } from '~/lib/content/home';
+import { LIBRARY_VERSION } from '~/lib/content/reference';
+
+export function getStaticPaths() {
+  return EXPERIMENTS.map((x, i) => ({ params: { slug: x.slug }, props: { x, next: EXPERIMENTS[i + 1] } }));
+}
+interface Props { x: Experiment; next?: Experiment }
+const { x, next } = Astro.props;
+const links = HOME_LINKS.map((l) => ({ ...l, current: l.href === '/experiments/' }));
+const container = 'mx-auto max-w-(--container-marketing) px-(--gutter)';
+const chip = 'inline-flex h-9 items-center rounded-block border border-[oklch(1_0_0/0.2)] bg-[oklch(0.16_0.01_70/0.6)] px-3 font-mono text-meta text-[oklch(0.95_0.004_85)] backdrop-blur-[6px] transition-colors hover:border-[oklch(1_0_0/0.5)] cursor-pointer';
+const name = x.title.replace(/ · .*/, '');
+---
+<BaseLayout title={`${name} · Experiments`} description={x.description}>
+  <SiteHeader variant="home" links={links} menuTarget="site-menu" />
+  <SiteMenu id="site-menu" links={links} />
+  <main data-pagefind-body data-pagefind-meta="section:Experiments">
+    <div class={`${container} flex flex-wrap justify-between gap-x-6 gap-y-2 pt-5 pb-4 font-mono text-meta text-mute`}>
+      <nav aria-label="Breadcrumb" class="flex gap-2"><a href="/experiments/" class="no-underline hover:text-ink">Experiments</a><span aria-hidden="true">/</span><span class="text-ink" aria-current="page">{x.no} {name}</span></nav>
+      <a href="/experiments/" class="no-underline hover:text-ink">All experiments →</a>
+    </div>
+
+    <section class={container} aria-label="Live demo">
+      <div id="stage" role="region" aria-label={`${x.title}, live demo`} data-stage class="xp-stage relative overflow-hidden rounded-block bg-[oklch(0.16_0.01_70)]">
+        <Orbits rings={[{ size: 520, alpha: 0.08 }, { size: 800, dashed: true, alpha: 0.07 }, { size: 1120, alpha: 0.05 }]} body={400} />
+        <ExperimentFrame experiment={x} mode="stage" title={`${x.title}: interactive demo`} class="absolute inset-0 size-full" />
+        <div class="pointer-events-none absolute top-[clamp(12px,2vw,18px)] left-[clamp(12px,2vw,20px)] z-[2] flex items-center gap-3">
+          <button type="button" data-present-close class={`${chip} xp-when-present pointer-events-auto`}>Close · Esc</button>
+          <span class="font-mono text-label text-[oklch(0.72_0.006_80)]"><span class="text-[oklch(0.68_0.19_35)]">{x.no}</span> · {x.title}</span>
+        </div>
+        <div class="absolute top-[clamp(12px,2vw,18px)] right-[clamp(12px,2vw,20px)] z-[2] flex gap-2">
+          <button type="button" data-present-open aria-label="Open full screen demo" class={`${chip} xp-when-inline`}>Full screen ⤢</button>
+          <SourceLink experiment={x} class="inline-flex h-9 items-center gap-2 rounded-block bg-[oklch(0.97_0.004_85)] px-3 font-mono text-meta font-medium text-ink no-underline transition-colors hover:bg-white" />
+        </div>
+        <div class="pointer-events-none absolute right-[clamp(12px,2vw,20px)] bottom-[clamp(12px,2vw,18px)] left-[clamp(12px,2vw,20px)] z-[2] flex flex-wrap justify-between gap-x-5 gap-y-1.5 font-mono text-tag text-[oklch(0.68_0.006_80)]">
+          <span>{x.hint}</span><span>Reactive CSS v{LIBRARY_VERSION}</span>
+        </div>
+      </div>
+    </section>
+
+    <section class={`${container} flex flex-wrap gap-[clamp(40px,6vw,96px)] pt-[clamp(40px,5vw,72px)] pb-[clamp(56px,7vw,96px)]`} aria-labelledby="xp-title">
+      <div class="flex max-w-[560px] flex-[1_1_380px] flex-col gap-[22px]">
+        <span class="font-mono text-meta text-mute"><span class="font-semibold text-rx">{x.no}</span> · {x.status}</span>
+        <h1 id="xp-title" class="m-0 text-[clamp(40px,5.6vw,76px)] leading-[0.94] font-semibold tracking-[-0.05em] text-balance">{x.title}</h1>
+        <p class="m-0 text-[18px] leading-[1.6] text-pretty text-ink-2">{x.description}</p>
+        <div class="mt-1.5 flex flex-wrap gap-2.5">
+          <button type="button" data-present-open class="h-[46px] cursor-pointer rounded-block border-0 bg-ink px-5 text-base font-medium text-on-ink transition-colors hover:bg-ink-hover">Open full demo</button>
+          <SourceLink experiment={x} class="inline-flex h-[46px] items-center gap-2 rounded-block border border-ink px-[18px] text-base font-medium no-underline transition-colors hover:bg-ink hover:text-on-ink" arrowClass="font-mono text-[13px]" />
+        </div>
+        {!REPOSITORY_PUBLIC && <p class="m-0 font-mono text-label text-mute" data-source-note>Source opens <code>{x.sourcePath}/</code> on GitHub once the repository is public.</p>}
+        <dl class="mt-[18px] mb-0 grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 border-t border-line pt-5 text-ui">
+          <dt class="pt-0.5 font-mono text-label text-mute">Browsers</dt>
+          <dd class="m-0 flex flex-wrap gap-1.5">
+            {x.browsers.tested.map((b) => <span class="rounded-tag border border-ink px-2 py-[3px] font-mono text-label">{b} ✓</span>)}
+            {x.browsers.notVerified.map((b) => <span class="rounded-tag border border-dashed border-line-dashed px-2 py-[3px] font-mono text-label text-ink-2">{b} not verified</span>)}
+          </dd>
+          <dt class="pt-0.5 font-mono text-label text-mute">Input</dt><dd class="m-0 text-ink-body">{x.input.long}</dd>
+          <dt class="pt-0.5 font-mono text-label text-mute">Motion</dt><dd class="m-0 text-ink-body">{x.motion.long}</dd>
+        </dl>
+      </div>
+      <div class="flex min-w-0 flex-[1_1_400px] flex-col gap-[18px]">
+        <span class="font-mono text-meta text-mute">/* what it uses */</span>
+        <div class="flex flex-col border-t border-ink">
+          {x.capabilities.map((c) => (
+            <div class="grid grid-cols-[minmax(0,180px)_minmax(0,1fr)] gap-x-6 gap-y-2 border-b border-line py-4">
+              <code class="font-mono text-[14px] font-semibold text-rx-strong">{c.name}</code>
+              <span class="text-base leading-[1.55] text-pretty text-ink-body">{c.description}</span>
+            </div>
+          ))}
+        </div>
+        <p class="mt-1.5 mb-0 text-[14px] leading-[1.6] text-pretty text-ink-2">The full stylesheet and markup are in the repository folder. Paste the stylesheet into the <a href="/playground/">Playground</a> to inspect each state as it changes.</p>
+      </div>
+    </section>
+
+    <section class="border-t border-line" aria-label="More experiments">
+      <div class={`${container} flex flex-wrap items-center justify-between gap-x-10 gap-y-4 py-[clamp(28px,4vw,44px)]`}>
+        <a href="/experiments/" class="text-base text-ink-2 no-underline hover:text-ink">← All experiments</a>
+        {next && (
+          <a href={experimentHref(next)} class="flex flex-col items-end gap-1 text-right no-underline">
+            <span class="font-mono text-label text-mute">next · {next.no}</span>
+            <span class="text-[22px] font-semibold tracking-[-0.02em]">{next.title}</span>
+          </a>
+        )}
+      </div>
+    </section>
+  </main>
+  <SiteFooter groups={FOOTER_GROUPS} installTag={INSTALL_TAG} version={LIBRARY_VERSION} />
+  <SearchDialog client:idle suggested={SUGGESTED} />
+</BaseLayout>
+
+<style is:global>
+  .xp-stage { height: clamp(540px, 76vh, 820px); }
+  .xp-stage[data-present] { position: fixed; inset: 0; z-index: 100; height: 100dvh; border-radius: 0; }
+  .xp-stage:not([data-present]) .xp-when-present, .xp-stage[data-present] .xp-when-inline { display: none; }
+</style>
+
+<script>
+  // Presentation mode: the stage covers the window; #present makes it shareable; Esc or Close leaves.
+  const stage = document.querySelector<HTMLElement>('[data-stage]')!;
+  const closeBtn = stage.querySelector<HTMLElement>('[data-present-close]')!;
+  let opener: HTMLElement | null = null;
+  function present(on: boolean, focus = true) {
+    if (stage.hasAttribute('data-present') === on) return;
+    stage.toggleAttribute('data-present', on);
+    stage.setAttribute('aria-label', stage.getAttribute('aria-label')!.replace(/, (live|full screen) demo$/, on ? ', full screen demo' : ', live demo'));
+    document.documentElement.style.overflow = on ? 'hidden' : '';
+    history.replaceState(history.state, '', on ? '#present' : location.pathname + location.search);
+    if (focus) (on ? closeBtn : opener ?? stage.querySelector<HTMLElement>('[data-present-open]'))?.focus();
+  }
+  document.querySelectorAll<HTMLElement>('[data-present-open]').forEach((b) => b.addEventListener('click', () => { opener = b; present(true); }));
+  closeBtn.addEventListener('click', () => present(false));
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && stage.hasAttribute('data-present')) present(false); });
+  const fromHash = () => present(location.hash === '#present', false);
+  addEventListener('hashchange', fromHash); // a #present link followed from this same page
+  if (location.hash === '#present') fromHash();
+</script>

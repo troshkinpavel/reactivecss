@@ -1,0 +1,17 @@
+/* State toggle */
+.toggle { display: flex; justify-content: center; }
+.toggle .switch { display: inline-flex; align-items: center; gap: 12px; padding: 6px 16px 6px 8px; border-radius: 999px; }
+.toggle .track { position: relative; width: 44px; height: 24px; border-radius: 999px; background: var(--line); transition: background 180ms; }
+.toggle .knob { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / 0.25); transition: translate 180ms; }
+.toggle .label { min-width: 3ch; text-align: left; }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+.toggle { --on: state(false); }
+
+.toggle .switch:on(click) { --on: toggle(); }
+
+/* The stored state shows up in three places. */
+.toggle:when(--on) .track { background: var(--accent); }
+.toggle:when(--on) .knob { translate: 20px 0; }
+.toggle .label { content: when(--on, "On", "Off"); }
+.toggle .switch { --attr-aria-pressed: var(--on); }   /* the button reports its state */

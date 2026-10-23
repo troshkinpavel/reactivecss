@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cross-browser checklist — Reactive CSS demo lab</title>
+  <link rel="stylesheet" href="lab.css">
+  <link rel="stylesheet" href="checklist.css">
+  <!-- Lab tooling only: reads each example's README checklist. -->
+  <script src="checklist.js" defer></script>
+</head>
+<body>
+  <header>
+    <h1>Cross-browser checklist <span class="ver">0.8.1</span></h1>
+    <p>Every row comes from the example's README (section 8). Open the example in Chrome, Safari and Firefox, do the action, compare with the expected result, and set the result per browser. Nothing is marked automatically: every cell starts as <strong>not tested</strong>. Results stay in this page only (not saved); copy or print them.</p>
+    <p><label>Tester <input class="who" placeholder="name"></label> <label>Versions <input class="versions" placeholder="Chrome 1xx, Safari 1x, Firefox 1xx"></label>
+      <button type="button" class="copy">Copy results as Markdown</button> <button type="button" class="print">Print</button> <a href="./">Back to the lab</a></p>
+    <textarea class="out" rows="6" aria-label="Results as Markdown" hidden></textarea>
+  </header>
+  <main class="checklist">
+    <noscript>The checklist reads the README files with a small lab script. Without it, use docs/browser-validation-0.7.1.md.</noscript>
+  </main>
+</body>
+</html>

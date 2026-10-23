@@ -1,0 +1,18 @@
+/* Focus management */
+.steps .panels { margin: 0 0 16px; padding: 0; list-style: none; }
+.steps .panel { padding: 4px 2px 8px; }
+.steps h2 { margin: 0 0 6px; font-size: 22px; }
+.steps h2:focus { outline: 3px solid var(--accent); outline-offset: 4px; border-radius: 2px; }   /* also for scripted focus */
+.steps p { margin: 0; color: var(--ink-2); }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+.steps       { --step: state(1); }
+.steps .next { on: click(cycle(--step, 1, 2, 3)); }
+.steps .n    { text: var(--step); }
+.steps:when(--step == 3) .next { text: "Start over"; }
+.steps .panel { display: none; }
+.steps .panel:nth-var(--step) { display: block; }
+
+/* focus: moves focus when the value turns false → true because of a user action */
+.steps .panel h2 { focus: false; }
+.steps .panel:nth-var(--step) h2 { focus: true; }

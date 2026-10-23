@@ -1,0 +1,79 @@
+/* Layout and typography live in base.css, shared by both versions. */
+/* The checked controls hold the state; :has() reads it. */
+
+/* ── Theme ───────────────────────────────── */
+.control-center {
+  --bg: #fbfaf7;
+  --fg: #1c1917;
+  --muted: #78716c;
+  background: var(--bg);
+  color: var(--fg);
+  transition: background 200ms, color 200ms;
+}
+
+.control-center:has([name="theme"][value="dark"]:checked) {
+  --bg: #1c1917;
+  --fg: #f5f5f4;
+  --muted: #a8a29e;
+}
+
+@media (prefers-color-scheme: dark) {
+  .control-center:has([name="theme"][value="system"]:checked) {
+    --bg: #1c1917;
+    --fg: #f5f5f4;
+    --muted: #a8a29e;
+  }
+}
+
+/* ── Accent ──────────────────────────────── */
+.control-center { --tint: #c8462c; }
+.control-center:has([name="accent"][value="moss"]:checked)  { --tint: #3f7a5a; }
+.control-center:has([name="accent"][value="slate"]:checked) { --tint: #4d6284; }
+
+/* ── Native control states ───────────────── */
+.theme label:has(:checked) {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.control-center input {
+  accent-color: var(--tint);
+}
+
+.notify input:checked {
+  background: var(--tint);
+}
+
+.profile input:user-invalid {
+  border-color: #b42318;
+}
+
+/* ── Notifications ───────────────────────── */
+.notify .status::after { content: "On"; }
+.preview .alert-text::after { content: "Sam replied to your comment"; }
+.preview .alert { border-color: var(--tint); }
+.preview .badge { background: var(--tint); }
+
+.control-center:has([name="notifications"]:not(:checked)) .status::after {
+  content: "Muted";
+}
+
+.control-center:has([name="notifications"]:not(:checked)) .preview .bell {
+  opacity: 0.4;
+}
+
+.control-center:has([name="notifications"]:not(:checked)) .preview .badge {
+  display: none;
+}
+
+.control-center:has([name="notifications"]:not(:checked)) .preview .alert {
+  border-color: var(--muted);
+  opacity: 0.6;
+}
+
+.control-center:has([name="notifications"]:not(:checked)) .alert-text::after {
+  content: "Notifications are muted";
+}
+
+/* ── Live preview ────────────────────────── */
+.preview .avatar { background: var(--tint); }

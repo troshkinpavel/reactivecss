@@ -1,0 +1,26 @@
+---
+// The persistent-preference example on a page of its own, without the sandboxed preview frame, so
+// localStorage works and a reload keeps the setting. Same files as the catalog entry; no other script.
+import apiCss from '~/generated/api-examples/api.css?raw';
+import css from '~/catalog/api/persistent-preference/style.css?raw';
+import html from '~/catalog/api/persistent-preference/index.html?raw';
+const main = html.match(/<main>([\s\S]*)<\/main>/)?.[1] ?? '';
+const style = `${apiCss}\n${css}`;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Persistent preference · standalone · Reactive CSS</title>
+    <style set:html={style} />
+    <script is:inline src="/runtime/reactive-css.min.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <Fragment set:html={main} />
+      <p class="files">Change the setting, then reload this page. · <a href="/examples/persistent-preference/">Back to the example</a></p>
+    </main>
+  </body>
+</html>

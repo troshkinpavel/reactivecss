@@ -1,0 +1,11 @@
+/* Pick a value */
+.pick .result { margin: 0 0 16px; font-size: 40px; font-weight: 600; text-align: center; }
+.pick .row { justify-content: center; }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+.pick { --fruit: state("Apple"); --picks: state(0); }
+.pick .again {
+  on: click(set(--fruit, pick("Apple", "Pear", "Lemon", "Plum", "Cherry")), increment(--picks));
+}
+.pick .result { text: var(--fruit); }
+.pick .count  { text: var(--picks); }

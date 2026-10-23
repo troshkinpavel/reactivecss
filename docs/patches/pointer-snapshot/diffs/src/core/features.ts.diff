@@ -1,0 +1,23 @@
+--- a/src/core/features.ts
++++ b/src/core/features.ts
+@@ -92,6 +92,11 @@
+     parameters: [{ name: 'text', type: '<string> | attr()' }, { name: 'delimiter', type: 'non-empty <string>' }], returns: 'a transient list, only as the single argument of pick()', requiresRuntime: true, evaluation: 'static',
+     description: 'Splits a string at every occurrence of the delimiter; entries are trimmed and empty entries dropped. The list is never stored: state stays scalar. No escape for the delimiter itself: choose one that does not occur in the values.',
+     examples: ['.shuffle { on: click(set(--message, pick(split(attr(data-greetings), "|")))); }'] },
++  { name: 'mouse', kind: 'expression', category: 'extend', status: 'experimental', since: 'unreleased', syntax: 'set(--state, mouse(x | y [, viewport | local]))',
++    parameters: [{ name: 'contexts', type: 'click(…) | pointerenter(…) | pointerleave(…) | outside(click | pointerdown, …); not key(…), change, input, focus, animation, transition, reset' }],
++    returns: '<length> in px', requiresRuntime: true, evaluation: 'event',
++    description: 'In set() only: the pointer position of the triggering event, stored once (it does not follow the pointer). Viewport: clientX / clientY. local: from the border box of the element with the on: declaration, as in mouse(…, local). A click without a pointer (keyboard, element.click()) gives the center of that element. The state must be a length state (state(0px)); other types are reported and unchanged. See docs/rfc-pointer-snapshot.md.',
++    examples: ['.area { --menu-x: state(0px); --menu-y: state(0px); on: click(set(--menu-x, mouse(x, local)), set(--menu-y, mouse(y, local))); }'] },
+   { name: 'when', kind: 'function', category: 'simplify', status: 'stable', since: '0.2', syntax: 'when(condition [, if-true [, if-false]])',
+     returns: 'one of the branches (true or false without branches, 0.5.3), or no value when unknown', requiresRuntime: 'conditional', nativeEquivalent: 'if(style(...)) for boolean conditions with static branches',
+     dependsOn: ['state'], description: 'Chooses a value from state.', examples: ['.content { opacity: when(--open, 1, 0); }'] },
+@@ -153,7 +158,7 @@
+   { name: 'outside', kind: 'trigger', category: 'extend', status: 'stable', since: '0.3', syntax: 'outside(click | pointerdown | focusin, action, ...)', requiresRuntime: true,
+     description: 'Runs when the event happens outside the element (consider the native popover attribute).', examples: ['.dropdown { on: outside(click, set(--open, false)); }'] },
+   // ---- actions --------------------------------------------------------------------------------
+-  { name: 'set', kind: 'action', category: 'extend', status: 'stable', since: '0.2', syntax: 'set(--state, value | attr(name) | pick(...) | sibling-index() | sibling-count() [, closest(selector)])',
++  { name: 'set', kind: 'action', category: 'extend', status: 'stable', since: '0.2', syntax: 'set(--state, value | attr(name) | pick(...) | sibling-index() | sibling-count() | mouse(x | y [, local]) [, closest(selector)])',
+     requiresRuntime: true, description: 'Assigns a typed value; attr() and pick() are evaluated at event time on the element with the on: declaration.', examples: ['set(--active, 2)', 'set(--message, attr(data-message))'] },
+   { name: 'prevent', kind: 'action', category: 'extend', status: 'experimental', since: '0.7.0', syntax: 'prevent()', requiresRuntime: true,
+     parameters: [{ name: 'contexts', type: 'click(…) | key(…) (keydown); not change, input, focus/blur, focusin/focusout, pointer enter/leave, animation/transition, reset, outside()' }],

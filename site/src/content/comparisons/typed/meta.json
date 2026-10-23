@@ -1,0 +1,18 @@
+{
+  "title": "Typed custom properties",
+  "relation": "approx",
+  "features": ["function:typed"],
+  "nativeNote": "@property",
+  "reactiveNote": "typed()",
+  "example": "compare-typed",
+  "native": [{ "file": "card.css", "lang": "css" }],
+  "simpler": "The syntax is inferred from the initial value, so one declaration replaces the five-line @property block, and the registration sits next to the rule that uses it.",
+  "differences": [
+    "typed() registers with inherits: true. This @property uses inherits: false. When inheritance matters, write @property yourself.",
+    "Both are document-wide and permanent. typed() uses CSS.registerProperty(), the same registration @property performs.",
+    "typed() never overrides a native @property for the same name in a readable stylesheet.",
+    "typed() needs the runtime. Without it, --rotation stays an unregistered property and the rotation jumps instead of animating.",
+    "typed() is experimental. @property is native in current Chromium, WebKit and Firefox releases."
+  ],
+  "links": [["typed() reference", "/docs/reference/typed/"], ["MDN: @property", "https://developer.mozilla.org/en-US/docs/Web/CSS/@property"]]
+}

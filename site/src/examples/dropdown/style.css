@@ -1,0 +1,24 @@
+.menu {
+  --open: state(false);
+}
+
+.menu > button:on(click) {
+  --open: toggle();
+}
+
+/* A click anywhere else, or Escape, closes it. */
+.menu:on(outside(click)) {
+  --open: set(false);
+}
+
+.menu:on(keydown(Escape)) {
+  --open: set(false);
+}
+
+.menu ul {
+  display: none;
+}
+
+.menu ul:when(--open) {
+  display: block;
+}

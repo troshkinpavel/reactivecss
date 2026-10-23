@@ -1,0 +1,4 @@
+.prefs { display: grid; gap: 10px; justify-items: start; padding: 22px; border-radius: 8px; background: white; border: 1px solid oklch(0.885 0.006 85); transition: background 200ms, color 200ms; }
+.prefs .theme { min-height: 40px; padding: 0 14px; border: 1px solid currentColor; border-radius: 3px; background: transparent; }
+.prefs output { font-weight: 600; }
+.prefs p { margin: 0; font-size: 13px; opacity: .7; }

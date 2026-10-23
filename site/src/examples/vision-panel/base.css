@@ -1,0 +1,7 @@
+.panel { display: grid; gap: 14px; justify-items: start; }
+.toggle { font: inherit; font-size: 15px; height: 38px; padding: 0 14px; border: 1px solid #1c1917; border-radius: 3px; background: #fff; }
+.toggle[aria-expanded="true"] { background: #1c1917; color: #fff; }
+.body label { display: grid; gap: 6px; font-size: 13.5px; color: #57534e; }
+.body input { font: inherit; font-size: 15px; height: 36px; padding: 0 10px; border: 1px solid #d6d3d1; border-radius: 3px; width: 220px; }
+.body p { margin: 10px 0 0; font-size: 17px; }
+.who { font-weight: 600; }

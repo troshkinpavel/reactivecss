@@ -1,0 +1,27 @@
+.panel {
+  --total: state(0);
+  --asked: state(0);
+  --done: state(false);
+}
+
+/* Every click inside the panel bubbles up to this rule… */
+.panel:on(click) {
+  --total: increment(1);
+}
+
+/* …except clicks that stop() ends at its element. */
+.panel .quiet:on(click, stop()) {}
+
+/* prevent() cancels the link's navigation. */
+.panel .confirm:on(click, prevent()) {
+  --asked: increment(1);
+}
+
+/* A one-time change: the :when() guard stops matching after the first click. */
+.panel:when(not --done) .once:on(click) {
+  --done: set(true);
+}
+
+.panel .total { content: var(--total); }
+.panel .asked { content: var(--asked); }
+.panel .n { content: when(--done, "done", "not yet"); }

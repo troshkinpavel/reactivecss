@@ -1,0 +1,22 @@
+/* Step wizard */
+.wizard .steps { display: flex; gap: 6px; margin: 0 0 14px; padding: 0; list-style: none; }
+.wizard .steps li { flex: 1; }
+.wizard .step { width: 100%; min-height: 36px; padding: 4px 6px; border-color: var(--line); font-size: 13.5px; }
+.wizard .panel { display: none; min-height: 72px; padding: 14px; border: 1px solid var(--line); border-radius: 4px; color: var(--ink-2); }
+.wizard .panel strong { display: block; color: var(--ink); font-size: 17px; }
+.wizard .row { justify-content: space-between; margin-top: 14px; }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+.wizard { --step: state(1); }
+
+/* The list item's position is the step: the buttons are the only child of each li. */
+.wizard li:on(click) { --step: set(sibling-index()); }
+.wizard .next:on(click) { --step: set(min(var(--step) + 1, 3)); }
+.wizard .back:on(click) { --step: set(max(var(--step) - 1, 1)); }
+
+.wizard .panel:nth-var(--step) { display: block; }
+.wizard li:nth-var(--step) .step { background: var(--ink); color: #fff; --attr-aria-current: step; }
+
+/* No Back on the first step, no Next on the last: disabled, so they leave the Tab order too. */
+.wizard:when(--step == 1) .back { --attr-disabled: true; }
+.wizard:when(--step == 3) .next { --attr-disabled: true; }

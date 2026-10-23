@@ -1,0 +1,35 @@
+---
+title: "Element geometry"
+description: "A card whose title size and readout follow its own measured width. Buttons change the width through state."
+group: Examples
+type: Example
+order: 30
+status: experimental
+uses: ["reference/element","reference/state","reference/increment"]
+---
+<Callout kind="experimental">
+
+`element()` is experimental.
+
+</Callout>
+
+<Example id="geometry" size="expanded" />
+
+## How it works
+1. `--size: state(320px)` drives the card's width; `min-width` and `max-width` clamp it.
+2. The buttons run `increment(--size, 40px)` and `decrement(--size, 40px)`.
+3. `--w: element(width)` reads the **measured** border-box width, which can differ from `--size` after clamping.
+4. The title's `font-size` and the readout derive from `--w` with native `clamp()` and `calc()`.
+
+## Compared with JavaScript
+The JavaScript version is the same idea by hand: one `ResizeObserver` writing `--w`. Reactive CSS shares one observer across every element that uses `element()` and guards against feedback loops.
+
+## Accessibility
+<Callout kind="tip" title="Keyboard path">
+
+The buttons are the keyboard path. The library playground also adds `resize: horizontal` for pointer users.
+
+</Callout>
+
+## APIs used
+<Related ids={["reference/element","reference/state","reference/increment","reference/decrement"]} />

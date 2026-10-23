@@ -1,0 +1,35 @@
+.billing { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.billing [role="switch"] {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+  border: none;
+  background: transparent;
+  font-size: 14.5px;
+}
+/* The small switch track and knob. --annual is 1 or 0. */
+.billing [role="switch"]::before {
+  content: '';
+  width: 40px;
+  height: 24px;
+  border-radius: 24px;
+  background: color-mix(in srgb, #f2542d calc(var(--annual) * 100%), #d9d5cf);
+  transition: background 200ms;
+}
+.billing [role="switch"]::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.18);
+  translate: calc(var(--annual) * 16px) 0;
+  transition: translate 200ms cubic-bezier(0.2, 0, 0, 1);
+}
+.price { margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.025em; }
+.saving { padding: 1px 6px; border: 1px solid oklch(0.21 0.01 80); border-radius: 2px; font-family: 'Red Hat Mono', monospace; font-size: 12px; }

@@ -1,0 +1,74 @@
+/* 0.3 demos: bind:, previous(), direction(), :changed(), key(), outside(), cycle(), typed().
+   No script on the page drives these components. */
+
+/* ---- L. Live form preview ------------------------------------------------------- */
+.form-demo { --name: state(""); --role: state("Designer"); --remote: state(false); display: grid; gap: 10px; }
+.form-demo label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.form-demo input[type=text], .form-demo select {
+  font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+}
+.form-demo input[name=name] { bind: --name; }
+.form-demo select { bind: --role; }
+.form-demo input[type=checkbox] { bind: --remote; }
+.badge { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; background: var(--code); }
+.badge .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); }
+.badge .who::before { content: var(--name); font-weight: 650; }
+.badge .what::before { content: var(--role) when(--remote, " · remote", ""); color: var(--muted); }
+.form-demo:when(--name == "") .who::before { content: "Your name"; color: var(--muted); font-weight: 400; }
+
+/* ---- M. Counter history ------------------------------------------------------------ */
+.history { --count: state(0); --last: previous(--count); display: flex; align-items: center; gap: 10px; }
+.history .up { on: click(increment(--count)); }
+.history .down { on: click(decrement(--count)); }
+.history .num { font-size: 28px; font-weight: 700; min-width: 2.5ch; text-align: center; counter-reset: n var(--count); }
+.history .num::before { content: counter(n); }
+.history .was { counter-reset: p var(--last); color: var(--muted); font-size: 13px; }
+.history .was::before { content: "previous: " counter(p); }
+.history:changed(--count):when(direction(--count) > 0) .num { animation: rise 300ms ease-out; color: #30a46c; }
+.history:changed(--count):when(direction(--count) < 0) .num { animation: fall 300ms ease-out; color: #e5484d; }
+@keyframes rise { from { translate: 0 10px; opacity: 0.3; } }
+@keyframes fall { from { translate: 0 -10px; opacity: 0.3; } }
+
+/* ---- N. Checkbox binding --------------------------------------------------------------- */
+.settings { --enabled: state(false); display: grid; gap: 10px; }
+.settings input[type=checkbox] { bind: --enabled; }
+.settings .status { padding: 12px; border-radius: 10px; background: var(--code); opacity: when(--enabled, 1, 0.4); transition: opacity 200ms; }
+.settings .status::before { content: when(--enabled, "Sync is on", "Sync is off"); }
+
+/* ---- O. Keyboard: Escape closes, focus must be inside ------------------------------------ */
+.dialog-state { --open: state(false); on: key(Escape, set(--open, false)); }
+.dialog-state .opener { on: click(toggle(--open)); }
+.dialog-state .sheet {
+  display: when(--open, block, none);
+  margin-top: 10px; padding: 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--code);
+}
+.dialog-state .close { on: click(set(--open, false)); }
+
+/* ---- P. Cycle -------------------------------------------------------------------------------- */
+.theme-switcher { --theme: state("light"); display: flex; align-items: center; gap: 12px; }
+.theme-switcher button { on: click(cycle(--theme, "light", "dark", "system")); }
+.theme-switcher button::after { content: " " var(--theme); } /* a string state prints with content */
+.theme-switcher .swatch { width: 120px; height: 44px; border-radius: 10px; border: 1px solid var(--line); transition: background 300ms; background: #fff; }
+.theme-switcher:when(--theme == "dark") .swatch { background: #1b1b22; }
+.theme-switcher:when(--theme == "system") .swatch { background: linear-gradient(90deg, #fff 50%, #1b1b22 50%); }
+
+/* ---- Q. Typed property: an animatable gradient angle ------------------------------------------ */
+:root { --angle: typed(0deg); }
+.dial { --turn: state(0); display: flex; align-items: center; gap: 12px; }
+.dial .face {
+  --angle: calc(var(--turn) * 90deg);
+  width: 72px; height: 72px; border-radius: 50%;
+  background: conic-gradient(from var(--angle), var(--accent), #30a46c, #f5a524, var(--accent));
+  transition: --angle 600ms cubic-bezier(.3, 1.3, .6, 1);
+}
+.dial button { on: click(increment(--turn)); }
+
+/* ---- R. Outside click ---------------------------------------------------------------------------- */
+.dropdown { --open: state(false); position: relative; display: inline-block; on: outside(click, set(--open, false)); }
+.dropdown > button { on: click(toggle(--open)); }
+.dropdown .menu {
+  display: when(--open, grid, none);
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 2; min-width: 160px; gap: 2px; padding: 6px;
+  border-radius: 10px; border: 1px solid var(--line); background: var(--panel); box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+}
+.dropdown .menu span { padding: 6px 8px; border-radius: 6px; }

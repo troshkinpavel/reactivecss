@@ -1,0 +1,34 @@
+.search {
+  --open: state(false);
+}
+
+.search .toggle:on(click) {
+  --open: toggle();
+}
+
+.search .toggle {
+  --attr-aria-expanded: var(--open);
+}
+
+.search .field {
+  display: none;
+}
+
+.search:when(--open) .field {
+  display: block;
+}
+
+/* A focus request: when --open becomes true, the field gets focus. */
+.search .field {
+  focus: when(--open);
+}
+
+/* From a real focus loss until the next focus. */
+.search .field:blur {
+  animation: nudge 300ms;
+}
+
+@keyframes nudge {
+  25% { translate: -4px 0; }
+  75% { translate: 4px 0; }
+}

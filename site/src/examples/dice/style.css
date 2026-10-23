@@ -1,0 +1,16 @@
+.die {
+  --roll: on(click, random(1, 6, by 1));
+  counter-reset: n var(--roll);
+}
+
+.die::before {
+  content: counter(n);
+}
+
+.greet {
+  --word: on(click, pick("Hello", "Hi", "Hey"));
+}
+
+.greet::after {
+  content: var(--word);
+}

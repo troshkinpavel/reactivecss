@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Focus transitions — Reactive CSS example</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Focus transitions</h1>
+    <p class="note">Focus follows user actions that change the panel (<code>focus:</code>, 0.6.0). Page load, scripts and the native popover never lose focus to it. Validation example: see the README checklist.</p>
+
+    <section class="flow" id="flow" aria-label="Panels">
+      <nav class="tabs" aria-label="Choose a panel">
+        <button type="button" class="go go1">Panel 1</button>
+        <button type="button" class="go go2">Panel 2</button>
+        <button type="button" class="go go3">Panel 3</button>
+        <button type="button" class="prev">Previous</button>
+        <button type="button" class="next">Next</button>
+        <button type="button" popovertarget="jump" class="open-jump">Jump menu (popover)</button>
+      </nav>
+
+      <div class="panels">
+        <section class="panel p1" aria-labelledby="h1"><h2 tabindex="-1" id="h1">Panel 1: Introduction</h2>
+          <p>Type here, then press Next: <input id="field" aria-label="A field in panel 1"></p></section>
+        <section class="panel p2" aria-labelledby="h2"><h2 tabindex="-1" id="h2">Panel 2: Details</h2>
+          <button type="button" class="more" aria-controls="extra">Show extra details</button>
+          <div class="extra" id="extra"><h3 tabindex="-1" id="h-extra">Extra details</h3><p>Revealed and focused in the same action.</p></div></section>
+        <section class="panel p3" aria-labelledby="h3"><h2 tabindex="-1" id="h3">Panel 3: Confirm</h2>
+          <label><input type="checkbox" class="lock"> Lock the Confirm button</label>
+          <button type="button" class="confirm" id="confirm">Confirm</button>
+          <p class="hint">Panel 3 focuses Confirm, unless it is locked (disabled): then focus stays where it was.</p></section>
+      </div>
+
+      <div popover id="jump" class="jump">
+        <p>Inside a native popover. These buttons change the panel, but focus stays here: the popover manages its own focus.</p>
+        <button type="button" class="go go1" id="jump1">Go to panel 1</button>
+        <button type="button" class="go go3" id="jump3">Go to panel 3</button>
+      </div>
+
+      <p class="status">Panel <span class="n">1</span> of 3</p>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Accordion — Reactive CSS example</title>
+</head>
+<body>
+  <main>
+    <p class="kicker">Interface 02 · <code>state()</code> <code>toggle()</code> <code>--attr-*</code> <code>when()</code></p>
+    <h1>Accordion</h1>
+    <p class="lede">Each item opens and closes on its own, and its button reports the state with aria-expanded.</p>
+    <section class="demo faq" aria-label="Accordion">
+      <div class="item">
+        <button aria-controls="faq-1">Is it a framework? <span class="chevron" aria-hidden="true">⌄</span></button>
+        <div class="body" id="faq-1">No. It extends the CSS you already write with state and events.</div>
+      </div>
+      <div class="item">
+        <button aria-controls="faq-2">Do I need a build step? <span class="chevron" aria-hidden="true">⌄</span></button>
+        <div class="body" id="faq-2">No. Load one script on the page and write stylesheets as usual.</div>
+      </div>
+      <div class="item">
+        <button aria-controls="faq-3">Should I use details instead? <span class="chevron" aria-hidden="true">⌄</span></button>
+        <div class="body" id="faq-3">Often, yes: details and summary need no script. Use state when other parts of the page must react.</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

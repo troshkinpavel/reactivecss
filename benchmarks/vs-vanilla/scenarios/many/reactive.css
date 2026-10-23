@@ -1,0 +1,3 @@
+.c { --n: state(0); }
+.c .inc:on(click) { --n: increment(1); }
+.c .v { content: var(--n); }

@@ -1,0 +1,116 @@
+{
+ "date": "2026-10-19T16:57:39.793Z",
+ "browser": "156.0.8078.4",
+ "lib": "rcss-070.min.js",
+ "loads": 1,
+ "rows": [
+  {
+   "scenario": "key, no prevent",
+   "n": 1000,
+   "us": 5,
+   "usRange": "3.50-6.50",
+   "preventedOf200": 0
+  },
+  {
+   "scenario": "key, prevent",
+   "n": 1000,
+   "us": 5,
+   "usRange": "2.50-8.50",
+   "preventedOf200": 200
+  },
+  {
+   "scenario": "key, conditional prevent (inactive)",
+   "n": 1000,
+   "us": 10.5,
+   "usRange": "9.00-12.00",
+   "preventedOf200": 0
+  },
+  {
+   "scenario": "key, conditional prevent (active)",
+   "n": 1000,
+   "us": 11,
+   "usRange": "8.00-12.50",
+   "preventedOf200": 200
+  },
+  {
+   "scenario": "key, 3 nested handlers, no prevent",
+   "n": 1000,
+   "us": 7,
+   "usRange": "5.00-11.00",
+   "preventedOf200": 0
+  },
+  {
+   "scenario": "key, 3 nested handlers, prevent",
+   "n": 1000,
+   "us": 7.5,
+   "usRange": "5.00-11.00",
+   "preventedOf200": 200
+  },
+  {
+   "scenario": "click, no prevent",
+   "n": 1000,
+   "us": 4,
+   "usRange": "1.50-6.50",
+   "preventedOf200": 0
+  },
+  {
+   "scenario": "key, no prevent",
+   "n": 10000,
+   "us": 5.5,
+   "usRange": "2.50-10.00",
+   "preventedOf200": 0
+  },
+  {
+   "scenario": "key, prevent",
+   "n": 10000,
+   "us": 4.5,
+   "usRange": "3.50-8.50",
+   "preventedOf200": 200
+  },
+  {
+   "scenario": "key, conditional prevent (inactive)",
+   "n": 10000,
+   "us": 10,
+   "usRange": "7.00-12.50",
+   "preventedOf200": 0
+  },
+  {
+   "scenario": "key, conditional prevent (active)",
+   "n": 10000,
+   "us": 11,
+   "usRange": "7.00-11.50",
+   "preventedOf200": 200
+  },
+  {
+   "scenario": "key, 3 nested handlers, no prevent",
+   "n": 10000,
+   "us": 5.5,
+   "usRange": "2.00-9.50",
+   "preventedOf200": 0
+  },
+  {
+   "scenario": "key, 3 nested handlers, prevent",
+   "n": 10000,
+   "us": 4.5,
+   "usRange": "3.00-12.50",
+   "preventedOf200": 200
+  },
+  {
+   "scenario": "click, no prevent",
+   "n": 10000,
+   "us": 4.5,
+   "usRange": "2.00-5.00",
+   "preventedOf200": 0
+  },
+  {
+   "scenario": "sheet with 200 on: rules",
+   "insertMs": 5.4,
+   "removeMs": 0.2
+  },
+  {
+   "scenario": "sheet with 200 on: rules using prevent()",
+   "insertMs": 5.6,
+   "removeMs": 0.5
+  }
+ ]
+}

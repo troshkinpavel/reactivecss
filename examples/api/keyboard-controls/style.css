@@ -1,0 +1,22 @@
+/* Keyboard controls */
+.keys .board {
+  display: grid; grid-template-columns: repeat(5, 48px); grid-template-rows: repeat(5, 48px);
+  width: max-content; margin: 0 auto 12px; border: 1px solid var(--ink); border-radius: 4px;
+  background: repeating-conic-gradient(#f3f1ec 0 25%, #fff 0 50%) 0 0 / 96px 96px;
+}
+.keys .board:focus-visible { outline-offset: 4px; }
+.keys .token { margin: 8px; border-radius: 50%; background: var(--accent); }
+.keys label { display: block; margin: 16px 0 6px; font-size: 14px; }
+.filler { min-height: 120vh; color: var(--ink-2); font-size: 14px; }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+.keys { --col: state(3); --row: state(3); }
+.keys .board {
+  on: key(ArrowRight, prevent(), cycle(--col, 1, 2, 3, 4, 5)),
+      key(ArrowLeft,  prevent(), cycle(--col, 5, 4, 3, 2, 1)),
+      key(ArrowDown,  prevent(), cycle(--row, 1, 2, 3, 4, 5)),
+      key(ArrowUp,    prevent(), cycle(--row, 5, 4, 3, 2, 1));
+}
+.keys .token { grid-column: var(--col); grid-row: var(--row); }
+.keys .col { text: var(--col); }
+.keys .r   { text: var(--row); }

@@ -1,0 +1,739 @@
+[
+  {
+    "id": "d-theme",
+    "kind": "Declaration",
+    "fn": "state",
+    "expr": "--theme: state(light)",
+    "own": "theme",
+    "what": "Declares the color mode on .control-center. A keyword: light, dark or system. Every element inside can read it.",
+    "aff": [
+      "app",
+      "themeSeg"
+    ],
+    "re": "--theme: state"
+  },
+  {
+    "id": "d-accent",
+    "kind": "Declaration",
+    "fn": "state",
+    "expr": "--accent: state(ember)",
+    "own": "accent",
+    "what": "A keyword naming the accent. Two :when() rules turn it into the --tint color used by the switch, avatar and meter.",
+    "aff": [
+      "swatches",
+      "avatar",
+      "notifySw",
+      "pMeter",
+      "pBadge"
+    ],
+    "re": "--accent: state"
+  },
+  {
+    "id": "d-density",
+    "kind": "Declaration",
+    "fn": "state",
+    "expr": "--density: state(comfortable)",
+    "own": "density",
+    "what": "A keyword, comfortable or compact. Two when() calls turn it into spacing tokens.",
+    "aff": [
+      "panels",
+      "densityBtn"
+    ],
+    "re": "--density: state"
+  },
+  {
+    "id": "d-notify",
+    "kind": "Declaration",
+    "fn": "state",
+    "expr": "--notify: state(true)",
+    "own": "notify",
+    "what": "A boolean. Conditions read it as true or false; var() reads it as 1 or 0.",
+    "aff": [
+      "notifySw",
+      "status",
+      "digest",
+      "pBell",
+      "pBadge"
+    ],
+    "re": "--notify: state"
+  },
+  {
+    "id": "d-digest",
+    "kind": "Declaration",
+    "fn": "state",
+    "expr": "--digest: state(\"Daily\")",
+    "own": "digest",
+    "what": "A quoted string. The radio group writes it through bind:, and the header prints it with var().",
+    "aff": [
+      "digest",
+      "pSched"
+    ],
+    "re": "--digest: state"
+  },
+  {
+    "id": "d-name",
+    "kind": "Declaration",
+    "fn": "state",
+    "expr": "--name: state(\"Alex Rivera\")",
+    "own": "name",
+    "what": "A quoted string, kept in sync with the text field by bind:.",
+    "aff": [
+      "nameIn",
+      "pName"
+    ],
+    "re": "--name: state"
+  },
+  {
+    "id": "d-round",
+    "kind": "Declaration",
+    "fn": "state",
+    "expr": "--round: state(true)",
+    "own": "round",
+    "what": "A boolean bound to the checkbox. It picks the avatar shape.",
+    "aff": [
+      "roundIn",
+      "avatar"
+    ],
+    "re": "--round: state"
+  },
+  {
+    "id": "d-goal",
+    "kind": "Declaration",
+    "fn": "state",
+    "expr": "--goal: state(4)",
+    "own": "goal",
+    "what": "A number. increment() and decrement() step it by 1; history functions remember how it changed.",
+    "aff": [
+      "goalOut",
+      "goalBtns",
+      "pMeter",
+      "trend"
+    ],
+    "re": "--goal: state"
+  },
+  {
+    "id": "d-was",
+    "kind": "History",
+    "fn": "previous",
+    "expr": "previous(--goal)",
+    "r": [
+      "goal"
+    ],
+    "what": "Holds the value --goal had before its last effective change. Until the first change it equals the initial value.",
+    "aff": [
+      "trend"
+    ],
+    "re": "--goal-was: previous",
+    "observes": true
+  },
+  {
+    "id": "a-light",
+    "kind": "Action",
+    "fn": "set",
+    "expr": "--theme: set(light)",
+    "w": "theme",
+    "val": "light",
+    "trig": "click on .theme-option.light",
+    "what": "Writes the keyword light into --theme. Writing the value it already has does nothing.",
+    "aff": [
+      "app",
+      "themeSeg"
+    ],
+    "re": "theme-option\\.light:on"
+  },
+  {
+    "id": "a-dark",
+    "kind": "Action",
+    "fn": "set",
+    "expr": "--theme: set(dark)",
+    "w": "theme",
+    "val": "dark",
+    "trig": "click on .theme-option.dark",
+    "what": "Writes the keyword dark into --theme. Writing the value it already has does nothing.",
+    "aff": [
+      "app",
+      "themeSeg"
+    ],
+    "re": "theme-option\\.dark:on"
+  },
+  {
+    "id": "a-system",
+    "kind": "Action",
+    "fn": "set",
+    "expr": "--theme: set(system)",
+    "w": "theme",
+    "val": "system",
+    "trig": "click on .theme-option.system",
+    "what": "Writes system into --theme. The OS preference is then read by a native @media query.",
+    "aff": [
+      "app",
+      "themeSeg"
+    ],
+    "re": "theme-option\\.system:on"
+  },
+  {
+    "id": "a-ember",
+    "kind": "Action",
+    "fn": "set",
+    "expr": "--accent: set(ember)",
+    "w": "accent",
+    "val": "ember",
+    "trig": "click on .swatch.ember",
+    "what": "Writes ember into --accent. Ember is the default --tint, so no :when() rule is needed for it.",
+    "aff": [
+      "swatches",
+      "avatar",
+      "notifySw",
+      "pMeter"
+    ],
+    "re": "swatch\\.ember:on"
+  },
+  {
+    "id": "a-moss",
+    "kind": "Action",
+    "fn": "set",
+    "expr": "--accent: set(moss)",
+    "w": "accent",
+    "val": "moss",
+    "trig": "click on .swatch.moss",
+    "what": "Writes moss into --accent.",
+    "aff": [
+      "swatches",
+      "avatar",
+      "notifySw",
+      "pMeter"
+    ],
+    "re": "swatch\\.moss:on"
+  },
+  {
+    "id": "a-slate",
+    "kind": "Action",
+    "fn": "set",
+    "expr": "--accent: set(slate)",
+    "w": "accent",
+    "val": "slate",
+    "trig": "click on .swatch.slate",
+    "what": "Writes slate into --accent.",
+    "aff": [
+      "swatches",
+      "avatar",
+      "notifySw",
+      "pMeter"
+    ],
+    "re": "swatch\\.slate:on"
+  },
+  {
+    "id": "a-density",
+    "kind": "Action",
+    "fn": "cycle",
+    "expr": "--density: cycle(comfortable, compact)",
+    "w": "density",
+    "trig": "click on .density-button",
+    "what": "Moves --density to the next value in the list and wraps around to the first.",
+    "aff": [
+      "panels",
+      "densityBtn"
+    ],
+    "re": "--density: cycle"
+  },
+  {
+    "id": "a-notify",
+    "kind": "Action",
+    "fn": "toggle",
+    "expr": "--notify: toggle()",
+    "w": "notify",
+    "trig": "click on .notify-switch",
+    "what": "Switches the boolean --notify between true and false.",
+    "aff": [
+      "notifySw",
+      "status",
+      "digest",
+      "pBell",
+      "pBadge"
+    ],
+    "re": "--notify: toggle\\(\\)"
+  },
+  {
+    "id": "a-plus",
+    "kind": "Action",
+    "fn": "increment",
+    "expr": "--goal: increment(1)",
+    "w": "goal",
+    "trig": "click on .goal .plus",
+    "what": "Adds 1 to --goal. The direction of the change is recorded for direction().",
+    "aff": [
+      "goalOut",
+      "pMeter",
+      "trend"
+    ],
+    "re": "--goal: increment"
+  },
+  {
+    "id": "a-minus",
+    "kind": "Action",
+    "fn": "decrement",
+    "expr": "--goal: decrement(1)",
+    "w": "goal",
+    "trig": "click on .goal .minus",
+    "what": "Subtracts 1 from --goal.",
+    "aff": [
+      "goalOut",
+      "pMeter",
+      "trend"
+    ],
+    "re": "--goal: decrement"
+  },
+  {
+    "id": "b-digest",
+    "kind": "Action",
+    "fn": "set",
+    "expr": "--digest: set(event(value))",
+    "w": "digest",
+    "trig": "change on a digest radio",
+    "what": "When a digest radio changes, copies its value into --digest.",
+    "aff": [
+      "digest",
+      "pSched"
+    ],
+    "re": "\\.digest input:on\\(change\\)"
+  },
+  {
+    "id": "b-name",
+    "kind": "Action",
+    "fn": "set",
+    "expr": "--name: set(event(value))",
+    "w": "name",
+    "trig": "input on the text field",
+    "what": "Writes --name on every input event; the header prints it. The field keeps its own text and caret.",
+    "aff": [
+      "nameIn",
+      "pName"
+    ],
+    "re": "input\\[type=\"text\"\\]:on\\(input\\)"
+  },
+  {
+    "id": "b-round",
+    "kind": "Action",
+    "fn": "set",
+    "expr": "--round: set(event(checked))",
+    "w": "round",
+    "trig": "change on the checkbox",
+    "what": "Copies the checkbox into the boolean --round, which picks the avatar shape.",
+    "aff": [
+      "roundIn",
+      "avatar"
+    ],
+    "re": "input\\[type=\"checkbox\"\\]:on\\(change\\)"
+  },
+  {
+    "id": "c-dark",
+    "kind": "Condition",
+    "fn": ":when",
+    "expr": ":when(--theme == dark)",
+    "r": [
+      "theme"
+    ],
+    "what": "Matches while --theme is dark and overrides the --bg and --fg tokens.",
+    "aff": [
+      "app"
+    ],
+    "re": "center:when\\(--theme == dark\\)",
+    "observes": true
+  },
+  {
+    "id": "c-system",
+    "kind": "Condition",
+    "fn": ":when",
+    "expr": ":when(--theme == system)",
+    "r": [
+      "theme"
+    ],
+    "what": "Matches while --theme is system. The surrounding @media query stays native, so the OS setting decides whether the rule applies.",
+    "aff": [
+      "app"
+    ],
+    "re": "center:when\\(--theme == system\\)",
+    "observes": true
+  },
+  {
+    "id": "c-moss",
+    "kind": "Condition",
+    "fn": ":when",
+    "expr": ":when(--accent == moss)",
+    "r": [
+      "accent"
+    ],
+    "what": "Sets --tint to the moss color while that accent is chosen.",
+    "aff": [
+      "avatar",
+      "notifySw",
+      "pMeter",
+      "pBadge"
+    ],
+    "re": ":when\\(--accent == moss\\) +\\{",
+    "observes": true
+  },
+  {
+    "id": "c-slate",
+    "kind": "Condition",
+    "fn": ":when",
+    "expr": ":when(--accent == slate)",
+    "r": [
+      "accent"
+    ],
+    "what": "Sets --tint to the slate color while that accent is chosen.",
+    "aff": [
+      "avatar",
+      "notifySw",
+      "pMeter",
+      "pBadge"
+    ],
+    "re": ":when\\(--accent == slate\\) \\{",
+    "observes": true
+  },
+  {
+    "id": "c-themeSel",
+    "kind": "Condition",
+    "fn": ":when",
+    "expr": ".theme-option.…:when(--theme == …)",
+    "r": [
+      "theme"
+    ],
+    "what": "One selector per option. Only the button whose name equals --theme matches, so it is drawn inverted.",
+    "aff": [
+      "themeSeg"
+    ],
+    "re": "theme-option\\.\\w+:when",
+    "observes": true
+  },
+  {
+    "id": "c-accentSel",
+    "kind": "Condition",
+    "fn": ":when",
+    "expr": ".swatch.…:when(--accent == …)",
+    "r": [
+      "accent"
+    ],
+    "what": "Outlines the swatch whose name equals --accent.",
+    "aff": [
+      "swatches"
+    ],
+    "re": "swatch\\.\\w+:when",
+    "observes": true
+  },
+  {
+    "id": "c-gap",
+    "kind": "Condition",
+    "fn": "when",
+    "expr": "when(--density == compact, 8px, 16px)",
+    "r": [
+      "density"
+    ],
+    "what": "Returns 8px in compact mode and 16px otherwise. Panels read the result as padding.",
+    "aff": [
+      "panels"
+    ],
+    "re": "--gap: when",
+    "observes": true
+  },
+  {
+    "id": "c-row",
+    "kind": "Condition",
+    "fn": "when",
+    "expr": "when(--density == compact, 36px, 48px)",
+    "r": [
+      "density"
+    ],
+    "what": "The minimum height of every setting row.",
+    "aff": [
+      "panels"
+    ],
+    "re": "--row: when",
+    "observes": true
+  },
+  {
+    "id": "c-densityLabel",
+    "kind": "Condition",
+    "fn": "when",
+    "expr": "when(--density == compact, \"Compact\", \"Comfortable\")",
+    "r": [
+      "density"
+    ],
+    "what": "Prints the current density on the button as generated content.",
+    "aff": [
+      "densityBtn"
+    ],
+    "re": "\"Compact\", \"Comfortable\"",
+    "observes": true
+  },
+  {
+    "id": "c-notifyBg",
+    "kind": "Condition",
+    "fn": "when",
+    "expr": "when(--notify, var(--tint), #d9d5cf)",
+    "r": [
+      "notify"
+    ],
+    "what": "Colors the switch track with the accent while --notify is true.",
+    "aff": [
+      "notifySw"
+    ],
+    "re": "background: when\\(--notify",
+    "observes": true
+  },
+  {
+    "id": "c-knob",
+    "kind": "Condition",
+    "fn": "when",
+    "expr": "when(--notify, 18px, 0)",
+    "r": [
+      "notify"
+    ],
+    "what": "Moves the switch knob to the right while --notify is true.",
+    "aff": [
+      "notifySw"
+    ],
+    "re": "translate: when\\(--notify",
+    "observes": true
+  },
+  {
+    "id": "c-status",
+    "kind": "Condition",
+    "fn": "when",
+    "expr": "when(--notify, \"On\", \"Muted\")",
+    "r": [
+      "notify"
+    ],
+    "what": "Generated status text next to the switch.",
+    "aff": [
+      "status"
+    ],
+    "re": "\"On\", \"Muted\"",
+    "observes": true
+  },
+  {
+    "id": "c-digestOp",
+    "kind": "Condition",
+    "fn": "when",
+    "expr": "when(--notify, 1, 0.4)",
+    "r": [
+      "notify"
+    ],
+    "what": "Fades the digest options while notifications are off.",
+    "aff": [
+      "digest"
+    ],
+    "re": "opacity: when\\(--notify, 1, 0\\.4\\)",
+    "observes": true
+  },
+  {
+    "id": "c-digestPe",
+    "kind": "Condition",
+    "fn": "when",
+    "expr": "when(--notify, auto, none)",
+    "r": [
+      "notify"
+    ],
+    "what": "Stops pointer input on the digest options while notifications are off. Keyboard focus is not blocked; the vanilla version disables the fieldset instead.",
+    "aff": [
+      "digest"
+    ],
+    "re": "pointer-events: when\\(--notify",
+    "observes": true
+  },
+  {
+    "id": "c-avatar",
+    "kind": "Condition",
+    "fn": "when",
+    "expr": "when(--round, 50%, 6px)",
+    "r": [
+      "round"
+    ],
+    "what": "A round avatar while --round is true, a rounded square otherwise.",
+    "aff": [
+      "avatar"
+    ],
+    "re": "border-radius: when\\(--round",
+    "observes": true
+  },
+  {
+    "id": "c-limits",
+    "kind": "Condition",
+    "fn": ":when",
+    "expr": ":when(--goal <= 1) · :when(--goal >= 10)",
+    "r": [
+      "goal"
+    ],
+    "what": "Fades and blocks the button at either end of the 1–10 range.",
+    "aff": [
+      "goalBtns"
+    ],
+    "re": ":when\\(--goal [<>]=",
+    "observes": true
+  },
+  {
+    "id": "h-changed",
+    "kind": "History",
+    "fn": ":changed",
+    "expr": ":changed(--goal)",
+    "r": [
+      "goal"
+    ],
+    "what": "Matches right after --goal changes, until the animation it started has finished. That replays the animation on every change.",
+    "aff": [
+      "goalOut"
+    ],
+    "re": ":changed\\(--goal\\)",
+    "observes": true
+  },
+  {
+    "id": "h-anim",
+    "kind": "History",
+    "fn": "direction",
+    "expr": "when(direction(--goal) > 0, rise, fall)",
+    "r": [
+      "goal"
+    ],
+    "what": "direction() is 1, 0 or -1 for the last change. Here it picks the rise or fall animation.",
+    "aff": [
+      "goalOut"
+    ],
+    "re": "when\\(direction\\(--goal\\) > 0, rise",
+    "observes": true
+  },
+  {
+    "id": "h-trend",
+    "kind": "History",
+    "fn": "direction",
+    "expr": "when(direction(--goal) > 0, \"↑ up\", \"↓ down\")",
+    "r": [
+      "goal"
+    ],
+    "what": "Prints which way the last change went.",
+    "aff": [
+      "trend"
+    ],
+    "re": "\"↑ up\", \"↓ down\"",
+    "observes": true
+  },
+  {
+    "id": "h-hide",
+    "kind": "History",
+    "fn": ":when",
+    "expr": ":when(direction(--goal) == 0)",
+    "r": [
+      "goal"
+    ],
+    "what": "Hides the history label until the goal has changed at least once.",
+    "aff": [
+      "trend"
+    ],
+    "re": ":when\\(direction\\(--goal\\) == 0\\)",
+    "observes": true
+  },
+  {
+    "id": "v-goalOut",
+    "kind": "Read",
+    "fn": "state",
+    "expr": "var(--goal)",
+    "r": [
+      "goal"
+    ],
+    "what": "Reads the number like any custom property and prints it through a CSS counter.",
+    "aff": [
+      "goalOut"
+    ],
+    "re": "counter-reset: n var\\(--goal\\)",
+    "observes": true
+  },
+  {
+    "id": "v-was",
+    "kind": "Read",
+    "fn": "previous",
+    "expr": "var(--goal-was)",
+    "r": [
+      "goal"
+    ],
+    "what": "Prints the previous value kept by previous(--goal).",
+    "aff": [
+      "trend"
+    ],
+    "re": "var\\(--goal-was\\)",
+    "observes": true
+  },
+  {
+    "id": "v-name",
+    "kind": "Read",
+    "fn": "state",
+    "expr": "var(--name)",
+    "r": [
+      "name"
+    ],
+    "what": "Prints the bound string in the header as generated content.",
+    "aff": [
+      "pName"
+    ],
+    "re": "\\.name::after",
+    "observes": true
+  },
+  {
+    "id": "v-sched",
+    "kind": "Read",
+    "fn": "state",
+    "expr": "var(--digest)",
+    "r": [
+      "digest"
+    ],
+    "what": "Prints the chosen digest in the header.",
+    "aff": [
+      "pSched"
+    ],
+    "re": "\\.schedule::after",
+    "observes": true
+  },
+  {
+    "id": "c-bell",
+    "kind": "Condition",
+    "fn": "when",
+    "expr": "when(--notify, 1, 0.35)",
+    "r": [
+      "notify"
+    ],
+    "what": "Dims the inbox bell while notifications are muted.",
+    "aff": [
+      "pBell"
+    ],
+    "re": "opacity: when\\(--notify, 1, 0\\.35\\)",
+    "observes": true
+  },
+  {
+    "id": "c-badge",
+    "kind": "Condition",
+    "fn": ":when",
+    "expr": ":when(--notify)",
+    "r": [
+      "notify"
+    ],
+    "what": "Shows the unread badge only while notifications are on.",
+    "aff": [
+      "pBadge"
+    ],
+    "re": "badge:when\\(--notify\\)",
+    "observes": true
+  },
+  {
+    "id": "v-meter",
+    "kind": "Read",
+    "fn": "state",
+    "expr": "calc(var(--goal) * 10%)",
+    "r": [
+      "goal"
+    ],
+    "what": "Native calc() turns the goal into a width. Reactive CSS only supplies the number.",
+    "aff": [
+      "pMeter"
+    ],
+    "re": "calc\\(var\\(--goal\\) \\* 10%\\)",
+    "observes": true
+  }
+]

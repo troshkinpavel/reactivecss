@@ -1,0 +1,24 @@
+/* Signup form */
+.signup form { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
+.signup label { display: grid; gap: 4px; font-size: 13px; color: var(--ink-2); }
+.signup label:first-child { grid-column: 1 / -1; }
+.signup select { min-height: 38px; font: inherit; }
+.signup .check { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--ink); }
+.signup .preview { margin: 14px 0 0; padding: 12px 14px; border: 1px dashed var(--line); border-radius: 4px; font-size: 18px; font-weight: 600; }
+.signup .badge { display: none; font-weight: 400; color: var(--accent); }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+/* The preview is outside the controls, so the states live on the section around both. */
+.signup { --name: state(""); --plan: state("basic"); --news: state(false); }
+
+/* Each control copies its value up when it changes. */
+.signup input[type="text"]:on(input) { --name: set(event(value)); }
+.signup select:on(change) { --plan: set(event(value)); }
+.signup input[type="checkbox"]:on(change) { --news: set(event(checked)); }
+
+/* Reset restores the controls natively; the states follow. */
+.signup:on(reset) { --name: set(""); --plan: set("basic"); --news: set(false); }
+
+.signup:when(--name != "") .name { content: var(--name); }
+.signup .plan { content: var(--plan); }
+.signup:when(--news) .badge { display: inline; }

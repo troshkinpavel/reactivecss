@@ -1,0 +1,66 @@
+/* Context menu */
+/* The menu is a sibling of the desk, so focus can return to the desk after a choice. */
+.ctx .stage { position: relative; }
+.ctx .desk {
+  display: grid; place-items: center; height: 220px; overflow: hidden;
+  border: 1px dashed #d6d1c8; border-radius: 4px; background: #fbfaf8; user-select: none;
+}
+.ctx .hint { margin: 0; font-size: 14px; color: #8a847b; pointer-events: none; }
+.ctx .menu {
+  position: absolute; top: 0; left: 0; display: grid; width: 160px; padding: 4px;
+  border: 1px solid #1c1917; border-radius: 4px; background: #fff; box-shadow: 0 6px 18px rgb(0 0 0 / 0.12);
+}
+.ctx .menu button {
+  min-height: 34px; padding: 6px 10px; border: 0; border-radius: 3px; background: none; text-align: left; font-size: 14px;
+}
+.ctx .menu button:hover, .ctx .menu button:focus-visible { outline: none; background: #f1eee8; }
+.ctx .readout { margin: 12px 0 0; }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+.ctx {
+  --open: state(false);
+  --x: state(0px);
+  --y: state(0px);
+  --action: state("none");
+  --restore: state(false);
+}
+
+/* Right-click, or the Menu key: prevent() keeps the browser's own menu closed.
+   The position is read once, at the event, and kept inside the desk. */
+.ctx .desk:on(contextmenu, prevent()) {
+  --open: set(true);
+  --restore: set(false);
+  --x: set(clamp(0px, event(local-x), calc(element(width) - 164px)));
+  --y: set(clamp(0px, event(local-y), calc(element(height) - 150px)));
+}
+
+/* A click on the desk closes the menu. */
+.ctx .desk:on(click) {
+  --open: set(false);
+}
+
+/* An item records its action, closes the menu and sends focus back to the desk. */
+.ctx .menu button:on(click) {
+  --action: set(attr(data-action));
+  --open: set(false);
+  --restore: set(true);
+}
+
+/* Escape from the desk or from an item. */
+.ctx .stage:on(keydown(Escape)) {
+  --open: set(false);
+  --restore: set(true);
+}
+
+/* A press elsewhere on the page closes it too, without taking focus. */
+.ctx:on(outside(pointerdown)) {
+  --open: set(false);
+}
+
+.ctx:when(not --open) .menu { display: none; }
+.ctx .menu { translate: var(--x) var(--y); }
+
+/* Escape or an item returns focus to the desk. */
+.ctx .desk { focus: when(--restore); }
+
+.ctx .last { content: var(--action); }

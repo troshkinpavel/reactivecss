@@ -1,0 +1,132 @@
+/* Reactive CSS used by the demos. This is a normal linked stylesheet: the library
+   fetches it, compiles the reactive parts and leaves everything else as written. */
+
+/* ---- A. Random particles ---------------------------------------------------- */
+.stage {
+  position: relative;
+  height: 300px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--code);
+  container-type: size;
+}
+.particle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: pick(#ff5d73, #ffb84d, #4dd4ac, #5b8cff, #b18cff);
+  opacity: random(0.45, 1);
+  scale: random(0.5, 1.5);
+  /* Mixed units (px and cqw) are handed to calc(), so particles fill any stage size. */
+  translate:
+    live(random(0px, calc(100cqw - 14px)), 2s)
+    live(random(0px, calc(100cqh - 14px)), 2s);
+  transition: translate 1.6s cubic-bezier(.4, 0, .2, 1);
+}
+
+/* ---- C. Dynamic sibling selection ----------------------------------------- */
+.carousel {
+  --active: 3;
+  display: flex;
+  gap: 8px;
+  padding: 16px 4px;
+}
+.carousel.autoplay {
+  --active: live(random(1, 5, by 1), 1.2s);
+}
+.slide {
+  flex: 1;
+  aspect-ratio: 3 / 4;
+  border-radius: 10px;
+  background: var(--code);
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  font-weight: 650;
+  color: var(--muted);
+  opacity: 0.45;
+  transition: opacity 250ms, scale 250ms, background 250ms;
+}
+.slide:nth-var(--active) {
+  opacity: 1;
+  scale: 1.1;
+  background: var(--accent);
+  color: white;
+}
+
+/* ---- D. Mouse tracking ---------------------------------------------------- */
+.pad {
+  position: relative;
+  height: 220px;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at center, var(--line) 1px, transparent 1.5px) 0 0 / 20px 20px,
+    var(--code);
+  overflow: hidden;
+  cursor: crosshair;
+  touch-action: none;
+  /* local: CSS pixels from the pad's own top-left corner. Children inherit the values. */
+  --mx: mouse(x, local);
+  --my: mouse(y, local);
+}
+.pad .dot {
+  position: absolute;
+  left: -12px;
+  top: -12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 25%, transparent);
+  translate: var(--mx) var(--my);
+  transition: translate 90ms linear;
+}
+.pad .trail {
+  position: absolute;
+  left: -6px;
+  top: -6px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  translate: var(--mx) var(--my);
+  transition: translate 600ms cubic-bezier(.2, .8, .2, 1);
+}
+
+/* ---- E. Visibility ---------------------------------------------------------- */
+.scroller {
+  height: 260px;
+  overflow-y: auto;
+  border-radius: 12px;
+  background: var(--code);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.reveal {
+  flex: none;
+  padding: 16px;
+  border-radius: 10px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  opacity: visible(0.6);
+  translate: 0 calc((1 - visible(0.6)) * 28px);
+  transition: opacity 400ms, translate 400ms cubic-bezier(.2, .8, .2, 1);
+}
+
+/* ---- F. Event-driven values ----------------------------------------------- */
+.tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.tile {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  background: var(--code);
+  border: 1px solid var(--line);
+  rotate: on(pointerenter, random(-14deg, 14deg));
+  background-color: on(click, pick(#ff5d73, #ffb84d, #4dd4ac, #5b8cff, #b18cff));
+  transition: rotate 300ms cubic-bezier(.3, 1.6, .5, 1), background-color 300ms;
+  cursor: pointer;
+}

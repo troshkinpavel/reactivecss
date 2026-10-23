@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Random colors — Reactive CSS API example</title>
+  <link rel="stylesheet" href="../api.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="kicker">API example 03 · <code>random()</code> <code>on()</code></p>
+    <h1>Random colors</h1>
+    <p class="lede">A new random hue on every click, chosen by the runtime, not by a script on the page.</p>
+    <section class="demo random" aria-label="Random color">
+      <div class="swatch" aria-hidden="true"></div>
+      <p class="readout">hue <span class="hue"></span>°</p>
+      <button type="button" class="roll">New color</button>
+    </section>
+    <p class="files"><a href="style.css">style.css</a> · <a href="README.md">README</a> · <a href="../">All API examples</a></p>
+  </main>
+</body>
+</html>

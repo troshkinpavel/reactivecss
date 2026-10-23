@@ -1,0 +1,11 @@
+.checklist { padding: 0 20px 40px; }
+.checklist section { background: #fff; border-radius: 12px; padding: 8px 14px; margin: 12px 0; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); break-inside: avoid; }
+.checklist h2 { font-size: 18px; margin: 4px 0; }
+.checklist table { border-collapse: collapse; width: 100%; font-size: 14px; }
+.checklist th, .checklist td { border-top: 1px solid #eee; padding: 4px 6px; text-align: left; vertical-align: top; }
+.checklist select { font: inherit; font-size: 13px; }
+.checklist select.pass { background: #dcfce7; } .checklist select.fail { background: #fee2e2; } .checklist select.na { background: #f3f4f6; }
+.checklist .notes { font-size: 13px; color: #555; white-space: pre-wrap; }
+header input { font: inherit; }
+.out { width: 100%; font: 12px ui-monospace, monospace; }
+@media print { header button, header a, .out { display: none; } .checklist section { box-shadow: none; border: 1px solid #ccc; } }

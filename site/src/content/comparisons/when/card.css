@@ -1,0 +1,12 @@
+.card {
+  --theme: light;
+  background: if(
+    style(--theme: dark): #171717;
+    else: #ffffff
+  );
+}
+
+/* something else must set the class */
+.card.is-dark {
+  --theme: dark;
+}

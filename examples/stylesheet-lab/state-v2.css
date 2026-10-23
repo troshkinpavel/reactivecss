@@ -1,0 +1,3 @@
+/* The state's own sheet, version 2: the same declaration plus a visual change. */
+.lab { --n: state(0); }
+.lab .count { font-weight: 700; }

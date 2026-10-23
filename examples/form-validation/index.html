@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Form validation — Reactive CSS example</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Form validation</h1>
+    <p class="note">Native constraint validation. <code>method="dialog"</code> outside a dialog: a valid submission goes nowhere, so nothing is sent or stored.</p>
+
+    <form class="signup" method="dialog" aria-labelledby="signup-title">
+      <h2 id="signup-title">Create an account</h2>
+
+      <div class="field">
+        <label for="f-name">Name</label>
+        <input id="f-name" name="name" required autocomplete="off" aria-describedby="e-name">
+        <p class="err" id="e-name">Enter your name.</p>
+      </div>
+      <div class="field">
+        <label for="f-email">Email</label>
+        <input id="f-email" name="email" type="email" required autocomplete="off" aria-describedby="e-email">
+        <p class="err" id="e-email">Enter an email address like name@example.com.</p>
+      </div>
+      <fieldset class="type">
+        <legend>Account type</legend>
+        <label><input type="radio" name="type" value="personal" checked> Personal</label>
+        <label><input type="radio" name="type" value="business"> Business</label>
+      </fieldset>
+      <div class="field company">
+        <label for="f-company">Company name</label>
+        <input id="f-company" name="company" autocomplete="off" aria-describedby="e-company">
+        <p class="err" id="e-company">Business accounts need a company name.</p>
+      </div>
+      <div class="field">
+        <label for="f-password">Password (at least 8 characters)</label>
+        <input id="f-password" name="password" type="password" minlength="8" required autocomplete="new-password" aria-describedby="e-password">
+        <p class="err" id="e-password">Use at least 8 characters.</p>
+      </div>
+      <label class="terms"><input type="checkbox" name="terms"> I accept the terms</label>
+
+      <p class="summary">Account: <span class="kind">Personal</span></p>
+      <button type="submit">Create account</button>
+      <p class="ok" role="status">All fields are valid. (Nothing was sent: this is a local example.)</p>
+    </form>
+  </main>
+</body>
+</html>

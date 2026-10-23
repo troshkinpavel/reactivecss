@@ -1,0 +1,24 @@
+---
+title: "Counter"
+description: "Increment and decrement a number and print it with a CSS counter."
+group: Examples
+type: Example
+order: 22
+uses: ["reference/state","reference/increment","reference/decrement"]
+---
+<Example id="counter" size="expanded" />
+
+## How it works
+1. `--count: state(0)` lives on `.counter`, so both buttons reach it as the nearest owner.
+2. The buttons run `increment()` and `decrement()`.
+3. `content: var()` can't print numbers, so a counter does: `counter-reset: n var(--count)` and `content: counter(n)`.
+
+## Accessibility
+<Callout kind="caution" title="Partly complete">
+
+The buttons are native and labelled. The number here is generated content, which screen readers announce inconsistently. To render it as real DOM text, use the experimental [`text:`](/docs/reference/text/) declaration (0.5.1), as the library's [score-history demo](/examples/score-history/) does.
+
+</Callout>
+
+## APIs used
+<Related ids={["reference/state","reference/increment","reference/decrement"]} />

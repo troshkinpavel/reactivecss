@@ -1,0 +1,84 @@
+---
+title: "Troubleshooting"
+description: "Symptoms, causes and fixes. Every compile-time warning names the stylesheet it came from, and ReactiveCSS.diagnostics lists all of them. Minified bundles report codes that reactive-css explain decodes."
+group: Project
+type: Project
+order: 42
+---
+## Diagnostics are codes such as RCSS-P001⟦…⟧
+The minified bundles report each problem as a stable code followed by its values, and log one summary line. Decode a message offline:
+
+```sh terminal
+npx reactive-css explain "RCSS-P001⟦:on()⟧⟦events⟧⟦events⟧"
+```
+
+Or load the development bundle, `reactive-css.js`, which logs the full text of every message.
+
+## Nothing reacts on a page opened from disk
+`file://` pages can't fetch linked stylesheets. Serve the folder over http (`npx serve`, `python3 -m http.server`) or use an inline `<style>`.
+
+## “Skipped cross-origin stylesheet …”
+The sheet is on another origin. Serve it from your origin, or with CORS and `<link crossorigin>`.
+
+## “… the browser did not apply this stylesheet”
+The browser blocked the sheet, for example through CSP or a network error. Fix the policy or the URL; the library cannot apply blocked CSS.
+
+## “uses --x, but no element declares --x: state(...)”
+The element is not inside an owner of `--x`. Add `--x: state(...)` to an ancestor, or check the selector of the state rule.
+
+```css fix.css
+/* before: the button is a sibling of .panel */
+.panel { --open: state(false); }
+
+/* after: both are inside .menu */
+.menu { --open: state(false); }
+```
+
+## “… is ignored in untrusted stylesheets”
+An event rule, a binding, `--attr-*`, `focus:` or reactive `content` is in a cross-origin sheet, or in `<style>` with `trustInlineStyles: false`. Move it to a same-origin stylesheet.
+
+## A modifier rule or event rule works locally but not in production
+Check the minified CSS. Minifiers that remove empty rules (esbuild `minify` or `minifySyntax`, csso, Lightning CSS) delete rules such as `a:on(click, prevent()) {}`. Use whitespace-only minification for stylesheets with Reactive CSS.
+
+## An attribute changes that should not
+A custom property named `--attr-<attribute>` writes that attribute since 0.9.0, when the attribute is allowlisted. If the stylesheet used such a name for something else, rename it, for example `--attr-hidden` to `--x-hidden`.
+
+## “write the modifier as a function: prevent()”
+Modifiers in `:on()` are functions: `:on(click, prevent())` and `:on(click, stop())`.
+
+## “once is not supported in :on()”
+There is no `once` modifier. Guard the rule with a state: `.b:when(not --done):on(click) { --done: set(true); }`.
+
+## “:focus() takes no arguments”
+A functional `:focus()` is not CSS. To move focus when a condition becomes true, write the declaration `focus: when(condition)` in an ordinary rule: see [Focus & Blur](/docs/focus/).
+
+## “an :on() rule contains only state changes”
+An `:on()` rule may only change states, such as `--open: toggle()`. Other declarations in it, including `color`, `focus:` and `--attr-*`, are dropped. Move them to an ordinary rule, usually one with `:when()`.
+
+## content: var(--n) shows nothing
+- **On an element**, `content: var(--n)` writes DOM text only when the `text` feature is in the bundle, the value reads state, and the element is empty or holds one text node. An element with child elements is never emptied; the diagnostic names it. Put the value in a leaf element such as `<output>`.
+- **On `::before` or `::after`**, `content` stays native, and CSS can't print a number there. Use `counter-reset: n var(--n); content: counter(n)`, or a string state.
+
+## A drag scrolls the page on a touch screen
+Give the draggable element `touch-action: none`, so the browser does not use the gesture for scrolling.
+
+## A persisted state is not kept
+Storage is unavailable or full: private mode, a sandboxed iframe or a quota error. The state keeps working without persistence, and `ReactiveCSS.diagnostics` has one note. A stored value whose type no longer matches the declaration is ignored too.
+
+## A when() property is unset
+The condition is unknown: a missing state, or a comparison of incompatible types such as `--n > 10px`. See `ReactiveCSS.diagnostics`.
+
+## :just-checked doesn't react to a script
+Setting `input.checked` fires no event. Dispatch `new Event('change', { bubbles: true })` or call `ReactiveCSS.refresh()`.
+
+## element() is frozen
+A value fed back into the element's own size was detected as a loop. Read the warning, and break the loop, for example by sizing a child instead.
+
+## wave() does nothing
+`wave()` was removed in 0.5.0. The browser drops the declaration as invalid. Use native `@property` and `@keyframes`, or animate `translate` directly: see [Geometry & Animation](/docs/geometry/#wave-was-removed).
+
+## Rules in an @import or a shadow root do nothing
+`@import`ed sheets and shadow DOM stylesheets are not processed. Link the sheet from the document with `<link rel="stylesheet">` instead.
+
+## It works in one browser but not another
+Check [Browser Compatibility](/docs/compat/). Firefox is unverified for 0.9.0: its automated suite has not run.

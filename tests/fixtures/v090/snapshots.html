@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Event-time snapshots · 0.9 fixture</title>
+<script src="/dist/reactive-css.js" defer></script>
+<style>
+  body { font: 16px/1.4 system-ui, sans-serif; margin: 0; }
+  /* Click position, captured once (not a live mouse() subscription). */
+  .pad { --x: state(0px); --y: state(0px); --clicks: state(0); position: absolute; left: 40px; top: 40px; width: 300px; height: 200px; background: #eef; }
+  .pad:on(pointerdown) { --x: set(event(local-x)); --y: set(mouse(y, local)); --clicks: increment(1); }
+  .pad .dot { position: absolute; left: var(--x); top: var(--y); width: 6px; height: 6px; background: red; }
+  .pad .xy { content: var(--x); }
+  /* Element size at the click. */
+  .box { --w: state(0px); position: absolute; left: 40px; top: 300px; width: 123px; height: 40px; background: #efe; }
+  .box:on(click) { --w: set(element(width)); }
+  .box .w { content: var(--w); }
+  /* Random and pick at event time; viewport snapshot. */
+  .dice { --roll: state(0); --face: state("?"); --vw: state(0px); position: absolute; left: 40px; top: 400px; }
+  .dice:on(click) { --roll: set(random(1, 6, by 1)); --face: set(pick("a", "b", "c")); --vw: set(viewport(width)); }
+  .dice .r { content: var(--roll); }
+  /* Swap: both values are read before either is written (one transaction per event). */
+  .swap { --a: state(1); --b: state(2); position: absolute; left: 40px; top: 460px; }
+  .swap:on(click) { --a: set(var(--b)); --b: set(var(--a)); }
+  .swap .ab { content: var(--a); }
+</style>
+</head>
+<body>
+  <div class="pad"><i class="dot"></i><span class="xy">0px</span></div>
+  <div class="box"><span class="w">0px</span></div>
+  <button class="dice"><span class="r">0</span></button>
+  <button class="swap"><span class="ab">1</span></button>
+</body>
+</html>

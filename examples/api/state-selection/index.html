@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>State selection — Reactive CSS API example</title>
+  <link rel="stylesheet" href="../api.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="kicker">API example 13 · <code>:nth-var()</code></p>
+    <h1>State selection</h1>
+    <p class="lede">Four cards, one selected. The selection is a number, set by clicking or by Previous/Next.</p>
+    <section class="demo select" aria-label="Choose a color">
+      <div class="cards" role="group" aria-label="Colors">
+        <button type="button" class="card"><i></i>Vermilion</button>
+        <button type="button" class="card"><i></i>Blue</button>
+        <button type="button" class="card"><i></i>Green</button>
+        <button type="button" class="card"><i></i>Ochre</button>
+      </div>
+      <div class="row">
+        <button type="button" class="prev">Previous</button>
+        <button type="button" class="next">Next</button>
+        <span class="readout" aria-live="polite">Selected: <span class="i">1</span> of 4</span>
+      </div>
+    </section>
+    <p class="files"><a href="style.css">style.css</a> · <a href="README.md">README</a> · <a href="../">All API examples</a></p>
+  </main>
+</body>
+</html>

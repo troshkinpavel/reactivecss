@@ -1,0 +1,26 @@
+.page {
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid oklch(0.885 0.006 85);
+  border-radius: 3px;
+  background: #fbfaf7;
+  color: #1c1917;
+  transition: background 200ms, color 200ms;
+}
+.bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.title { font-size: 15px; font-weight: 600; }
+.theme-button {
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  background: transparent;
+  font-family: 'Red Hat Mono', monospace;
+  font-size: 13px;
+  line-height: 1;
+}
+.page p { margin: 0; font-size: 14px; line-height: 1.55; opacity: 0.85; }

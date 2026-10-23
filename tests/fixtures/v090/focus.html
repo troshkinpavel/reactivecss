@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Focus and blur · 0.9 fixture</title>
+<script src="/dist/reactive-css.js" defer></script>
+<style>
+  body { font: 16px/1.4 system-ui, sans-serif; margin: 24px; }
+  @keyframes shake { 0%, 100% { translate: 0; } 25% { translate: -4px; } 75% { translate: 4px; } }
+  /* :blur matches from a real focus loss until the next focus; never at load. */
+  input.check:blur { animation: shake 250ms; outline: 2px solid orange; }
+  .search { --open: state(false); }
+  .search .toggle:on(click) { --open: toggle(); }
+  .search .field { display: none; }
+  .search:when(--open) .field { display: inline-block; }
+  .search .field { focus: when(--open) }
+  /* Native :focus and :focus-visible are untouched. */
+  .search .field:focus { background: lightyellow; }
+</style>
+</head>
+<body>
+  <p><input class="check" id="a" placeholder="a"> <input class="check" id="b" placeholder="b"></p>
+  <div class="search" id="search"><button class="toggle">Search</button> <input class="field" placeholder="Find"></div>
+</body>
+</html>

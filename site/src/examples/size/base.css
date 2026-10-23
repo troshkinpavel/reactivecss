@@ -1,0 +1,20 @@
+.reader {
+  width: 100%;
+  max-width: 300px;
+  display: grid;
+  grid-template-columns: repeat(3, auto) 1fr;
+  row-gap: 14px;
+}
+.reader button {
+  height: 36px;
+  min-width: 44px;
+  padding: 0 12px;
+  border: 1px solid oklch(0.885 0.006 85);
+  background: transparent;
+  font-size: 14px;
+}
+.reader .s { border-radius: 3px 0 0 3px; }
+.reader .m { border-left: none; border-right: none; }
+.reader .l { border-radius: 0 3px 3px 0; }
+.reader button:hover { background: oklch(0.94 0.005 85); }
+.reader p { grid-column: 1 / -1; margin: 0; line-height: 1.55; color: oklch(0.3 0.01 80); transition: font-size 200ms; }

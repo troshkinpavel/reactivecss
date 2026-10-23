@@ -1,0 +1,77 @@
+/* 10 · History. Shared theme and layer order: lib/theme.css */
+
+/* ---- Reactive CSS ------------------------------------------------------- */
+
+@layer reactive {
+  .history {
+    --t: state(20);
+
+    .up:on(click)   { --t: increment(1); }
+    .down:on(click) { --t: decrement(1); }
+
+    .now  { content: var(--t); }
+    .prev { content: previous(--t); }               /* the value before the last change */
+
+    /* direction(): 1 after a rise, -1 after a fall, 0 before any change. */
+    &:when(direction(--t) > 0) {
+      .word { content: when(direction(--t) > 0, "warmer", ""); }
+      .arrow { opacity: 1; color: oklch(65% 0.18 30); }
+    }
+    &:when(direction(--t) < 0) {
+      .word { content: when(direction(--t) < 0, "colder", ""); }
+      .arrow { opacity: 1; color: oklch(65% 0.14 240); rotate: 180deg; }
+    }
+
+    /* :changed() matches right after each change, so the slide restarts on every click. */
+    &:changed(--t):when(direction(--t) > 0) .now { animation: from-below 300ms var(--ease); }
+    &:changed(--t):when(direction(--t) < 0) .now { animation: from-above 300ms var(--ease); }
+
+    /* The reading itself warms and cools: a native hue from the number, blue at 0 °C, red near 37 °C. */
+    .reading { color: oklch(70% 0.15 clamp(25, 250 - var(--t) * 6, 250)); }
+  }
+}
+
+/* ---- Plain CSS ---------------------------------------------------------- */
+
+@layer components {
+  .history {
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+
+      button {
+        inline-size: 56px;
+        aspect-ratio: 1;
+        font-size: 1.625rem;
+      }
+    }
+
+    .reading {
+      display: flex;
+      align-items: flex-start;
+      min-inline-size: 4ch;
+      justify-content: center;
+      overflow: hidden;
+      font-size: 4.5rem;
+      font-weight: 700;
+      line-height: 1.1;
+      font-variant-numeric: tabular-nums;
+      transition: color 300ms;
+    }
+
+    .now { display: inline-block; }
+    .unit { margin-block-start: .4em; font-size: .35em; }
+
+    .readout { margin-block-start: 16px; color: var(--muted); }
+    .arrow {
+      display: inline-block;
+      opacity: .3;
+      transition: rotate 200ms var(--ease), color 200ms, opacity 200ms;
+    }
+  }
+
+  @keyframes from-below { from { translate: 0 60%; opacity: 0; } }
+  @keyframes from-above { from { translate: 0 -60%; opacity: 0; } }
+}

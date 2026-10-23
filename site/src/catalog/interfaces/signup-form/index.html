@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Signup form — Reactive CSS example</title>
+</head>
+<body>
+  <main>
+    <p class="kicker">Interface 05 · <code>state()</code> <code>:on()</code> <code>event()</code> <code>content</code> <code>:when()</code></p>
+    <h1>Signup form</h1>
+    <p class="lede">A text field, a select and a checkbox feed a live preview, and Reset clears both.</p>
+    <section class="demo signup" aria-label="Signup form">
+      <form>
+        <label>Name <input type="text" name="name" placeholder="Ada Lovelace"></label>
+        <label>Plan
+          <select name="plan">
+            <option value="basic">Basic</option>
+            <option value="pro">Pro</option>
+            <option value="team">Team</option>
+          </select>
+        </label>
+        <label class="check"><input type="checkbox" name="news"> Newsletter</label>
+        <button type="reset">Reset</button>
+      </form>
+      <p class="preview"><span class="name">Your name</span> · <span class="plan">basic</span><span class="badge"> · subscribed</span></p>
+    </section>
+  </main>
+</body>
+</html>

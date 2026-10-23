@@ -1,0 +1,16 @@
+/* Theme switcher */
+.themes { display: grid; gap: 12px; transition: background 200ms, color 200ms; }
+.themes .bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.themes .switch { border-color: currentColor; background: transparent; color: inherit; }
+.themes p { margin: 0; }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+.themes { --theme: state(light); }
+
+.themes .switch:on(click) { --theme: cycle(light, dark, sepia); }
+
+.themes:when(--theme == dark) { background: #1c1917; color: #f5f5f4; }
+.themes:when(--theme == sepia) { background: #f3e7d0; color: #3f2d1c; }
+
+/* The button names the current theme, as real DOM text. */
+.themes .name { content: var(--theme); }

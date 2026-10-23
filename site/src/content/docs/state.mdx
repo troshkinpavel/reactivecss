@@ -1,0 +1,155 @@
+---
+title: "State"
+description: "A state is a value an element owns. Declare it with state(), change it with mutations inside :on() rules, and read it with var(), when() or :when()."
+group: Concepts
+type: Concept
+order: 6
+---
+## Declaring state
+`state()` is only valid as the whole value of a custom property.
+
+```css state.css
+.player {
+  --playing: state(false);
+  --volume: state(0.8);
+  --size: state(320px);
+  --mode: state(compact);
+  --title: state("Untitled");
+}
+```
+
+| Type | Examples | Notes |
+| --- | --- | --- |
+| Boolean | `true`, `false` | Reads as `1` or `0` through `var()`, so it works in `calc()` |
+| Number | `0`, `0.8`, `-3` | |
+| Dimension | `320px`, `45deg`, `200ms`, `50%` | Keeps its unit |
+| Keyword | `compact`, `dark`, `#0b57d0` | Identifiers and colors |
+| String | `"Untitled"`, `""` | Quoted |
+
+The initial value sets the type for the state's lifetime. Read a state with `var(--x)`, [`when()`](/docs/reference/when/) or [`:when()`](/docs/reference/when-selector/).
+
+## Ownership
+Every element that matches a `state()` rule owns an independent state. Consumers, and the mutations that change it, use the **nearest owner**: the element itself, then its ancestors. An inner component with the same name shadows the outer one.
+
+<Example id="docs-attr" size="compact" />
+
+Each `.item` above owns its own `--open`, so opening one item leaves the others closed.
+
+### Sharing
+To share a state, declare it on a common ancestor. To make it page-wide, declare it on `:root`. Siblings never see each other's states: in the counter below, `--count` is on `.counter`, so both buttons and the output can reach it.
+
+## Changing state
+Inside an [`:on()`](/docs/events/) rule, a declaration of the state's own custom property is a **mutation**: it says how that state changes when the event happens.
+
+| Mutation | Effect |
+| --- | --- |
+| [`--x: set(value)`](/docs/reference/set/) | Stores the value of an expression |
+| [`--x: toggle()`](/docs/reference/toggle/) | Flips a boolean |
+| [`--x: increment(step)`](/docs/reference/increment/) | Adds a step: default 1, in the state's unit |
+| [`--x: decrement(step)`](/docs/reference/decrement/) | Subtracts a step |
+| [`--x: cycle(a, b, c)`](/docs/reference/cycle/) | Moves to the next listed value, wrapping around. From a value that is not listed, it moves to the first. |
+
+<Example id="docs-counter" />
+
+The state on the left is always the one that changes. Mutations are only meaningful inside `:on()` rules.
+
+### One model
+All five mutations work the same way as `set()`: compute a new value from the values before the event, then store it in the nearest owner. Conceptually, `--count: increment(1)` is `--count: set(calc(var(--count) + 1))`, and `toggle()` stores the opposite of the current boolean. The shorthands add checks and defaults: `increment()` without a step adds 1 **in the state's unit**, while `calc(var(--size) + 1)` on a `px` state would mix a dimension with a plain number.
+
+## Types and units in mutations
+A mutation stores a value only if it fits the state's type:
+- **Units convert within a family:** the absolute lengths (`px`, `cm`, `mm`, `in`, `pt`…); `deg`, `grad`, `rad`, `turn`; `s` and `ms`. `increment(1cm)` on a `px` state adds about 37.8px. Percentages are their own unit.
+- **Units that need layout,** such as `em`, `rem` and `vw`, are not resolved. Use [`element()`](/docs/reference/element/) or [`viewport()`](/docs/reference/viewport/) instead.
+- **Mismatches write nothing.** `increment(5%)` on a `px` state, `set(10px)` on a number state or `set("dark")` on a keyword state gives one diagnostic, and the state keeps its value. The same applies to dividing by zero.
+- **A step needs the state's unit:** write `increment(10px)` for a `px` state, or `increment()` for 1px.
+- **Booleans count as 1 or 0** in arithmetic, as `var(--open)` does in `calc()`.
+- **Two shortcuts:** a unitless `0` can be stored in a dimension state, and `0` or `1` in a boolean state.
+
+## Expressions in mutations
+`set()`, `increment()` and `decrement()` take an expression, evaluated once at the event.
+
+```css slider.css
+.slider {
+  --level: state(50);
+}
+
+.slider .more:on(click) {
+  --level: set(min(var(--level) + 10, 100));
+}
+
+.slider .less:on(click) {
+  --level: set(max(var(--level) - 10, 0));
+}
+```
+
+| Kind | Available |
+| --- | --- |
+| Values | Numbers, dimensions, percentages, quoted strings, `true`, `false`, keywords |
+| Operators | `+`, `-`, `*`, `/` and parentheses. As in `calc()`, `+` and `-` need spaces around them. |
+| Math | `calc()`, `min()`, `max()`, `clamp()`, `round()`, `abs()`, all typed as above |
+| States and properties | `var(--name)` or `var(--name, fallback)`: the nearest state, else the element's computed custom property, else the fallback |
+| The event | [`event(field)`](/docs/event-data/) |
+| Read at the event | `mouse()`, `element()`, `viewport()`, `attr()`, `pick()`, `random()`, `sibling-index()`, `sibling-count()` |
+
+There are no other operators or functions: no comparisons, no `when()` and no JavaScript. Anything else is a compile error that lists what is available. Inside a mutation, the functions in the last row are snapshots taken at the event, not live values: see [Event data](/docs/event-data/#snapshots-at-the-event).
+
+## state() options
+`state()` takes the initial value first, then up to two options in either order.
+
+### bind()
+`state(v, bind(value))` and `state(v, bind(checked))` bind a form control to its own state, two-way. `state(v, bind(aria-pressed))` reflects the state into an attribute. Details: [Data Binding](/docs/binding/) and [`bind()`](/docs/reference/bind-state/).
+
+```css toggle.css
+.toggle {
+  --on: state(false, bind(aria-pressed));
+}
+
+.toggle:on(click) {
+  --on: toggle();
+}
+```
+
+### persist()
+`state(v, persist("key"))` keeps the value in `localStorage` across reloads. *Experimental.* See [Persistence](/docs/persistence/).
+
+```css theme.css
+:root {
+  --dark: state(false, persist("theme"));
+}
+```
+
+### Initial value from an attribute
+`state(attr(name, fallback))` reads an attribute **once**, when the state is created, and never synchronizes it again. The fallback's type is the state's type: with `attr(aria-expanded, false)` the attribute is parsed as a boolean, and an invalid or missing value gives the fallback.
+
+```css disclosure.css
+.disclosure {
+  --open: state(attr(data-open, false));
+}
+```
+
+`state(bind(x))` without an initial value is rejected; write `state(false, bind(aria-expanded))`.
+
+## Printing values
+On an element, [`content: var(--count)`](/docs/reference/content/) writes the state as the element's text: numbers, strings and keywords alike. The element must be empty or hold only text. On `::before` and `::after`, `content` stays native CSS, which cannot print a number from a custom property; use a counter there:
+
+```css output.css
+.counter output::before {
+  counter-reset: n var(--count);
+  content: counter(n);
+}
+```
+
+## Lifetime
+A state is created when its element starts matching a `state()` rule and is disposed when it stops matching or is removed. Re-inserting the element starts over at the initial value. CSS recalculation never resets a state.
+
+<Callout kind="note" title="In memory unless persisted">
+
+State resets on reload and when its stylesheet is edited, unless it uses [`persist()`](/docs/persistence/). If another, non-state declaration of the same property wins the cascade, `var(--x)` shows that value while conditions and mutations keep using the state.
+
+</Callout>
+
+## Upgrading from 0.8
+Stylesheets written for 0.8 are covered in [Migrating to 0.9](/docs/migration/#legacy-08x-compatibility).
+
+## Related
+<Related ids={["reference/state","reference/set","reference/toggle","reference/increment","reference/decrement","reference/cycle","reference/bind-state","reference/persist","events","event-data"]} />

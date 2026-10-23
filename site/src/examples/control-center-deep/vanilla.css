@@ -1,0 +1,75 @@
+/* Layout and typography live in base.css, shared by both versions. */
+
+/* ── Theme and accent ────────────────────── */
+.control-center {
+  --bg: #fbfaf7;
+  --fg: #1c1917;
+  --tint: #c8462c;
+  background: var(--bg);
+  color: var(--fg);
+  transition: background 200ms, color 200ms;
+}
+
+.control-center[data-theme="dark"] {
+  --bg: #1c1917;
+  --fg: #f5f5f4;
+}
+
+@media (prefers-color-scheme: dark) {
+  .control-center[data-theme="system"] {
+    --bg: #1c1917;
+    --fg: #f5f5f4;
+  }
+}
+
+.control-center[data-accent="moss"]  { --tint: #3f7a5a; }
+.control-center[data-accent="slate"] { --tint: #4d6284; }
+
+.theme-option[aria-pressed="true"] {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.swatch[aria-pressed="true"] {
+  outline: 2px solid var(--fg);
+}
+
+/* ── Density ─────────────────────────────── */
+.control-center { --gap: 16px; --row: 48px; }
+
+.control-center[data-density="compact"] {
+  --gap: 8px;
+  --row: 36px;
+}
+
+.panel   { padding: var(--gap); }
+.setting { min-height: var(--row); }
+
+/* ── Notifications ───────────────────────── */
+.notify-switch { background: #d9d5cf; }
+.notify-switch[aria-checked="true"] { background: var(--tint); }
+.notify-switch[aria-checked="true"]::after { translate: 18px 0; }
+
+.digest:disabled { opacity: 0.4; }
+
+.control-center[data-notify="false"] .preview .bell { opacity: 0.35; }
+.control-center[data-notify="false"] .preview .badge { display: none; }
+
+/* ── Profile ─────────────────────────────── */
+.avatar {
+  background: var(--tint);
+  border-radius: 50%;
+}
+
+.control-center[data-round="false"] .avatar { border-radius: 6px; }
+
+/* ── Focus goal and history ──────────────── */
+.goal button:disabled { opacity: 0.35; }
+.goal output.rise { animation: rise 240ms; }
+.goal output.fall { animation: fall 240ms; }
+.goal .history:empty { visibility: hidden; }
+
+.preview .meter {
+  width: calc(var(--goal, 4) * 10%);
+  background: var(--tint);
+}

@@ -1,0 +1,64 @@
+/* 04 · Accordion. Shared theme and layer order: lib/theme.css */
+
+/* ---- Reactive CSS ------------------------------------------------------- */
+
+@layer reactive {
+  .accordion {
+    .item { --open: state(false); }                  /* each item owns its state: the others stay as they are */
+
+    .item > button {
+      --attr-aria-expanded: var(--open);
+      &:on(click) { --open: toggle(); }
+    }
+
+    .item:when(--open) .body { block-size: auto; visibility: visible; }
+    .chevron { rotate: when(--open, 180deg, 0deg); }
+  }
+}
+
+/* ---- Plain CSS ---------------------------------------------------------- */
+
+@layer components {
+  .accordion {
+    padding-inline: 20px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-box);
+    background: var(--surface);
+    text-align: start;
+
+    .item + .item { border-block-start: 1px solid var(--line); }
+
+    .item > button {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      inline-size: 100%;
+      min-block-size: 52px;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      font-weight: 500;
+      text-align: start;
+
+      &:hover { background: transparent; }
+      &:active { scale: 1; }
+    }
+
+    .chevron {
+      color: var(--muted);
+      transition: rotate 200ms var(--ease);
+    }
+
+    .body {
+      block-size: 0;                                 /* animates to auto through interpolate-size (lib/theme.css) */
+      overflow: hidden;
+      visibility: hidden;                            /* closed content is not read out or focusable */
+      color: var(--muted);
+      transition: block-size 250ms var(--ease), visibility 250ms allow-discrete;
+
+      p { padding-block-end: 16px; }
+    }
+  }
+}

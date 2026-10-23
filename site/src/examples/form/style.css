@@ -1,0 +1,19 @@
+/* The preview reads the states, so they live on the form, around both. */
+.signup {
+  --name: state("");
+  --plan: state("basic");
+  --news: state(false);
+}
+
+/* Copy each control's value up to the form when it changes. */
+.signup input[type="text"]:on(input)      { --name: set(event(value)); }
+.signup select:on(change)                 { --plan: set(event(value)); }
+.signup input[type="checkbox"]:on(change) { --news: set(event(checked)); }
+
+.preview .name::after {
+  content: var(--name);
+}
+
+.preview .badge:when(--news) {
+  display: inline-block;
+}

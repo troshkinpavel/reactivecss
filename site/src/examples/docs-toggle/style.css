@@ -1,0 +1,20 @@
+/* The state is reflected into aria-pressed. */
+.toggle {
+  --on: state(false, bind(aria-pressed));
+}
+
+.toggle:on(click) {
+  --on: toggle();
+}
+
+.toggle .label {
+  content: when(--on, "On", "Off");
+}
+
+.toggle:when(--on) .knob {
+  background: #15803d;
+}
+
+.toggle:when(--on) .knob::after {
+  translate: 20px 0;
+}

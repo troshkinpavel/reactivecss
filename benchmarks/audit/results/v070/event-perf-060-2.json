@@ -1,0 +1,55 @@
+{
+ "date": "2026-10-19T16:59:23.393Z",
+ "browser": "156.0.8078.4",
+ "lib": "rcss-060.min.js",
+ "loads": 3,
+ "rows": [
+  {
+   "scenario": "key, no prevent",
+   "n": 1000,
+   "us": 4.5,
+   "usRange": "2.00-7.00",
+   "preventedOf200": 0
+  },
+  {
+   "scenario": "key, 3 nested handlers, no prevent",
+   "n": 1000,
+   "us": 7,
+   "usRange": "4.00-10.50",
+   "preventedOf200": 0
+  },
+  {
+   "scenario": "click, no prevent",
+   "n": 1000,
+   "us": 5,
+   "usRange": "3.00-6.00",
+   "preventedOf200": 0
+  },
+  {
+   "scenario": "key, no prevent",
+   "n": 10000,
+   "us": 4.5,
+   "usRange": "2.50-8.50",
+   "preventedOf200": 0
+  },
+  {
+   "scenario": "key, 3 nested handlers, no prevent",
+   "n": 10000,
+   "us": 6,
+   "usRange": "4.50-11.50",
+   "preventedOf200": 0
+  },
+  {
+   "scenario": "click, no prevent",
+   "n": 10000,
+   "us": 4.5,
+   "usRange": "3.00-6.50",
+   "preventedOf200": 0
+  },
+  {
+   "scenario": "sheet with 200 on: rules",
+   "insertMs": 4.6,
+   "removeMs": 0.2
+  }
+ ]
+}

@@ -1,0 +1,20 @@
+.cart {
+  --items: state(1);
+}
+
+.cart .add:on(click) {
+  --items: increment(1);
+}
+
+.banner {
+  opacity: 0;
+  translate: 0 8px;
+  transition:
+    opacity 200ms,
+    translate 200ms;
+}
+
+.cart:when(--items >= 3) .banner {
+  opacity: 1;
+  translate: 0;
+}

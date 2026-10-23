@@ -1,0 +1,20 @@
+/* Focus & blur */
+.focusing { display: grid; gap: 10px; justify-items: start; }
+.focusing .field { width: 100%; padding: 8px 10px; border: 1px solid var(--ink-2); border-radius: 4px; font: inherit; }
+.focusing .hint { margin: 0; font-size: 14px; color: var(--ink-2); }
+@keyframes nudge { 25% { translate: -5px 0; } 75% { translate: 5px 0; } }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+.focusing { --open: state(false); }
+
+.focusing .open:on(click) { --open: toggle(); }
+.focusing .open { --attr-aria-expanded: var(--open); }
+
+.focusing .field { display: none; }
+.focusing:when(--open) .field { display: block; }
+
+/* A focus request: when --open becomes true, the field takes focus. */
+.focusing .field { focus: when(--open); }
+
+/* From a real focus loss until the field is focused again. */
+.focusing .field:blur { animation: nudge 250ms; }

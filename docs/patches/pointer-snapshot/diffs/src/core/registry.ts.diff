@@ -1,0 +1,34 @@
+--- a/src/core/registry.ts
++++ b/src/core/registry.ts
+@@ -157,8 +157,11 @@
+ export interface ActionDef {
+   name: string;
+   syntax: string;
+-  /** Validate the argument texts once; throw to reject the declaration. */
+-  compile(args: string[]): unknown;
++  /**
++   * Validate the argument texts once; throw to reject the declaration. `at.trigger` is the
++   * trigger it runs in ("click", "keydown", "outside:click"…); `at.use` records a usage key.
++   */
++  compile(args: string[], at: { trigger: string; use(key: string): void }): unknown;
+   /** Run for the element that carries the `on:` declaration, during the event's dispatch. */
+   run(el: Element, data: any, event: Event): void;
+   /** Cancels the event's default (prevent()): its event type needs a non-passive listener. */
+@@ -169,6 +172,8 @@
+ export const CANCELABLE_TRIGGERS = new Set(['click', 'keydown']);
+ 
+ export const actions = new Map<string, ActionDef>();
++/** Expressions describe() lists: the core ones, plus those a feature adds to set() (mouse() in events). */
++export const expressions = [...EXPRESSIONS];
+ 
+ /**
+  * Runtimes of the declarations the parser recognizes, registered by their feature modules
+@@ -208,7 +213,7 @@
+     functions: [...functions.values()].map((f) => ({ name: f.name, kind: f.kind, syntax: f.syntax })),
+     selectors: [...selectors.values()].map((s) => ({ name: s.name, kind: s.kind, syntax: s.syntax })),
+     actions: [...actions.values()].map((a) => ({ name: a.name, syntax: a.syntax })),
+-    expressions: EXPRESSIONS,
++    expressions: [...expressions],
+     events: [...ACTION_EVENTS],
+     outsideEvents: [...OUTSIDE_EVENTS],
+   };

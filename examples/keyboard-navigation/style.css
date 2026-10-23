@@ -1,0 +1,39 @@
+/* Keyboard navigation: all behavior is in this file (Reactive CSS + native CSS). */
+
+body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #1c1c1e; background: #f6f6f4; }
+main { max-width: 640px; margin: 0 auto; padding: 24px 16px; }
+.note { color: #555; }
+.nav { background: #fff; border-radius: 14px; padding: 16px 20px; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
+.list { border: 1px solid #ccc; border-radius: 10px; padding: 4px; }
+.opt { padding: 6px 10px; border-radius: 6px; }
+.opt[aria-selected="true"] { background: #1d4ed8; color: #fff; }
+.inner { margin-left: 8px; padding: 0 6px; border: 1px dashed currentColor; border-radius: 6px; }
+.filler { height: 2400px; margin-top: 24px; border-top: 2px dashed #bbb; color: #999; padding-top: 8px; }
+:focus-visible { outline: 3px solid #f59e0b; outline-offset: 2px; }
+
+/* ---- state ---------------------------------------------------------------------------------- */
+.nav { --i: state(1); --locked: state(false); --q: state(1); }
+.nav .lock { bind: --locked; }
+.nav .status .sel { text: var(--i); }
+.nav .inner .q { text: var(--q); }
+
+/* ---- the list: a roving tabindex, selection, focus --------------------------------------------- */
+.nav .opt { attr: aria-selected "false"; attr: tabindex "-1"; focus: false; }
+.nav .opt:nth-var(--i) { attr: aria-selected "true"; attr: tabindex "0"; focus: true; }
+.nav .opt { on: click(set(--i, sibling-index())); }
+
+/* Conditional events: only while unlocked does the list handle (and cancel) these keys. Locked:
+   no rule applies, so the keys keep their native behavior (the page scrolls). */
+.nav:when(--locked == false) .list {
+  on: key(ArrowDown, prevent(), cycle(--i, 1, 2, 3, 4, 5, 6)), key(ArrowUp, prevent(), cycle(--i, 6, 5, 4, 3, 2, 1)),
+      key(Home, prevent(), set(--i, 1)), key(End, prevent(), set(--i, 6));
+}
+
+/* A nested region inside item 5: ArrowLeft/Right are its own (the list ignores them); ArrowDown
+   still reaches the list's handler (bubbling) and is cancelled there. */
+.nav .inner { on: key(ArrowRight, prevent(), increment(--q)), key(ArrowLeft, prevent(), decrement(--q)); }
+
+/* The section handles Escape (unlock; no default to cancel), also while typing in the filter:
+   non-printable keys run their actions in fields too, but no focus: depends on --locked, so focus
+   stays in the field. The filter is not inside the list: its arrows, Home and End stay native. */
+.nav { on: key(Escape, set(--locked, false)); }

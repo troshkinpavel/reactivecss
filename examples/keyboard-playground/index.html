@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Keyboard playground — Reactive CSS example</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Keyboard playground</h1>
+    <p class="note">Focus the pad and use the arrow keys; Escape centers the dot. Below, nested regions show how a key press reaches the focused element and its ancestors.</p>
+
+    <section class="playground" aria-label="Keyboard playground">
+      <h2>Movement pad</h2>
+      <div class="pad" tabindex="0" role="group" aria-label="Movement pad: arrow keys move, Escape centers" aria-describedby="pad-status">
+        <span class="dot" aria-hidden="true"></span>
+      </div>
+      <p class="status" id="pad-status">x <span class="x">0</span>, y <span class="y">0</span> · last key: <span class="last">none</span> · <span class="focus-text">pad not focused</span></p>
+
+      <h2>Nested regions</h2>
+      <div class="outer" role="group" aria-label="Outer region">
+        <p>Outer: Enter pressed inside <span class="outer-n">0</span> times</p>
+        <div class="inner" role="group" aria-label="Inner region">
+          <p>Inner: Enter pressed inside <span class="inner-n">0</span> times</p>
+          <button type="button" class="target">Focus me and press Enter</button>
+        </div>
+        <button type="button" class="outer-target">Outer button</button>
+      </div>
+
+      <button type="button" class="reset">Reset everything</button>
+    </section>
+  </main>
+</body>
+</html>

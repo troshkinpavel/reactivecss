@@ -1,0 +1,4 @@
+.panel { display: grid; gap: 10px; justify-items: start; max-width: 340px; }
+.panel button { min-height: 40px; padding: 0 14px; border: 1px solid oklch(0.21 0.01 80); border-radius: 3px; background: transparent; }
+.panel p { margin: 6px 0 0; font-size: 14px; color: oklch(0.43 0.01 80); }
+.panel output { font-weight: 600; color: oklch(0.21 0.01 80); font-variant-numeric: tabular-nums; }

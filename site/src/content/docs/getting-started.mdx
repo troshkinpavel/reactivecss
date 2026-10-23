@@ -1,0 +1,121 @@
+---
+title: "Getting Started"
+description: "Add the library to a page, then build a like button that remembers whether it was clicked. You only need to know HTML and CSS."
+group: Start
+type: Tutorial
+order: 1
+---
+<Facts>
+  <Fact label="Time">About 5 minutes</Fact>
+  <Fact label="You need">A local web server and a browser</Fact>
+  <Fact label="You will use">`state()`, `:on()`, `when()`</Fact>
+</Facts>
+
+## [1] Add the library
+Load the script once, next to your stylesheet. There is no setup code, no attributes and no build step.
+
+```html index.html
+<!doctype html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="like.css">
+  <script src="reactive-css.min.js" defer></script>
+</head>
+<body>
+  <button class="like" aria-pressed="false">♥ Like</button>
+</body>
+</html>
+```
+
+<Callout kind="caution" title="Serve the folder">
+
+Pages opened from `file://` cannot fetch linked stylesheets, so nothing reacts. Run `npx serve` or `python3 -m http.server` in the folder, or use an inline `<style>`.
+
+</Callout>
+
+This tutorial uses the full bundle, which has every feature. Where to get it, npm and CDN status, and smaller bundles: [Installation](/docs/installation/). Once your stylesheets are written, the [bundle builder](/bundle-builder/) can generate a bundle with only the features they use.
+
+## [2] Declare local state
+Inside the button's rule, declare a custom property with `state()`. Every element that matches the rule owns its own independent copy, starting at `false`.
+
+```css like.css
+.like {
+  --liked: state(false);
+}
+```
+
+Nothing visible happens yet. The state exists, but nothing changes it and nothing reads it.
+
+## [3] Handle a click
+Add an event rule. `:on(click)` says when it runs, and `--liked: toggle()` says what it does: flip the state.
+
+```css like.css
+.like {
+  --liked: state(false);
+}
+
+.like:on(click) {
+  --liked: toggle();
+}
+```
+
+An `:on()` rule only changes states. Styles go in ordinary rules.
+
+## [4] Apply a conditional value
+`when()` picks one of two values from a condition. It works anywhere a normal value goes, and a native transition smooths the change.
+
+```css like.css
+.like {
+  --liked: state(false);
+  color: when(--liked, #f2542d, #57534e);
+  transition: color 200ms;
+}
+
+.like:on(click) {
+  --liked: toggle();
+}
+```
+
+The preview runs the same button.
+
+<Example id="like" controls />
+
+<Callout kind="outcome" title="Expected result">
+
+Clicking the button switches its color, and the chip after `state(false)` on line 2 changes between false and true. The lines involved light up in order: the click, the state, then the color.
+
+</Callout>
+
+## [5] Try changing it
+Use the color and transition controls under the preview. The code updates to match. Then try these edits in your own file:
+
+- Replace `--liked: toggle()` with `--liked: set(true)` so the button can only be liked once.
+- Add `font-weight: when(--liked, 700, 400);` to make the liked state bolder.
+- Add `.like:when(--liked) { border-style: dashed; }` to style several properties at once.
+
+<Callout kind="tip" title="Accessibility">
+
+This stylesheet only changes styles, so the button's `aria-pressed` stays `false` and assistive technology never hears the state. Add `bind(aria-pressed)` to the state, and the attribute follows it:
+
+```css like.css
+.like {
+  --liked: state(false, bind(aria-pressed));
+  color: when(--liked, #f2542d, #57534e);
+  transition: color 200ms;
+}
+
+.like:on(click) {
+  --liked: toggle();
+}
+```
+
+The state also starts from the attribute in the HTML, so `aria-pressed="true"` starts the button liked. See [DOM Integration](/docs/binding/#attribute-reflection-statev-bindattribute).
+
+</Callout>
+
+## What's next
+<Cards>
+  <Card href="/docs/state/" title="State">Ownership, nearest-owner lookup and lifetime.</Card>
+  <Card href="/docs/events/" title="Events & Actions">Event rules, triggers, modifiers and mutations.</Card>
+  <Card href="/docs/conditions/" title="Conditions">Comparisons, `:when()` and native `if()`.</Card>
+</Cards>

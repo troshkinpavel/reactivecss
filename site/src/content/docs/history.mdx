@@ -1,0 +1,52 @@
+---
+title: "State History"
+description: "Every state remembers its value before the last change. previous(), direction() and :changed() turn that into animations that know which way a value moved."
+group: Concepts
+type: Guide
+order: 15
+---
+## previous()
+`previous(--count)` is the value before the last effective change, and the initial value until then. It shares the state's history, so it costs no extra storage.
+
+## direction()
+`direction(--count)` is `1`, `0` or `-1`: whether the last change of a number or dimension state went up, nowhere or down. For other types it is unknown.
+
+## :changed()
+`:changed(--count)` matches from the frame after a change until the animations it started have finished, so the same animation replays on every change.
+
+## An animated counter
+<Example id="history" size="expanded" />
+
+### Keyframes
+```css keyframes.css
+@keyframes slide-up {
+  from { translate: 0 40%; opacity: 0; }
+}
+
+@keyframes slide-down {
+  from { translate: 0 -40%; opacity: 0; }
+}
+```
+
+### Compared with JavaScript
+The JavaScript version removes the class, forces a reflow with `offsetWidth` and adds the class again to restart the animation. `:changed()` replaces that trick and also waits for the animation to finish before it stops matching.
+
+<Callout kind="tip" title="Reduced motion">
+
+Turn the animation off for people who ask for less motion. The number still updates instantly.
+
+</Callout>
+
+```css motion.css
+@media (prefers-reduced-motion: reduce) {
+  .counter:changed(--count) output { animation: none; }
+}
+```
+
+## Limits
+- Only one step of history is kept. A bounded `history(--x, n)` is planned, not shipped.
+- An infinite animation keeps `:changed()` matching until the next change.
+- In very large pages, finding the animations a change started costs roughly running animations × page size in Chromium.
+
+## Related
+<Related ids={["reference/previous","reference/direction","reference/changed","selectors"]} />

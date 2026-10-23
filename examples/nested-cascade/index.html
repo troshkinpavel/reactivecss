@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nested state and cascade — Reactive CSS example</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Nested state and cascade</h1>
+    <p class="note">Three nested boxes each <strong>own</strong> a state <code>--n</code> (runtime ownership: an action changes the nearest owner). Which declaration applies to an element is decided by the ordinary <strong>CSS cascade</strong>: specificity, <code>@layer</code>, <code>!important</code>, conditions.</p>
+
+    <div class="box" id="outer">
+      <div class="row"><b>Outer</b> n = <span class="n">0</span> <button type="button" class="inc">+</button> <button type="button" class="dec">−</button> <span class="label">base</span>
+        <span class="chip">chip</span> <span class="imp">imp</span></div>
+      <p class="inherit">A paragraph without its own state reads the nearest owner: n = <span class="v">0</span></p>
+      <div class="box special" id="middle">
+        <div class="row"><b>Middle (.special)</b> n = <span class="n">0</span> <button type="button" class="inc">+</button> <button type="button" class="dec">−</button> <span class="label">base</span>
+          <span class="chip">chip</span> <span class="imp">imp</span></div>
+        <div class="box" id="inner">
+          <div class="row"><b>Inner</b> n = <span class="n">0</span> <button type="button" class="inc">+</button> <button type="button" class="dec">−</button> <span class="label">base</span>
+            <span class="chip">chip</span> <span class="imp">imp</span></div>
+          <button type="button" class="outer-inc">+ outer (closest(#outer))</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Interactive quiz — Reactive CSS example</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>CSS quiz</h1>
+    <!-- The answer key is in the HTML (class="correct"); the first answer to each question counts. -->
+    <section class="quiz" aria-label="CSS quiz">
+      <p class="scoreline"><span class="progress-text">Question <span class="qn">1</span> of 3 · </span>Score: <span class="sc">0</span></p>
+      <div class="cards">
+        <section class="card question q1" aria-label="Question 1 of 3">
+          <h2 tabindex="-1">Which selector matches a parent that contains a checked checkbox?</h2>
+          <div class="options">
+            <button type="button" class="opt">.parent:checked</button>
+            <button type="button" class="opt correct">.parent:has(:checked)</button>
+            <button type="button" class="opt">.parent &gt; :checked</button>
+          </div>
+          <p class="verdict" aria-live="polite"></p>
+          <p class="explain"><code>:has()</code> matches an element by what it contains. The third option selects the checkbox, not the parent.</p>
+        </section>
+        <section class="card question q2" aria-label="Question 2 of 3">
+          <h2 tabindex="-1">What does <code>clamp(1rem, 4vw, 2rem)</code> return on a very wide screen?</h2>
+          <div class="options">
+            <button type="button" class="opt">4vw</button>
+            <button type="button" class="opt">1rem</button>
+            <button type="button" class="opt correct">2rem</button>
+          </div>
+          <p class="verdict" aria-live="polite"></p>
+          <p class="explain">The preferred value grows with the viewport, and the maximum caps it at 2rem.</p>
+        </section>
+        <section class="card question q3" aria-label="Question 3 of 3">
+          <h2 tabindex="-1">Which element gives a disclosure widget without any script?</h2>
+          <div class="options">
+            <button type="button" class="opt correct">&lt;details&gt;</button>
+            <button type="button" class="opt">&lt;section&gt;</button>
+            <button type="button" class="opt">&lt;aside&gt;</button>
+          </div>
+          <p class="verdict" aria-live="polite"></p>
+          <p class="explain"><code>&lt;details&gt;</code> and <code>&lt;summary&gt;</code> open and close natively, with keyboard support.</p>
+        </section>
+        <section class="card result" aria-label="Result">
+          <h2 tabindex="-1">Result</h2>
+          <p class="final">You scored <span class="sc">0</span> of 3.</p>
+          <p class="praise"></p>
+          <button type="button" class="restart">Try again</button>
+        </section>
+      </div>
+      <div class="nav">
+        <button type="button" class="next">Next</button>
+        <p class="nudge">Choose an answer first.</p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

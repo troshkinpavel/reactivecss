@@ -1,0 +1,137 @@
+/* 07 · Profile Builder. Shared theme and layer order: lib/theme.css */
+
+/* ---- Reactive CSS ------------------------------------------------------- */
+
+@layer reactive {
+  /* The card is outside the controls, so the states live on the section around both. */
+  .profile {
+    --name: state("");
+    --role: state("Designer");
+    --hue: state(250);
+    --available: state(false);
+
+    /* Each control copies its value up when it changes. */
+    input[name="name"]:on(input)       { --name: set(event(value)); }
+    select:on(change)                  { --role: set(event(value)); }
+    input[type="range"]:on(input)      { --hue: set(event(value-as-number)); }  /* a number, not the text "150" */
+    input[type="checkbox"]:on(change)  { --available: set(event(checked)); }
+
+    /* The Reset button restores the controls natively. The states follow. */
+    form:on(reset) { --name: set(""); --role: set("Designer"); --hue: set(250); --available: set(false); }
+
+    &:when(--name != "") .name { content: var(--name); }
+    .role { content: var(--role); }
+    &:when(--available) .badge { opacity: 1; scale: 1; }
+
+    .card { --c: oklch(62% 0.16 var(--hue)); }       /* one hue drives the avatar, the border and the glow */
+
+    /* :blur matches after a real focus loss, until the field is focused again. */
+    input[type="email"]:blur:invalid {
+      border-color: oklch(62% 0.2 25);
+      animation: shake 300ms;
+      & + .error { display: block; }
+    }
+  }
+}
+
+/* ---- Plain CSS ---------------------------------------------------------- */
+
+@layer components {
+  .profile {
+    display: grid;
+    gap: 24px;
+    text-align: start;
+  }
+
+  .card {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    border: 1px solid color-mix(in oklch, var(--c) 50%, var(--line));
+    border-radius: var(--radius-box);
+    background: linear-gradient(135deg, color-mix(in oklch, var(--c) 14%, var(--surface)), var(--surface) 60%);
+    transition: border-color 200ms;
+
+    h2 { font-size: 1.25rem; line-height: 1.2; overflow-wrap: anywhere; }
+    p { color: var(--muted); font-size: .9375rem; }
+  }
+
+  .avatar {
+    inline-size: 56px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 50% 38%, oklch(100% 0 0 / .85) 0 16%, transparent 17%),
+      radial-gradient(ellipse 34% 26% at 50% 86%, oklch(100% 0 0 / .85) 98%, transparent),
+      var(--c);
+  }
+
+  .badge {
+    padding: 4px 10px;
+    border-radius: var(--radius);
+    background: color-mix(in oklch, oklch(70% 0.17 150) 20%, transparent);
+    color: light-dark(oklch(45% 0.13 150), oklch(80% 0.15 150));
+    font-size: .75rem;
+    font-weight: 600;
+    opacity: 0;
+    scale: .8;
+    transition: opacity 200ms, scale 200ms var(--ease);
+  }
+
+  form {
+    display: grid;
+    gap: 14px;
+  }
+
+  label {
+    display: grid;
+    gap: 6px;
+    color: var(--muted);
+    font-size: .875rem;
+  }
+
+  input:not([type="checkbox"], [type="range"]), select {
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--fg);
+    font: inherit;
+    font-size: 1rem;
+    transition: border-color 150ms;
+
+    &:focus-visible { border-color: var(--accent); outline: none; }
+  }
+
+  input[type="range"], input[type="checkbox"] { accent-color: var(--accent); }
+
+  .check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--fg);
+    font-size: 1rem;
+
+    input { inline-size: 18px; block-size: 18px; margin: 0; }
+  }
+
+  .error {
+    display: none;
+    color: oklch(62% 0.2 25);
+    font-size: .8125rem;
+  }
+
+  button[type="reset"] {
+    justify-self: start;
+    padding: 8px 20px;
+    font-size: .875rem;
+    color: var(--muted);
+  }
+
+  @keyframes shake {
+    25% { translate: -4px 0; }
+    75% { translate: 4px 0; }
+  }
+}

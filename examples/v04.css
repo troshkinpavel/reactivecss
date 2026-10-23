@@ -1,0 +1,24 @@
+/* 0.4 demo: element(). No script on the page drives it. */
+
+/* ---- S. Element geometry ------------------------------------------------------------ */
+.geo-wrap { --size: state(320px); }
+.geo-wrap .narrower { on: click(decrement(--size, 40px)); }
+.geo-wrap .wider { on: click(increment(--size, 40px)); }
+.geo {
+  --w: element(width);            /* the measured border-box width, in px */
+  width: var(--size);             /* state drives the width; min/max clamp it */
+  min-width: 160px;
+  max-width: 100%;
+  resize: horizontal;             /* native resize handle (mouse); the buttons are the keyboard path */
+  overflow: hidden;
+  padding: 14px;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  display: grid;
+  gap: 8px;
+}
+.geo .label { font-size: clamp(12px, calc(var(--w) / 18), 28px); font-weight: 650; }
+.geo .bar { height: 8px; border-radius: 4px; background: var(--accent); width: calc(var(--w) / 2); }
+.geo .px { counter-reset: w calc(var(--w) / 1px); color: var(--muted); font-size: 13px; }
+.geo .px::before { content: counter(w) "px wide (border box)"; }
+

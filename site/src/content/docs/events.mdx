@@ -1,0 +1,304 @@
+---
+title: "Events"
+description: "An :on() rule changes state when an event happens. Its selector says when, its declarations say which state changes and how, and the browser's cascade picks the winning rule."
+group: Concepts
+type: Guide
+order: 7
+---
+## The :on() rule
+An event rule is an ordinary style rule whose selector ends with `:on(event)`. Its declarations are **mutations**: each one names a state on the left and says how it changes on the right.
+
+```css counter.css
+.counter {
+  --count: state(0);
+}
+
+.counter .inc:on(click) {
+  --count: increment(1);
+}
+
+.counter .dec:on(click) {
+  --count: decrement(1);
+}
+```
+
+Read it as CSS: "when an `.inc` inside `.counter` is clicked, increment `--count`". The mutations are [`set()`](/docs/reference/set/), [`toggle()`](/docs/reference/toggle/), [`increment()`](/docs/reference/increment/), [`decrement()`](/docs/reference/decrement/) and [`cycle()`](/docs/reference/cycle/), described on [State](/docs/state/).
+
+<Example id="docs-counter" />
+
+The general form is `:on(trigger [, modifier]…)`:
+
+| Part | Values |
+| --- | --- |
+| Trigger | An event name such as `click`, `keydown(Escape)`, `outside(click)` or `drag` |
+| Modifiers | `prevent()`, `stop()`, alone or together |
+
+Browsers do not know `:on()`. Reactive CSS reads it from the stylesheet's source text and compiles it into an ordinary rule with generated custom properties; the runtime does the rest. Full syntax: [`:on()`](/docs/reference/on-rule/).
+
+<Callout kind="note" title="Stability">
+
+`:on()` is recommended as stable for 0.9.0. The runtime's feature registry still reports it as experimental until the release decision.
+
+</Callout>
+
+## Events
+| Group | Events | Rules that run |
+| --- | --- | --- |
+| Pointer and mouse | `click`, `dblclick`, `contextmenu`, `pointerdown`, `pointerup`, `pointermove`, `pointercancel`, `mousedown`, `mouseup`, `mousemove` | The target and its ancestors, innermost first |
+| Pointer and mouse, entering and leaving | `pointerenter`, `pointerleave`, `mouseenter`, `mouseleave` | The target only |
+| Forms | `input`, `change`, `submit`, `reset` | The target and its ancestors |
+| Keyboard | `keydown`, `keyup`, with or without a key: `keydown(Escape)` | The focused element and its ancestors |
+| Focus | `focusin`, `focusout` | The target and its ancestors |
+| Focus | `focus`, `blur` | The target only |
+| Animations and transitions | `animationstart`, `animationend`, `animationcancel`, `transitionend`, `transitioncancel` | The element's own animations and transitions only |
+| Scrolling | `scroll`, `scrollend` (where the browser has it) | The scroll container only. Page scrolling has no element, so it runs no rule. |
+| Other | `toggle` | The target only |
+| Outside | `outside(click)`, `outside(pointerdown)`, `outside(focusin)` | Elements the event happened outside of |
+| Drag | `drag`, `drag(start)`, `drag(move)`, `drag(end)`, `drag(cancel)` | The dragged element: see [Drag](/docs/drag/) |
+
+An unknown name is a compile error that lists the supported names. `keydown` and `keyup` are the only events that take an argument.
+
+## Which state changes
+A mutation changes the **nearest owner** of the state on the left: the element the rule matched, or else its closest ancestor that declares that state. It is the same lookup `var()` uses, so a rule can only change a state its element can see.
+
+```css menu.css
+.menu {
+  --open: state(false);
+}
+
+/* The button is inside .menu, so it reaches .menu's --open. */
+.menu > button:on(click) {
+  --open: toggle();
+}
+```
+
+- Every element that matches a `state()` declaration owns its own copy, so ten `.menu` elements have ten independent `--open` states.
+- Siblings and unrelated elements never share a state. To share one, declare it on a common ancestor.
+- With no owner on the element or its ancestors, the mutation does nothing and one diagnostic names the element.
+
+## Where :on() can go
+`:on()` belongs in the **subject**, the last compound of the selector:
+
+| Selector | Valid? |
+| --- | --- |
+| `.tabs .tab:on(click)` | Yes |
+| `.card:hover:on(click)`, `.list:when(--editing) li:on(click)` | Yes: conditions can sit anywhere in the selector |
+| `.a:on(click), .b:on(click)` | Yes: every item of the list has `:on()` |
+| `.a:on(click) .b` | No: `:on()` is not in the last compound |
+| `:is(.a:on(click))`, `.a:not(:on(click))`, `.a:has(:on(click))` | No: not inside `:not()`, `:is()`, `:where()` or `:has()` |
+| `.a:on(click):on(keydown)` | No: one `:on()` per selector. Write two rules. |
+| `.a:on(click), .b` | No: an event rule's list cannot mix in a plain selector |
+
+Each invalid rule is reported once and ignored. Nesting works: `&:on(click)` inside `.button { … }` is the same as `.button:on(click)`.
+
+## When rules compete
+Event rules follow the cascade like any other declarations. For each element, trigger and state, **one mutation wins**: the one the browser would pick for an ordinary property, by origin, `!important`, layer, specificity and order.
+
+```css buttons.css
+.toolbar {
+  --count: state(0);
+}
+
+.button:on(click) {
+  --count: increment(1);
+}
+
+.primary.button:on(click) {
+  --count: increment(2);
+}
+```
+
+Clicking a `.button` adds 1. Clicking a `.primary.button` adds 2, not 3: both rules match, and the more specific one wins.
+
+**Different states never conflict.** If one rule changes `--a` and another changes `--b` on the same click, both run. Only two mutations of the same state on the same element compete.
+
+**Conditions are checked at each event.** `@media`, `@supports`, `@container`, `:hover` and `:when()` decide whether a rule applies at the moment of the event, just as they decide whether a color applies.
+
+```css stepper.css
+.stepper {
+  --n: state(0);
+  --big: state(false);
+}
+
+.stepper .add:on(click) {
+  --n: increment(1);
+}
+
+/* While --big is true, this rule also applies, and it wins the cascade for --n. */
+.stepper:when(--big) .add:on(click) {
+  --n: increment(10);
+}
+
+.stepper .size:on(click) {
+  --big: toggle();
+}
+```
+
+The same works with at-rules: a rule inside `@media (width >= 60em)` applies only to clicks while the viewport is that wide.
+
+An element can have any number of event rules: one per trigger, or several for the same trigger that change different states.
+
+## One transaction per event
+Every mutation that runs for one event reads the values **from before the event**. Declaration order cannot change another mutation's input, so this swaps the two values:
+
+```css swap.css
+.swap {
+  --a: state(1);
+  --b: state(2);
+}
+
+.swap:on(click) {
+  --a: set(var(--b));
+  --b: set(var(--a));
+}
+```
+
+After evaluation, the writes are applied innermost element first. If two elements on the event's path write the same state, the outer element's write is applied, once:
+
+```css nested.css
+.outer {
+  --n: state(0);
+}
+
+.outer:on(click) {
+  --n: increment(1);
+}
+
+.outer .inner:on(click) {
+  --n: increment(1);
+}
+```
+
+A click on `.inner` runs both rules, and both read `--n` as 0, so `--n` becomes 1.
+
+## Modifiers
+Modifiers follow the trigger and are written as functions: `:on(click, prevent())`, `:on(keydown(Escape), prevent(), stop())`. Each is optional, appears at most once and takes no arguments; the order does not matter. A bare `prevent` or `stop` is a compile error that asks for the function form.
+
+<Example id="docs-modifiers" />
+
+### prevent()
+Cancels the event's native default action, such as following a link, submitting a form or scrolling on an arrow key. It calls `preventDefault()` synchronously while the event is dispatched. More: [`prevent()`](/docs/reference/prevent/).
+
+- It is allowed only for events that can be cancelled: `click`, `dblclick`, `contextmenu`, `mousedown`, `pointerdown`, `keydown`, `keyup`, `submit` and `drag` (where it cancels the `pointerdown`). Anywhere else it is a compile error, and `outside()` never accepts it.
+- The element gets `prevent()` if **any** rule that applies to it for that trigger has it.
+- A form control keeps its own keys: typing, arrow keys in a field and so on are never cancelled by a rule on an ancestor. A rule on the control itself can cancel them.
+- A `click` rule with `prevent()` on a container also cancels the links and buttons inside it, so put it on the element that needs it.
+
+```css submit.css
+form.search {
+  --sent: state(0);
+}
+
+/* The form never reloads the page; the state counts the attempts. */
+form.search:on(submit, prevent()) {
+  --sent: increment(1);
+}
+```
+
+### stop()
+Ends the event at the element:
+- `:on()` rules on the element's **ancestors** do not run for this event. The element's own rules still run.
+- The event's native propagation stops at the element too: when the event reaches it, `stopPropagation()` is called (never `stopImmediatePropagation()`), so ancestors' listeners do not see it. Listeners on the element and on its descendants still receive it, and the capture phase is never stopped.
+- `outside()` rules elsewhere on the page are not affected.
+
+`stop()` has no meaning for `outside()` and drag triggers, where it is a compile error.
+
+### Changing state only once
+There is no `once` modifier; `:on(click, once)` is a compile error. For a change that should happen a single time, guard the rule with a state:
+
+```css intro.css
+.intro {
+  --seen: state(false);
+}
+
+.intro:when(not --seen):on(click) {
+  --seen: set(true);
+}
+```
+
+After the first click `--seen` is true, the rule no longer applies, and later clicks do nothing. Add `persist()` to the state to keep it across reloads: see [Persistence](/docs/persistence/).
+
+## Keyboard
+`keydown(Key)` and `keyup(Key)` run when the key matches. Without a key, `keydown` runs for every key.
+
+```css dialog.css
+.dialog {
+  --open: state(false);
+}
+
+.dialog:on(keydown(Escape)) {
+  --open: set(false);
+}
+```
+
+- **Key names** are `KeyboardEvent.key` values, not case-sensitive: `Escape`, `Enter`, `ArrowRight`, `Home`, `a`, `/`. `Space`, `Esc`, `Up`, `Down`, `Left`, `Right` and `Del` are accepted as aliases.
+- **Modifiers** come before the key, joined with `+`: `ctrl+k`, `shift+Tab`, `alt+meta+ArrowUp`. `ctrl`, `alt` and `meta` must match exactly. For keys that type a character, `shift` is required only when you write it, because Shift changes the character itself.
+- **Where keys are heard.** The focused element and its ancestors. When nothing is focused (Safari does not focus buttons on click), the element last pressed with the pointer stands in for focus.
+- **Typing is not a shortcut.** A character key without `ctrl`, `alt` or `meta` never runs a rule while the user types in a field.
+- **Form controls keep their own keys,** also with `prevent()` on an ancestor (see above).
+
+A rule that moves focus after Enter or a typed key is deferred so the key does not also activate the new target; that, and focus requests with `focus: when(…)`, are on [Focus](/docs/focus/).
+
+## Outside the element
+`outside(click)`, `outside(pointerdown)` and `outside(focusin)` run on elements the event happened **outside** of, which is how menus close when you click elsewhere. Shadow DOM is taken into account. Reference: [`outside`](/docs/reference/outside/).
+
+```css dropdown.css
+.dropdown {
+  --open: state(false);
+}
+
+.dropdown > button:on(click) {
+  --open: toggle();
+}
+
+.dropdown:on(outside(click)) {
+  --open: set(false);
+}
+```
+
+<Callout kind="tip" title="Prefer popover">
+
+For popups, the native `popover` attribute already provides light dismiss and Escape handling without any script.
+
+</Callout>
+
+## Values at the event
+Mutations can compute their value: `set(clamp(0px, event(local-x), 200px))`. Inside a mutation, `event()` reads data of the current event, and `mouse()`, `element()`, `viewport()`, `attr()`, `pick()` and `random()` are read **once, at the event**. See [Event data](/docs/event-data/) and the expression list on [State](/docs/state/#expressions-in-mutations).
+
+## What an :on() rule contains
+An event rule describes a moment, so it may only contain mutations of custom properties. Any other declaration (`color: red`, a plain `--x: 5`, an `--attr-*` declaration) is dropped with a warning, and nested rules and at-rules inside it are rejected. Style the result with the state instead: `.menu:when(--open) { … }`.
+
+A rule with **no declarations** is valid. It carries only modifiers:
+
+```css links.css
+/* Cancels navigation for these links; changes no state. */
+.preview a:on(click, prevent()) {}
+```
+
+<Callout kind="warning" title="Minifiers delete empty rules">
+
+esbuild with `minify` or `minifySyntax`, csso and Lightning CSS remove empty rules such as `a:on(click, prevent()) {}` **silently**, and the behavior disappears. Rules with declarations survive, and whitespace-only minification (esbuild `minifyWhitespace`) keeps everything. Reactive CSS cannot detect a rule that was removed before it loaded, and there is no automatic way to preserve it. Keep stylesheets with Reactive CSS out of empty-rule removal: minify them for whitespace only.
+
+</Callout>
+
+## Listeners and cleanup
+- One capturing listener on the document per event type, installed only while at least one rule uses that type. It is passive unless a rule for that type uses `prevent()`.
+- Candidate elements are tracked as the DOM changes; an event checks only the elements on its path.
+- With one unconditional rule for an element there is no style read. Otherwise the runtime reads the computed style once per element to let the cascade choose.
+- Nothing runs while the page is idle: no timers and no animation frames.
+- Removing the last rule for an event type removes its listener, and `stop()` releases every listener and gesture.
+
+## Trust
+Event rules can change only declared states. Nothing else is reachable: no DOM, network, storage, script or arbitrary methods. They are accepted only from inline and same-origin stylesheets; a cross-origin stylesheet's event rules are dropped.
+
+<Callout kind="warning" title="Accessibility">
+
+Events change state, not semantics. A `<div>` with `:on(click)` still cannot be focused or activated from the keyboard. Put behavior on real buttons and native controls.
+
+</Callout>
+
+## Upgrading from 0.8
+Stylesheets written for 0.8 are covered in [Migrating to 0.9](/docs/migration/#legacy-08x-compatibility).
+
+## Related
+<Related ids={["reference/on-rule","reference/set","reference/toggle","reference/increment","reference/cycle","reference/prevent","reference/outside","reference/event","event-data","drag","state"]} />

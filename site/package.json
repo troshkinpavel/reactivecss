@@ -1,0 +1,52 @@
+{
+  "name": "reactive-css-site",
+  "private": true,
+  "type": "module",
+  "description": "Documentation website for Reactive CSS. Consumes the library from ../dist; never published.",
+  "scripts": {
+    "sync-runtime": "node scripts/sync-runtime.mjs",
+    "dev": "npm run sync-runtime && astro dev",
+    "admin": "node admin/server.ts",
+    "build": "npm run sync-runtime && astro build && pagefind --site dist",
+    "preview": "astro preview",
+    "storybook": "storybook dev -p 6006",
+    "storybook:build": "storybook build",
+    "typecheck": "npm run sync-runtime && astro check",
+    "test": "npm run sync-runtime && vitest run --project unit",
+    "test:stories": "vitest run --project storybook",
+    "test:e2e": "playwright test",
+    "verify": "npm run typecheck && npm test && npm run build && npm run test:stories && npm run test:e2e",
+    "test:visual": "playwright test tests/e2e/visual.spec.ts --project=chromium",
+    "visual-review": "node scripts/visual-review.mjs",
+    "measure": "node scripts/measure-performance.mjs",
+    "api-coverage": "API_COVERAGE=1 vitest run --project unit tests/unit/api-coverage.test.ts"
+  },
+  "dependencies": {
+    "@astrojs/markdown-remark": "^7.3.3",
+    "@astrojs/mdx": "^8.1.0",
+    "@astrojs/react": "^7.1.0",
+    "@astrojs/sitemap": "^3.7.4",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.4.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "shiki": "^4.5.0",
+    "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.64.1",
+    "@storybook/addon-docs": "^10.6.2",
+    "@storybook/addon-vitest": "^10.6.2",
+    "@storybook/react-vite": "^10.6.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitest/browser": "^5.0.5",
+    "@vitest/browser-playwright": "^5.0.5",
+    "pagefind": "^1.5.2",
+    "storybook": "^10.6.2",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.5"
+  }
+}

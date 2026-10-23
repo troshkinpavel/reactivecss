@@ -1,0 +1,720 @@
+{
+ "date": "2026-10-21T23:15:24.943Z",
+ "throttle": 4,
+ "browser": "156.0.8078.4",
+ "cpu": "Apple M4 Max",
+ "cores": 14,
+ "node": "v26.8.2",
+ "runs": 3,
+ "results": {
+  "click": {
+   "1000 components, 150 clicks": {
+    "v0.8.1 (0.8 syntax)": {
+     "scriptMsPerClick": {
+      "median": 0.128,
+      "min": 0.09948,
+      "max": 0.1381
+     },
+     "taskMsPerClick": {
+      "median": 2.8,
+      "min": 2.642,
+      "max": 2.832
+     },
+     "latencyMedian": {
+      "median": 0.1,
+      "min": 0.1,
+      "max": 0.1
+     },
+     "latencyP95": {
+      "median": 0.7,
+      "min": 0.6,
+      "max": 0.7
+     }
+    },
+    "v0.9.0-rc1 (0.9 syntax)": {
+     "scriptMsPerClick": {
+      "median": 0.1567,
+      "min": 0.1106,
+      "max": 0.2039
+     },
+     "taskMsPerClick": {
+      "median": 2.892,
+      "min": 2.578,
+      "max": 3.091
+     },
+     "latencyMedian": {
+      "median": 0.1,
+      "min": 0,
+      "max": 0.1
+     },
+     "latencyP95": {
+      "median": 0.7,
+      "min": 0.7,
+      "max": 0.8
+     }
+    },
+    "v0.9.0 (0.8 syntax)": {
+     "scriptMsPerClick": {
+      "median": 0.1427,
+      "min": 0.1004,
+      "max": 0.2188
+     },
+     "taskMsPerClick": {
+      "median": 2.859,
+      "min": 2.403,
+      "max": 3.281
+     },
+     "latencyMedian": {
+      "median": 0.1,
+      "min": 0.1,
+      "max": 0.1
+     },
+     "latencyP95": {
+      "median": 0.7,
+      "min": 0.5,
+      "max": 0.8
+     }
+    },
+    "v0.9.0 (0.9 syntax)": {
+     "scriptMsPerClick": {
+      "median": 0.1885,
+      "min": 0.1276,
+      "max": 0.194
+     },
+     "taskMsPerClick": {
+      "median": 2.895,
+      "min": 2.567,
+      "max": 3.274
+     },
+     "latencyMedian": {
+      "median": 0.1,
+      "min": 0.1,
+      "max": 0.1
+     },
+     "latencyP95": {
+      "median": 0.8,
+      "min": 0.6,
+      "max": 0.9
+     }
+    },
+    "plain JavaScript": {
+     "scriptMsPerClick": {
+      "median": 0.04655,
+      "min": 0.0395,
+      "max": 0.0697
+     },
+     "taskMsPerClick": {
+      "median": 2.797,
+      "min": 2.526,
+      "max": 3.804
+     },
+     "latencyMedian": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "latencyP95": {
+      "median": 0.4,
+      "min": 0.3,
+      "max": 0.4
+     }
+    }
+   },
+   "1000 components, rules per element (v0.9.0)": {
+    "one rule (no style read)": {
+     "scriptMsPerClick": {
+      "median": 0.1107,
+      "min": 0.09096,
+      "max": 0.1274
+     },
+     "taskMsPerClick": {
+      "median": 1.017,
+      "min": 0.8813,
+      "max": 1.019
+     },
+     "latencyMedian": {
+      "median": 5.6,
+      "min": 5.2,
+      "max": 6.4
+     }
+    },
+    "five competing rules (one style read)": {
+     "scriptMsPerClick": {
+      "median": 0.1027,
+      "min": 0.09963,
+      "max": 0.1109
+     },
+     "taskMsPerClick": {
+      "median": 0.9769,
+      "min": 0.9521,
+      "max": 1.003
+     },
+     "latencyMedian": {
+      "median": 5.6,
+      "min": 4.7,
+      "max": 5.8
+     }
+    }
+   },
+   "1000 components, four mutations per click (v0.9.0)": {
+    "four mutations per click": {
+     "scriptMsPerClick": {
+      "median": 0.1321,
+      "min": 0.1148,
+      "max": 0.1536
+     },
+     "taskMsPerClick": {
+      "median": 0.9183,
+      "min": 0.9145,
+      "max": 1.002
+     },
+     "latencyMedian": {
+      "median": 5.7,
+      "min": 5.2,
+      "max": 6.4
+     }
+    }
+   }
+  },
+  "drag": {
+   "one active drag among 1 candidates": {
+    "v0.9.0-rc1 :on(drag)": {
+     "scriptMsPerS": {
+      "median": 10.54,
+      "min": 10.43,
+      "max": 11.39
+     },
+     "scriptMsPerMove": {
+      "median": 0.1769,
+      "min": 0.1751,
+      "max": 0.1911
+     },
+     "layoutCount": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    },
+    "v0.9.0 :on(drag)": {
+     "scriptMsPerS": {
+      "median": 11.71,
+      "min": 8.628,
+      "max": 12.39
+     },
+     "scriptMsPerMove": {
+      "median": 0.196,
+      "min": 0.1447,
+      "max": 0.2076
+     },
+     "layoutCount": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    },
+    "v0.9.0 custom (events, gestures)": {
+     "scriptMsPerS": {
+      "median": 8.717,
+      "min": 5.041,
+      "max": 12.11
+     },
+     "scriptMsPerMove": {
+      "median": 0.1458,
+      "min": 0.08438,
+      "max": 0.2026
+     },
+     "layoutCount": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    },
+    "plain JavaScript": {
+     "scriptMsPerS": {
+      "median": 1.858,
+      "min": 0.5569,
+      "max": 2.34
+     },
+     "scriptMsPerMove": {
+      "median": 0.03108,
+      "min": 0.009323,
+      "max": 0.03929
+     },
+     "layoutCount": {
+      "median": 1,
+      "min": 1,
+      "max": 1
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "one active drag among 1000 candidates": {
+    "v0.9.0-rc1 :on(drag)": {
+     "scriptMsPerS": {
+      "median": 9.639,
+      "min": 8.78,
+      "max": 10.09
+     },
+     "scriptMsPerMove": {
+      "median": 0.1617,
+      "min": 0.1472,
+      "max": 0.1691
+     },
+     "layoutCount": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    },
+    "v0.9.0 :on(drag)": {
+     "scriptMsPerS": {
+      "median": 9.37,
+      "min": 8.936,
+      "max": 10.78
+     },
+     "scriptMsPerMove": {
+      "median": 0.157,
+      "min": 0.1498,
+      "max": 0.1807
+     },
+     "layoutCount": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    },
+    "v0.9.0 custom (events, gestures)": {
+     "scriptMsPerS": {
+      "median": 6.565,
+      "min": 6.384,
+      "max": 13.12
+     },
+     "scriptMsPerMove": {
+      "median": 0.1101,
+      "min": 0.107,
+      "max": 0.22
+     },
+     "layoutCount": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    },
+    "plain JavaScript": {
+     "scriptMsPerS": {
+      "median": 2.768,
+      "min": 1.942,
+      "max": 2.898
+     },
+     "scriptMsPerMove": {
+      "median": 0.04655,
+      "min": 0.03256,
+      "max": 0.04864
+     },
+     "layoutCount": {
+      "median": 1,
+      "min": 1,
+      "max": 1
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "persisted position, 300 moves": {
+    "persisted --x": {
+     "storageWrites": {
+      "median": 21,
+      "min": 21,
+      "max": 21
+     },
+     "scriptMsPerMove": {
+      "median": 0.1652,
+      "min": 0.1632,
+      "max": 0.2185
+     }
+    }
+   }
+  },
+  "live": {
+   "live(random(), 200ms) on 10,000 elements, 3 s": {
+    "v0.8.1": {
+     "frameMedian": {
+      "median": 16.7,
+      "min": 16.7,
+      "max": 16.7
+     },
+     "frameP95": {
+      "median": 33.4,
+      "min": 33.3,
+      "max": 50
+     },
+     "heapMB": {
+      "median": 8.261,
+      "min": 6.461,
+      "max": 9.389
+     }
+    },
+    "v0.9.0-rc1": {
+     "frameMedian": {
+      "median": 16.7,
+      "min": 16.7,
+      "max": 16.7
+     },
+     "frameP95": {
+      "median": 33.4,
+      "min": 33.3,
+      "max": 49.9
+     },
+     "heapMB": {
+      "median": 6.447,
+      "min": 6.344,
+      "max": 7.579
+     }
+    },
+    "v0.9.0": {
+     "frameMedian": {
+      "median": 16.7,
+      "min": 16.7,
+      "max": 16.7
+     },
+     "frameP95": {
+      "median": 33.3,
+      "min": 33.3,
+      "max": 33.4
+     },
+     "heapMB": {
+      "median": 6.409,
+      "min": 6.37,
+      "max": 7.461
+     }
+    }
+   }
+  },
+  "input": {
+   "100 characters typed into a bound field with a live preview": {
+    "v0.8.1 (bind:, text:)": {
+     "scriptMsPerInput": {
+      "median": 0.02647,
+      "min": 0.01704,
+      "max": 0.03852
+     },
+     "taskMsPerInput": {
+      "median": 0.2278,
+      "min": 0.2218,
+      "max": 0.2661
+     }
+    },
+    "v0.9.0 (bind:, text:)": {
+     "scriptMsPerInput": {
+      "median": 0.04747,
+      "min": 0.03176,
+      "max": 0.05276
+     },
+     "taskMsPerInput": {
+      "median": 0.2644,
+      "min": 0.2562,
+      "max": 0.3193
+     }
+    },
+    "v0.9.0-rc1 (:on(input), event(value), bind(value))": {
+     "scriptMsPerInput": {
+      "median": 0.08738,
+      "min": 0.07029,
+      "max": 0.1014
+     },
+     "taskMsPerInput": {
+      "median": 0.3729,
+      "min": 0.2938,
+      "max": 0.5236
+     }
+    },
+    "v0.9.0 (:on(input), event(value), bind(value))": {
+     "scriptMsPerInput": {
+      "median": 0.09147,
+      "min": 0.0799,
+      "max": 0.1186
+     },
+     "taskMsPerInput": {
+      "median": 0.4556,
+      "min": 0.3881,
+      "max": 0.4682
+     }
+    },
+    "plain JavaScript": {
+     "scriptMsPerInput": {
+      "median": 0.01392,
+      "min": 0.01327,
+      "max": 0.01926
+     },
+     "taskMsPerInput": {
+      "median": 0.2755,
+      "min": 0.2177,
+      "max": 0.3459
+     }
+    }
+   },
+   "mousemove snapshot, one element": {
+    "v0.9.0-rc1 :on(mousemove)": {
+     "scriptMsPerS": {
+      "median": 8.504,
+      "min": 6.177,
+      "max": 8.538
+     },
+     "taskMsPerS": {
+      "median": 50.13,
+      "min": 39.58,
+      "max": 54.05
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    },
+    "v0.9.0 :on(mousemove)": {
+     "scriptMsPerS": {
+      "median": 9.095,
+      "min": 8.87,
+      "max": 9.389
+     },
+     "taskMsPerS": {
+      "median": 57.42,
+      "min": 57.4,
+      "max": 61.61
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    },
+    "plain JavaScript": {
+     "scriptMsPerS": {
+      "median": 2.005,
+      "min": 1.8,
+      "max": 2.109
+     },
+     "taskMsPerS": {
+      "median": 29.45,
+      "min": 26.96,
+      "max": 30.45
+     },
+     "longTasks": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "scroll snapshot (200 wheel steps)": {
+    "v0.9.0-rc1 :on(scroll)": {
+     "scriptMsPerS": {
+      "median": 11.13,
+      "min": 9.17,
+      "max": 13.44
+     },
+     "taskMsPerS": {
+      "median": 54.98,
+      "min": 41.36,
+      "max": 57.69
+     }
+    },
+    "v0.9.0 :on(scroll)": {
+     "scriptMsPerS": {
+      "median": 8.561,
+      "min": 6.378,
+      "max": 12.36
+     },
+     "taskMsPerS": {
+      "median": 40.97,
+      "min": 28.19,
+      "max": 56.77
+     }
+    },
+    "plain JavaScript": {
+     "scriptMsPerS": {
+      "median": 1.648,
+      "min": 1.482,
+      "max": 1.894
+     },
+     "taskMsPerS": {
+      "median": 21.82,
+      "min": 21.42,
+      "max": 23.75
+     }
+    }
+   }
+  },
+  "render": {
+   "click → first observation (ms, median of 40 clicks)": {
+    "v0.8.1 (0.8 syntax)": {
+     "styleMs": {
+      "median": 15.6,
+      "min": 15.4,
+      "max": 15.7
+     },
+     "textMs": {
+      "median": 0.8,
+      "min": 0.7,
+      "max": 0.9
+     },
+     "attrMs": {
+      "median": 0.8,
+      "min": 0.7,
+      "max": 0.9
+     },
+     "focusMs": {
+      "median": 1,
+      "min": 0.9,
+      "max": 1.1
+     },
+     "focusCount": {
+      "median": 20,
+      "min": 20,
+      "max": 20
+     }
+    },
+    "v0.9.0-rc1 (0.9 syntax)": {
+     "styleMs": {
+      "median": 16,
+      "min": 15.8,
+      "max": 16
+     },
+     "textMs": {
+      "median": 0.8,
+      "min": 0.7,
+      "max": 0.9
+     },
+     "attrMs": {
+      "median": 0.8,
+      "min": 0.7,
+      "max": 0.9
+     },
+     "focusMs": {
+      "median": 0.8,
+      "min": 0.8,
+      "max": 1
+     },
+     "focusCount": {
+      "median": 20,
+      "min": 20,
+      "max": 20
+     }
+    },
+    "v0.9.0 (0.8 syntax)": {
+     "styleMs": {
+      "median": 15.7,
+      "min": 15.2,
+      "max": 15.8
+     },
+     "textMs": {
+      "median": 0.9,
+      "min": 0.7,
+      "max": 1
+     },
+     "attrMs": {
+      "median": 0.9,
+      "min": 0.7,
+      "max": 1
+     },
+     "focusMs": {
+      "median": 1,
+      "min": 1,
+      "max": 1.3
+     },
+     "focusCount": {
+      "median": 20,
+      "min": 20,
+      "max": 20
+     }
+    },
+    "v0.9.0 (0.9 syntax)": {
+     "styleMs": {
+      "median": 15.4,
+      "min": 15.4,
+      "max": 15.9
+     },
+     "textMs": {
+      "median": 0.7,
+      "min": 0.6,
+      "max": 1
+     },
+     "attrMs": {
+      "median": 0.7,
+      "min": 0.6,
+      "max": 1
+     },
+     "focusMs": {
+      "median": 0.8,
+      "min": 0.6,
+      "max": 1
+     },
+     "focusCount": {
+      "median": 20,
+      "min": 20,
+      "max": 20
+     }
+    }
+   }
+  }
+ },
+ "sections": {
+  "click": {
+   "date": "2026-10-21T23:15:24.943Z",
+   "runs": 3
+  },
+  "drag": {
+   "date": "2026-10-21T23:15:24.943Z",
+   "runs": 3
+  },
+  "live": {
+   "date": "2026-10-21T23:15:24.943Z",
+   "runs": 3
+  },
+  "input": {
+   "date": "2026-10-21T23:15:24.943Z",
+   "runs": 3
+  },
+  "render": {
+   "date": "2026-10-21T23:15:24.943Z",
+   "runs": 3
+  }
+ }
+}

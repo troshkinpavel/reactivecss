@@ -1,0 +1,53 @@
+/* Notification center: all behavior is in this file (Reactive CSS + native CSS). */
+
+body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #1c1c1e; background: #f6f6f4; }
+main { max-width: 620px; margin: 0 auto; padding: 24px 16px; }
+.note { color: #555; }
+.center { background: #fff; border-radius: 14px; padding: 16px 20px; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
+.head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; }
+.head h2 { margin: 0; font-size: 20px; }
+.count { margin: 0; color: #555; font-variant-numeric: tabular-nums; }
+.list { list-style: none; margin: 12px 0 0; padding: 0; }
+.note-item { padding: 10px 12px; border-radius: 10px; margin: 6px 0; background: #eef2ff; }
+.note-item p { margin: 0 0 6px; }
+.note-item[data-read="1"] { background: #f4f4f5; color: #555; }
+button { font: inherit; padding: 6px 12px; border-radius: 8px; border: 1px solid #888; background: #fafafa; cursor: pointer; }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+.actions { display: flex; gap: 8px; margin-top: 8px; }
+:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+
+/* ---- state: owned by the center ----------------------------------------------------------------
+   One read and one dismissed flag per notification (no arrays), whether the list is open, and
+   which notification was dismissed last (0 = none): a one-step history for Undo. */
+.center { --open: state(true); --r1: state(false); --r2: state(false); --r3: state(false);
+  --d1: state(false); --d2: state(false); --d3: state(false); --last: state(0); }
+
+/* ---- expand / collapse: a disclosure (attr:, 0.5.3) ------------------------------------------- */
+.center .toggle { on: click(toggle(--open)); attr: aria-expanded var(--open); }
+.center .body { attr: hidden when(--open, false, true); }
+
+/* ---- per notification: read state as aria-pressed on its toggle, data-read on the item, and the
+   item hidden once dismissed. One rule per item: no parameterized rules. */
+.center .n1 .read { on: click(toggle(--r1)); attr: aria-pressed var(--r1); }
+.center .n2 .read { on: click(toggle(--r2)); attr: aria-pressed var(--r2); }
+.center .n3 .read { on: click(toggle(--r3)); attr: aria-pressed var(--r3); }
+.center .n1 { attr: data-read var(--r1); attr: hidden var(--d1); }
+.center .n2 { attr: data-read var(--r2); attr: hidden var(--d2); }
+.center .n3 { attr: data-read var(--r3); attr: hidden var(--d3); }
+.center .n1 .dismiss { on: click(set(--d1, true), set(--last, 1)); }
+.center .n2 .dismiss { on: click(set(--d2, true), set(--last, 2)); }
+.center .n3 .dismiss { on: click(set(--d3, true), set(--last, 3)); }
+
+/* ---- history: Undo brings back the last dismissed notification (one step) ------------------- */
+.center .undo { attr: disabled when(--last == 0); }
+.center:when(--last == 1) .undo { on: click(set(--d1, false), set(--last, 0)); }
+.center:when(--last == 2) .undo { on: click(set(--d2, false), set(--last, 0)); }
+.center:when(--last == 3) .undo { on: click(set(--d3, false), set(--last, 0)); }
+.center .dismiss-all { on: click(set(--d1, true), set(--d2, true), set(--d3, true), set(--last, 0));
+  attr: disabled when(--d1 and --d2 and --d3); }
+.center .empty { attr: hidden when(--d1 and --d2 and --d3, false, true); color: #555; }
+
+/* ---- unread count: booleans are 1/0 in CSS, so native math counts them ---------------------- */
+@property --unread { syntax: "<integer>"; inherits: true; initial-value: 0; }
+.center { --unread: calc((1 - var(--r1)) * (1 - var(--d1)) + (1 - var(--r2)) * (1 - var(--d2)) + (1 - var(--r3)) * (1 - var(--d3))); }
+.center .count .n { text: var(--unread); }

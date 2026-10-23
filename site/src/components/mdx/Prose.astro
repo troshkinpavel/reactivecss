@@ -1,0 +1,13 @@
+---
+// Paragraphs, lists and links inside MDX articles.
+interface Props { as: 'p' | 'ul' | 'ol' | 'li' | 'strong' }
+const { as: Tag, ...rest } = Astro.props;
+const cls = {
+  p: 'mb-[18px] max-w-(--container-prose) text-body leading-[1.7] text-pretty text-ink-body',
+  ul: 'mb-[22px] flex max-w-(--container-prose) list-none flex-col gap-2 p-0',
+  ol: 'mb-[22px] flex max-w-(--container-prose) list-none flex-col gap-2 p-0 [counter-reset:li]',
+  li: 'prose-li flex gap-3 text-[16.5px] leading-[1.65] text-ink-body',
+  strong: 'font-semibold text-ink',
+}[Tag];
+---
+<Tag class={cls} {...rest}><slot /></Tag>

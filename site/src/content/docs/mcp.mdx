@@ -1,0 +1,150 @@
+---
+title: "MCP Server"
+description: "Give your AI coding agent accurate Reactive CSS 0.9.0 knowledge. The @reactivecss/mcp server provides documentation, API lookup, code validation, examples, migration guidance and bundle recommendations to any MCP-compatible client."
+group: Integrations
+type: Guide
+order: 39
+---
+<Callout kind="provisional" title="Not yet published">
+
+`@reactivecss/mcp` lives in `packages/mcp/` and is not on npm yet. Until it is, run the server from a local build. The `npx` commands below are for after publication.
+
+</Callout>
+
+<Facts>
+  <Fact label="Package">`@reactivecss/mcp`</Fact>
+  <Fact label="Source">`packages/mcp/`</Fact>
+  <Fact label="Targets">Reactive CSS 0.9.0</Fact>
+  <Fact label="Provides">7 tools · 8 resources · 4 prompts</Fact>
+</Facts>
+
+## Why use it
+Language models learn from whatever Reactive CSS they saw in training, which is often an older API. Without help, an agent may write `on: click(toggle(--open))` instead of `:on(click)`, or invent functions the runtime doesn't have.
+
+The MCP server gives the agent the current documentation and a validator, so it can check its own output before showing it to you.
+
+- **Current syntax.** Answers come from the 0.9.0 reference, not from training data.
+- **Checked code.** The agent can validate a stylesheet with the library's own compiler, and fix what the runtime would reject.
+- **Migration help.** Older declarations such as `on:`, `bind:` and `text:` are mapped to their 0.9.0 forms.
+- **Smaller bundles.** The agent can recommend Full, Compact or a Custom bundle from the features your CSS uses.
+
+## [1] Install
+Until publication, build the server from the repository. It needs Node.js 22 or later.
+
+```bash terminal
+cd packages/mcp
+npm install
+npm run build
+```
+
+The server is `packages/mcp/dist/index.js`. After publication, clients start it with `npx -y @reactivecss/mcp` instead, with no build step.
+
+## [2] Connect your client
+Most MCP clients read a JSON configuration that names the server and the command that starts it. Replace the path with the absolute path to `dist/index.js` on your machine.
+
+```json mcp.json
+{
+  "mcpServers": {
+    "reactivecss": {
+      "command": "node",
+      "args": ["/absolute/path/to/packages/mcp/dist/index.js"]
+    }
+  }
+}
+```
+
+In Claude Code, add it from the terminal:
+
+```bash terminal
+claude mcp add reactivecss -- node /absolute/path/to/packages/mcp/dist/index.js
+```
+
+<Callout kind="tip" title="Where the file goes">
+
+Each client keeps its MCP configuration in a different place, and VS Code uses a `servers` object instead of `mcpServers`. Follow your client's own MCP documentation for the file location. The package README has the VS Code form.
+
+</Callout>
+
+## [3] Check that it works
+Ask your agent a question only the current docs can answer, such as how to read the click position in an event rule. A connected agent should look it up and answer with `set(event(client-x))` inside a `:on(click)` rule, stored in a length state such as `state(0px)`, citing the 0.9.0 reference.
+
+## Supported clients
+The server speaks MCP over stdio, the transport every client listed here supports.
+
+| Client | Status | Notes |
+| --- | --- | --- |
+| MCP Inspector (CLI) | **Verified** | Listing and calling tools, reading resources and listing prompts, during development. |
+| Claude Code | Not verified | Configuration above; not yet run against the server. |
+| Cursor | Not verified | Uses the `mcpServers` configuration above. |
+| VS Code (agent mode) | Not verified | Uses a `servers` object; see the package README. |
+| Other MCP clients | Not verified | Should work with any client that supports MCP over stdio. Report results in the repository issues. |
+
+## What it provides
+Everything is read-only and offline: the server reads no files of yours, opens no network connections and runs no code from its input.
+
+<Facts>
+  <Fact label="Tools">7: API lookup, documentation search, examples, validation, feature analysis, bundle advice and migration</Fact>
+  <Fact label="Resources">8: reference documents the client can read directly</Fact>
+  <Fact label="Prompts">4: ready-made tasks such as migrating a stylesheet</Fact>
+</Facts>
+
+### Tools
+Actions the agent calls with arguments, for example "look up `increment()`" or "validate this stylesheet": `get_api_reference`, `search_docs`, `get_example`, `validate_css`, `analyze_features`, `suggest_bundle` and `migrate_css`. Their parameters are in the package README.
+
+### Resources
+Read-only documents the client can attach to a conversation: the API reference, the bundle features and their dependencies, the migration guide, compatibility, experimental APIs and common mistakes.
+
+### Prompts
+Templates your client can offer as commands: `create_reactive_component`, `migrate_to_v09`, `review_reactive_css` and `optimize_reactive_bundle`. Each one tells the agent which tools to call and to validate the result.
+
+## Example: validating agent output
+An agent asked for a disclosure menu first produces older syntax. It calls `validate_css`, which reports the legacy declarations, and the agent rewrites them before replying.
+
+```css menu.css
+.nav {
+  --open: state(false);
+}
+.nav button {
+  on: click(toggle(--open));
+  attr: aria-expanded var(--open);
+}
+```
+
+<Callout kind="warning" title="Validation result">
+
+Two warnings: `on:` (`MCP-legacy-on`) and `attr:` (`MCP-legacy-attr`) are 0.8 syntax. They still run in 0.9.0, but the current forms are `:on(click)` for the event and `--attr-aria-expanded` for the attribute.
+
+</Callout>
+
+```css menu.css
+.nav {
+  --open: state(false);
+}
+.nav button {
+  --attr-aria-expanded: var(--open);
+}
+.nav button:on(click) {
+  --open: toggle();
+}
+```
+
+<Callout kind="outcome" title="Validated">
+
+No errors or warnings. `suggest_bundle` recommends a custom bundle with `core`, `events` and `attributes`, and gives the `reactive-css build` command for it.
+
+</Callout>
+
+## Limits
+- The server describes Reactive CSS. It doesn't run your page or see your DOM.
+- Validation checks syntax and API usage, not visual results. Test in a browser.
+- Answers target 0.9.0. Use the server version that matches your runtime.
+
+## Links
+<Cards>
+  <Card href="https://github.com/troshkinpavel/reactivecss/tree/main/packages/mcp" title="Source on GitHub">`packages/mcp/` in the Reactive CSS repository. Opens once the repository is public.</Card>
+  <Card href="#1-install" title="npm package">`@reactivecss/mcp`. Not yet published.</Card>
+  <Card href="/docs/migration/" title="Migration guide">What changed in 0.9.0 and how to update older stylesheets.</Card>
+</Cards>
+
+## Related
+<Related ids={["getting-started","installation","migration","reference"]} />

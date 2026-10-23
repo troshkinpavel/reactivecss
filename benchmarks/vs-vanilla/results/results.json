@@ -1,0 +1,707 @@
+{
+ "date": "2026-10-22T22:36:09.606Z",
+ "browser": "156.0.8078.4",
+ "cpu": "Apple M4 Max",
+ "runs": 5,
+ "interactionsPerRun": 40,
+ "scenarios": {
+  "counter": {
+   "vanilla": {
+    "startScriptMs": {
+     "median": 0.443,
+     "min": 0.38,
+     "max": 0.483
+    },
+    "startTaskMs": {
+     "median": 8.01,
+     "min": 7.65,
+     "max": 8.21
+    },
+    "readyMs": {
+     "median": 9.8,
+     "min": 7.9,
+     "max": 10.2
+    },
+    "heapMB": {
+     "median": 0.61,
+     "min": 0.61,
+     "max": 0.61
+    },
+    "domLatencyMs": {
+     "median": 0.1,
+     "min": 0,
+     "max": 0.1
+    },
+    "paintFrames": {
+     "median": 1,
+     "min": 1,
+     "max": 1
+    },
+    "updates": {
+     "median": 40,
+     "min": 40,
+     "max": 40
+    },
+    "scriptMsPerInteraction": {
+     "median": 0.14,
+     "min": 0.055,
+     "max": 0.167
+    },
+    "idleScriptMs": {
+     "median": 0,
+     "min": 0,
+     "max": 0
+    },
+    "idleTaskMs": {
+     "median": 0.415,
+     "min": 0.097,
+     "max": 0.442
+    }
+   },
+   "rcss": {
+    "startScriptMs": {
+     "median": 3.99,
+     "min": 3.67,
+     "max": 4.3
+    },
+    "startTaskMs": {
+     "median": 14.8,
+     "min": 13.8,
+     "max": 16.2
+    },
+    "readyMs": {
+     "median": 11.7,
+     "min": 10.9,
+     "max": 12.6
+    },
+    "heapMB": {
+     "median": 1.57,
+     "min": 1.57,
+     "max": 1.57
+    },
+    "domLatencyMs": {
+     "median": 15.2,
+     "min": 13.3,
+     "max": 16
+    },
+    "paintFrames": {
+     "median": 1,
+     "min": 1,
+     "max": 1
+    },
+    "updates": {
+     "median": 40,
+     "min": 40,
+     "max": 40
+    },
+    "scriptMsPerInteraction": {
+     "median": 0.269,
+     "min": 0.107,
+     "max": 0.497
+    },
+    "idleScriptMs": {
+     "median": 0,
+     "min": 0,
+     "max": 0
+    },
+    "idleTaskMs": {
+     "median": 0.228,
+     "min": 0.109,
+     "max": 0.403
+    }
+   },
+   "equivalentFinalState": true,
+   "finalState": {
+    "vanilla": {
+     "text": "45",
+     "pressed": null,
+     "translate": "none"
+    },
+    "rcss": {
+     "text": "45",
+     "pressed": null,
+     "translate": "none"
+    }
+   }
+  },
+  "toggle": {
+   "vanilla": {
+    "startScriptMs": {
+     "median": 0.363,
+     "min": 0.333,
+     "max": 0.41
+    },
+    "startTaskMs": {
+     "median": 7.47,
+     "min": 7.32,
+     "max": 8.1
+    },
+    "readyMs": {
+     "median": 7.7,
+     "min": 7.6,
+     "max": 9.9
+    },
+    "heapMB": {
+     "median": 0.607,
+     "min": 0.607,
+     "max": 0.607
+    },
+    "domLatencyMs": {
+     "median": 0.1,
+     "min": 0,
+     "max": 0.1
+    },
+    "paintFrames": {
+     "median": 1,
+     "min": 1,
+     "max": 1
+    },
+    "updates": {
+     "median": 40,
+     "min": 40,
+     "max": 40
+    },
+    "scriptMsPerInteraction": {
+     "median": 0.171,
+     "min": 0.102,
+     "max": 0.182
+    },
+    "idleScriptMs": {
+     "median": 0,
+     "min": 0,
+     "max": 0
+    },
+    "idleTaskMs": {
+     "median": 0.258,
+     "min": 0.17,
+     "max": 0.32
+    }
+   },
+   "rcss": {
+    "startScriptMs": {
+     "median": 3.59,
+     "min": 3.54,
+     "max": 3.68
+    },
+    "startTaskMs": {
+     "median": 14.4,
+     "min": 14.3,
+     "max": 14.7
+    },
+    "readyMs": {
+     "median": 11.3,
+     "min": 11,
+     "max": 12
+    },
+    "heapMB": {
+     "median": 1.54,
+     "min": 1.54,
+     "max": 1.54
+    },
+    "domLatencyMs": {
+     "median": 0.2,
+     "min": 0.2,
+     "max": 0.2
+    },
+    "paintFrames": {
+     "median": 1,
+     "min": 1,
+     "max": 1
+    },
+    "updates": {
+     "median": 40,
+     "min": 40,
+     "max": 40
+    },
+    "scriptMsPerInteraction": {
+     "median": 0.37,
+     "min": 0.367,
+     "max": 0.399
+    },
+    "idleScriptMs": {
+     "median": 0,
+     "min": 0,
+     "max": 0
+    },
+    "idleTaskMs": {
+     "median": 0.29,
+     "min": 0.271,
+     "max": 0.331
+    }
+   },
+   "equivalentFinalState": true,
+   "finalState": {
+    "vanilla": {
+     "text": "Dark mode",
+     "pressed": "true",
+     "translate": "none"
+    },
+    "rcss": {
+     "text": "Dark mode",
+     "pressed": "true",
+     "translate": "none"
+    }
+   }
+  },
+  "form": {
+   "vanilla": {
+    "startScriptMs": {
+     "median": 0.482,
+     "min": 0.415,
+     "max": 0.515
+    },
+    "startTaskMs": {
+     "median": 8.38,
+     "min": 7.67,
+     "max": 8.73
+    },
+    "readyMs": {
+     "median": 8.6,
+     "min": 8.1,
+     "max": 9.8
+    },
+    "heapMB": {
+     "median": 0.617,
+     "min": 0.617,
+     "max": 0.617
+    },
+    "domLatencyMs": {
+     "median": 0.1,
+     "min": 0,
+     "max": 0.1
+    },
+    "paintFrames": {
+     "median": 1,
+     "min": 1,
+     "max": 1
+    },
+    "updates": {
+     "median": 40,
+     "min": 40,
+     "max": 40
+    },
+    "scriptMsPerInteraction": {
+     "median": 0.163,
+     "min": 0.123,
+     "max": 0.191
+    },
+    "idleScriptMs": {
+     "median": 0,
+     "min": 0,
+     "max": 0
+    },
+    "idleTaskMs": {
+     "median": 2.84,
+     "min": 1.41,
+     "max": 3.1
+    }
+   },
+   "rcss": {
+    "startScriptMs": {
+     "median": 4.01,
+     "min": 3.83,
+     "max": 4.16
+    },
+    "startTaskMs": {
+     "median": 15.1,
+     "min": 14.6,
+     "max": 15.6
+    },
+    "readyMs": {
+     "median": 12,
+     "min": 11.6,
+     "max": 13.5
+    },
+    "heapMB": {
+     "median": 1.57,
+     "min": 1.57,
+     "max": 1.57
+    },
+    "domLatencyMs": {
+     "median": 14.9,
+     "min": 14.2,
+     "max": 15.6
+    },
+    "paintFrames": {
+     "median": 1,
+     "min": 1,
+     "max": 1
+    },
+    "updates": {
+     "median": 40,
+     "min": 40,
+     "max": 40
+    },
+    "scriptMsPerInteraction": {
+     "median": 0.441,
+     "min": 0.226,
+     "max": 0.465
+    },
+    "idleScriptMs": {
+     "median": 0,
+     "min": 0,
+     "max": 0
+    },
+    "idleTaskMs": {
+     "median": 2.45,
+     "min": 1.83,
+     "max": 2.92
+    }
+   },
+   "equivalentFinalState": true,
+   "finalState": {
+    "vanilla": {
+     "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+     "pressed": null,
+     "translate": "none"
+    },
+    "rcss": {
+     "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+     "pressed": null,
+     "translate": "none"
+    }
+   }
+  },
+  "drag": {
+   "vanilla": {
+    "startScriptMs": {
+     "median": 0.335,
+     "min": 0.307,
+     "max": 0.428
+    },
+    "startTaskMs": {
+     "median": 4.09,
+     "min": 3.77,
+     "max": 4.22
+    },
+    "readyMs": {
+     "median": 4.4,
+     "min": 4.2,
+     "max": 4.6
+    },
+    "heapMB": {
+     "median": 0.603,
+     "min": 0.603,
+     "max": 0.603
+    },
+    "domLatencyMs": {
+     "median": 0.1,
+     "min": 0,
+     "max": 0.1
+    },
+    "paintFrames": {
+     "median": 1,
+     "min": 1,
+     "max": 1
+    },
+    "updates": {
+     "median": 40,
+     "min": 40,
+     "max": 40
+    },
+    "scriptMsPerInteraction": {
+     "median": 0.192,
+     "min": 0.121,
+     "max": 0.243
+    },
+    "idleScriptMs": {
+     "median": 0,
+     "min": 0,
+     "max": 0
+    },
+    "idleTaskMs": {
+     "median": 0.386,
+     "min": 0.26,
+     "max": 0.514
+    }
+   },
+   "rcss": {
+    "startScriptMs": {
+     "median": 3.72,
+     "min": 3.4,
+     "max": 4.22
+    },
+    "startTaskMs": {
+     "median": 11.1,
+     "min": 10.8,
+     "max": 12.4
+    },
+    "readyMs": {
+     "median": 11.2,
+     "min": 11,
+     "max": 14
+    },
+    "heapMB": {
+     "median": 1.55,
+     "min": 1.55,
+     "max": 1.55
+    },
+    "domLatencyMs": {
+     "median": 0.3,
+     "min": 0.1,
+     "max": 0.4
+    },
+    "paintFrames": {
+     "median": 1,
+     "min": 1,
+     "max": 1
+    },
+    "updates": {
+     "median": 40,
+     "min": 40,
+     "max": 40
+    },
+    "scriptMsPerInteraction": {
+     "median": 0.278,
+     "min": 0.147,
+     "max": 0.384
+    },
+    "idleScriptMs": {
+     "median": 0,
+     "min": 0,
+     "max": 0
+    },
+    "idleTaskMs": {
+     "median": 0.219,
+     "min": 0.139,
+     "max": 0.408
+    }
+   },
+   "equivalentFinalState": true,
+   "finalState": {
+    "vanilla": {
+     "text": "",
+     "pressed": null,
+     "translate": "225px"
+    },
+    "rcss": {
+     "text": "",
+     "pressed": null,
+     "translate": "225px"
+    }
+   }
+  },
+  "many": {
+   "vanilla": {
+    "startScriptMs": {
+     "median": 0.201,
+     "min": 0.198,
+     "max": 0.216
+    },
+    "startTaskMs": {
+     "median": 15.8,
+     "min": 15,
+     "max": 16.6
+    },
+    "readyMs": {
+     "median": 6.3,
+     "min": 5.8,
+     "max": 6.8
+    },
+    "heapMB": {
+     "median": 0.541,
+     "min": 0.541,
+     "max": 0.541
+    },
+    "domLatencyMs": {
+     "median": 0,
+     "min": 0,
+     "max": 0.1
+    },
+    "paintFrames": {
+     "median": 1,
+     "min": 1,
+     "max": 1
+    },
+    "updates": {
+     "median": 40,
+     "min": 40,
+     "max": 40
+    },
+    "scriptMsPerInteraction": {
+     "median": 0.147,
+     "min": 0.0688,
+     "max": 0.165
+    },
+    "idleScriptMs": {
+     "median": 0,
+     "min": 0,
+     "max": 0
+    },
+    "idleTaskMs": {
+     "median": 0.313,
+     "min": 0.236,
+     "max": 0.355
+    }
+   },
+   "rcss": {
+    "startScriptMs": {
+     "median": 7.88,
+     "min": 7.7,
+     "max": 9.49
+    },
+    "startTaskMs": {
+     "median": 28.7,
+     "min": 28.6,
+     "max": 30.5
+    },
+    "readyMs": {
+     "median": 26,
+     "min": 25.7,
+     "max": 27.3
+    },
+    "heapMB": {
+     "median": 2.29,
+     "min": 2.29,
+     "max": 2.29
+    },
+    "domLatencyMs": {
+     "median": 14.7,
+     "min": 14.3,
+     "max": 14.8
+    },
+    "paintFrames": {
+     "median": 1,
+     "min": 1,
+     "max": 1
+    },
+    "updates": {
+     "median": 40,
+     "min": 40,
+     "max": 40
+    },
+    "scriptMsPerInteraction": {
+     "median": 0.276,
+     "min": 0.263,
+     "max": 0.32
+    },
+    "idleScriptMs": {
+     "median": 0,
+     "min": 0,
+     "max": 0
+    },
+    "idleTaskMs": {
+     "median": 0.431,
+     "min": 0.167,
+     "max": 0.534
+    }
+   },
+   "equivalentFinalState": true,
+   "finalState": {
+    "vanilla": {
+     "text": "45",
+     "pressed": null,
+     "translate": "none"
+    },
+    "rcss": {
+     "text": "45",
+     "pressed": null,
+     "translate": "none"
+    }
+   }
+  }
+ },
+ "sizes": {
+  "fullRuntime": {
+   "minified": 149039,
+   "gzip": 49233
+  },
+  "perScenario": {
+   "counter": {
+    "appCss": {
+     "bytes": 92,
+     "gzip": 91
+    },
+    "vanillaJs": {
+     "bytes": 161,
+     "gzip": 139
+    },
+    "customRuntime": {
+     "features": [
+      "core",
+      "events",
+      "text"
+     ],
+     "minified": 78484,
+     "gzip": 26834
+    }
+   },
+   "toggle": {
+    "appCss": {
+     "bytes": 80,
+     "gzip": 90
+    },
+    "vanillaJs": {
+     "bytes": 166,
+     "gzip": 142
+    },
+    "customRuntime": {
+     "features": [
+      "core",
+      "events",
+      "attributes"
+     ],
+     "minified": 84670,
+     "gzip": 28777
+    }
+   },
+   "form": {
+    "appCss": {
+     "bytes": 96,
+     "gzip": 95
+    },
+    "vanillaJs": {
+     "bytes": 161,
+     "gzip": 138
+    },
+    "customRuntime": {
+     "features": [
+      "core",
+      "events",
+      "text"
+     ],
+     "minified": 78484,
+     "gzip": 26834
+    }
+   },
+   "drag": {
+    "appCss": {
+     "bytes": 127,
+     "gzip": 101
+    },
+    "vanillaJs": {
+     "bytes": 410,
+     "gzip": 245
+    },
+    "customRuntime": {
+     "features": [
+      "core",
+      "events",
+      "gestures"
+     ],
+     "minified": 78093,
+     "gzip": 26847
+    }
+   },
+   "many": {
+    "appCss": {
+     "bytes": 92,
+     "gzip": 91
+    },
+    "vanillaJs": {
+     "bytes": 147,
+     "gzip": 139
+    },
+    "customRuntime": {
+     "features": [
+      "core",
+      "events",
+      "text"
+     ],
+     "minified": 78484,
+     "gzip": 26834
+    }
+   }
+  }
+ }
+}

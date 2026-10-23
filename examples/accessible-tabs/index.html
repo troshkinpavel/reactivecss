@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Accessible tabs — Reactive CSS example</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Tabs</h1>
+    <p class="note">Tab selection with real <code>aria-selected</code> and <code>hidden</code> attributes. Arrow keys, Home and End move between tabs (automatic activation); only the selected tab is in the Tab order. See the README for what is and is not verified.</p>
+
+    <div class="tabs" id="account">
+      <div role="tablist" aria-label="Account">
+        <button type="button" role="tab" id="t-profile" aria-controls="p-profile">Profile</button>
+        <button type="button" role="tab" id="t-security" aria-controls="p-security">Security</button>
+        <button type="button" role="tab" id="t-billing" aria-controls="p-billing" class="billing">Billing</button>
+        <button type="button" role="tab" id="t-team" aria-controls="p-team" disabled>Team (soon)</button>
+      </div>
+      <div class="panels">
+        <section role="tabpanel" tabindex="0" id="p-profile" aria-labelledby="t-profile">
+          <h2>Profile</h2>
+          <label><input type="checkbox" class="has-billing"> I have a billing account (enables the Billing tab)</label>
+        </section>
+        <section role="tabpanel" tabindex="0" id="p-security" aria-labelledby="t-security"><h2>Security</h2><p>Two-factor authentication is on.</p></section>
+        <section role="tabpanel" tabindex="0" id="p-billing" aria-labelledby="t-billing"><h2>Billing</h2><p>Invoices are sent monthly.</p></section>
+        <section role="tabpanel" tabindex="0" id="p-team" aria-labelledby="t-team"><h2>Team</h2><p>Coming soon.</p></section>
+      </div>
+    </div>
+
+    <div class="tabs" id="docs">
+      <div role="tablist" aria-label="Documentation">
+        <button type="button" role="tab" id="t-html" aria-controls="p-html">HTML</button>
+        <button type="button" role="tab" id="t-css" aria-controls="p-css">CSS</button>
+      </div>
+      <div class="panels">
+        <section role="tabpanel" tabindex="0" id="p-html" aria-labelledby="t-html"><h2>HTML</h2><p>A second, independent tab set.</p></section>
+        <section role="tabpanel" tabindex="0" id="p-css" aria-labelledby="t-css"><h2>CSS</h2><p>Its own state.</p></section>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,209 @@
+---
+title: "Event Data"
+description: "event(field) reads data of the current event inside a mutation: where a press happened, which key was pressed, what a field contains. Fields are checked against the trigger at compile time."
+group: Concepts
+type: Concept
+order: 8
+---
+## event(field)
+`event(field)` gives one value from the event that is running the rule: a pointer position, a key, a field's value. It is valid only inside a mutation of an [`:on()`](/docs/events/) rule.
+
+```css pad.css
+.pad {
+  --x: state(0px);
+  --y: state(0px);
+}
+
+.pad:on(pointerdown) {
+  --x: set(event(local-x));
+  --y: set(event(local-y));
+}
+```
+
+<Example id="docs-event-data" />
+
+- **A snapshot.** The value is copied when the event happens. The state keeps it until the next mutation; nothing follows the pointer afterwards.
+- **A closed list.** `event()` reads the fields listed below, nothing else. It is not access to the JavaScript `Event` object: no methods, no other properties, no script.
+- **Checked against the trigger.** Each field belongs to a category, and the trigger decides which categories exist. `event(key)` in an `:on(click)` rule is a compile error that lists the fields `click` provides.
+- **Only in mutations.** Anywhere else, `event()` is a compile error, because there is no event there.
+
+Reference: [`event()`](/docs/reference/event/).
+
+## Fields
+Lengths are in CSS px. A field the event does not carry writes nothing: the mutation is skipped, never set to `NaN` or an empty value.
+
+### General
+| Field | Type | Triggers |
+| --- | --- | --- |
+| `type` | string | All. The DOM event type, such as `"click"`; `"drag"` for drag phases. |
+
+### Pointer
+| Field | Type | Triggers |
+| --- | --- | --- |
+| `client-x`, `client-y` | px | Pointer and mouse events, drag. Viewport coordinates. |
+| `page-x`, `page-y` | px | Pointer and mouse events, drag. Document coordinates. |
+| `local-x`, `local-y` | px | Pointer and mouse events, drag. Relative to the border box of the element the rule matched. |
+| `button`, `buttons` | number | Pointer and mouse events, drag. As in `MouseEvent`. |
+| `pointer-id`, `pressure` | number | Pointer events and drag. As in `PointerEvent`. |
+| `pointer-type` | string | Pointer events and drag: `"mouse"`, `"pen"` or `"touch"`. |
+| `alt-key`, `ctrl-key`, `shift-key`, `meta-key` | boolean | Pointer, mouse and keyboard events, drag. |
+
+**Pointer events** here are `click`, `contextmenu`, `pointerdown`, `pointerup`, `pointermove`, `pointerenter`, `pointerleave`, `pointercancel`, `outside(click)` and `outside(pointerdown)`. **Mouse events** are `dblclick`, `mousedown`, `mouseup`, `mousemove`, `mouseenter` and `mouseleave`; they have no `pointer-id`, `pressure` or `pointer-type`. When a browser delivers `click` as a plain `MouseEvent`, those three fields write nothing.
+
+```css map.css
+.map {
+  --pin-x: state(0px);
+  --pin-y: state(0px);
+  --input: state("none");
+}
+
+.map:on(click) {
+  --pin-x: set(event(local-x));
+  --pin-y: set(event(local-y));
+}
+
+/* "mouse", "pen" or "touch": style per input type with :when(). */
+.map:on(pointerdown) {
+  --input: set(event(pointer-type));
+}
+```
+
+### Keyboard
+| Field | Type | Triggers |
+| --- | --- | --- |
+| `key`, `code` | string | `keydown`, `keyup`. As in `KeyboardEvent`. |
+| `repeat` | boolean | `keydown`, `keyup`. True while the key auto-repeats. |
+| `alt-key`, `ctrl-key`, `shift-key`, `meta-key` | boolean | Also available here. |
+
+```css last-key.css
+.field-help {
+  --last: state("");
+}
+
+.field-help:on(keydown) {
+  --last: set(event(key));
+}
+```
+
+### Form
+| Field | Type | Triggers |
+| --- | --- | --- |
+| `value` | string | `input`, `change`. The value of the control the event happened on. |
+| `value-as-number` | number | `input`, `change`. Writes nothing when the value is not a number. |
+| `checked` | boolean | `input`, `change`. For checkboxes and radios. |
+
+The control is `event.target`, and it must be an `input`, `select` or `textarea`; otherwise the field writes nothing. **Password, one-time-code and payment fields** (`autocomplete="cc-…"`) always give `""` for `value`, and nothing for `value-as-number`, so a stylesheet can never read what is typed into them.
+
+```css search.css
+.search {
+  --query: state("");
+  --limit: state(10);
+}
+
+.search input[type=search]:on(input) {
+  --query: set(event(value));
+}
+
+.search input[type=number]:on(change) {
+  --limit: set(event(value-as-number));
+}
+```
+
+To keep a control and its **own** state equal in both directions, use `state("", bind(value))` instead: see [Data Binding](/docs/binding/).
+
+### Drag
+*Experimental.* Available in [drag](/docs/drag/) triggers only.
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `x`, `y` | like the state | The mutated state's value at drag start, plus the total pointer distance on that axis. The state must hold `px` or a number. |
+| `delta-x`, `delta-y` | px | Total distance since the drag started |
+| `movement-x`, `movement-y` | px | Distance since the previous drag event |
+| `start-x`, `start-y` | px | Viewport coordinates of the `pointerdown` |
+
+The pointer fields above are available too; `local-x` and `local-y` are relative to the element's box **at drag start**.
+
+```css card.css
+.card {
+  --x: state(0px);
+  translate: var(--x) 0;
+  touch-action: none;
+}
+
+.card:on(drag) {
+  --x: set(event(x));
+}
+```
+
+### Scroll
+| Field | Type | Triggers |
+| --- | --- | --- |
+| `scroll-top`, `scroll-left` | px | `scroll`, `scrollend`. The scroll offset of the element the rule matched. |
+
+```css feed.css
+.feed {
+  --top: state(0px);
+  overflow: auto;
+}
+
+.feed:on(scrollend) {
+  --top: set(event(scroll-top));
+}
+```
+
+Focus, `submit`, `reset`, animation, transition and `toggle` triggers provide `type` only.
+
+## Elements involved
+Three elements can take part in one event:
+
+| Element | What it is | Used by |
+| --- | --- | --- |
+| `event.target` | Where the event happened: possibly a child of the rule's element | `value`, `value-as-number`, `checked` |
+| The rule element | The element on the event's path that the `:on()` rule matched | `local-x`, `local-y`, `scroll-top`, `scroll-left`, `element()`, `attr()`, `sibling-index()` |
+| The state owner | The nearest element, from the rule element upwards, that declares the mutated state | Where the value is stored |
+
+```css list.css
+.list {
+  --picked: state("");
+}
+
+.list li:on(click) {
+  --picked: set(attr(data-id));
+}
+```
+
+A click on a `<span>` inside an `<li>` has the span as `event.target`. The rule element is the `<li>`, so `attr(data-id)` reads the `<li>`'s attribute, and the value is stored in `.list`'s `--picked`.
+
+## Snapshots at the event
+Inside a mutation, these functions are evaluated **once, when the event happens**. Outside mutations they keep their usual behavior.
+
+| Function | Inside a mutation | Outside |
+| --- | --- | --- |
+| `mouse(x)`, `mouse(y)` | The event's `client-x` or `client-y`. `mouse(x, local)` is `event(local-x)`. Pointer, mouse and drag triggers only. | A live value that follows the pointer |
+| `element(width)`, `element(height)` | The rule element's border-box size at the event | A live value, updated when the element resizes |
+| `viewport(width)`, `viewport(height)` | The window's inner size in px | Native `100dvw` and `100dvh` |
+| `attr(name, fallback)` | The rule element's attribute at the event | In `state()`: read once at creation. In other declarations it is native CSS `attr()`, untouched. |
+| `pick(a, b, …)`, `random(min, max, step)` | A new value at each event | One value per element, re-rolled only by `live()` or `on()` |
+
+So `event(client-x)`, `mouse(x)`, `element(width)` and `attr(data-id)` answer different questions:
+- `event(client-x)` is a field **of this event**, checked against the trigger;
+- `mouse(x)` in a mutation is the same number. Outside a mutation it is a subscription to the pointer, re-evaluated as it moves;
+- `element(width)` measures **the rule element**, not the event;
+- `attr(data-id)` reads **the rule element's markup**, whatever the event was.
+
+```css dice.css
+.dice {
+  --roll: state(1);
+}
+
+/* A new number at each click. random(min, max, step) and by step both work here. */
+.dice:on(click) {
+  --roll: set(random(1, 6, 1));
+}
+```
+
+## Stability
+The pointer, keyboard and form fields are recommended as stable for 0.9.0. The drag fields are experimental, like [drag gestures](/docs/drag/), until they are validated on real touch and pen hardware.
+
+## Related
+<Related ids={["reference/event","reference/on-rule","reference/drag","reference/mouse","reference/element","reference/viewport","reference/attr","reference/random","events","state","drag"]} />

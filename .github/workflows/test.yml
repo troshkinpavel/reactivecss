@@ -1,0 +1,115 @@
+# Validation only: no publishing, no deployment, no secrets. Runs on pull requests and on pushes
+# to main. Firefox is not part of the local verification (Playwright's Firefox does not start on the
+# development machine), so its job is informational until it has passed here.
+name: test
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  library:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Distribution tests (Node import, TypeScript consumer)
+        run: npx vitest run --dir tests/dist && npx tsc -p tests/dist/tsconfig.json
+      - name: Package contents
+        run: npm pack --dry-run
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npx playwright test --project=chromium --project=webkit
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: library-playwright
+          path: test-results/
+          retention-days: 7
+
+  mcp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: packages/mcp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            packages/mcp/package-lock.json
+      # The server bundles the library's compiler and reads its built dist/ for the measured sizes.
+      - run: npm ci && npm run build
+        working-directory: .
+      - run: npm ci
+      - run: npm run typecheck
+      - name: Build, unit and protocol tests
+        run: npm test
+      - name: Clean-install consumer test
+        run: npm run test:consumer
+      - name: Package contents
+        run: npm pack --dry-run
+
+  site:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            site/package-lock.json
+      # The site reads the library's bundles and registry from ../dist.
+      - run: npm ci && npm run build
+        working-directory: .
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      # Chromium only, and screenshot baselines (recorded on macOS) are not compared: the full
+      # Chromium + WebKit run with screenshots is `npm run test:e2e` locally.
+      - run: npx playwright test --project=chromium --ignore-snapshots
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: site-playwright
+          path: site/test-results/
+          retention-days: 7
+
+  library-firefox:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps firefox
+      - run: npx playwright test --project=firefox

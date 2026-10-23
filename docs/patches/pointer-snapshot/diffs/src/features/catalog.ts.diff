@@ -1,0 +1,13 @@
+--- a/src/features/catalog.ts
++++ b/src/features/catalog.ts
+@@ -37,8 +37,8 @@
+     syntax: ['--x: state(initial)', 'attr(name) / pick(…) / split(text, "d") in state() and set()', 'previous(--x) / direction(--x) as condition operands', 'ReactiveCSS.start/stop/refresh/stats/compile/describe/diagnostics'] },
+   { id: 'events', title: 'Events & actions', category: 'Events & Actions', entry: 'src/features/events.ts',
+     modules: ['state/actions.ts'], requires: ['core'], optional: [], status: 'stable',
+-    provides: ['decl:on', 'trigger:*', 'act:*'],
+-    syntax: ['on: trigger(action, …)', 'key(Key, …)', 'outside(event, …)', 'set() toggle() increment() decrement() cycle()', 'prevent() (experimental)'] },
++    provides: ['decl:on', 'trigger:*', 'act:*', 'expr:mouse'],
++    syntax: ['on: trigger(action, …)', 'key(Key, …)', 'outside(event, …)', 'set() toggle() increment() decrement() cycle()', 'set(--x, mouse(x|y [, local])) (experimental)', 'prevent() (experimental)'] },
+   { id: 'conditions', title: 'Conditions', category: 'Conditions & Selectors', entry: 'src/features/conditions.ts',
+     modules: ['state/conditions.ts'], requires: ['core'], optional: [], status: 'stable',
+     provides: ['fn:when', 'sel:when'],

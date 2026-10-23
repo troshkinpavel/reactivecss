@@ -1,0 +1,232 @@
+---
+title: "DOM Integration"
+description: "Connect state to the DOM: two-way form binding with state(v, bind(value)), attribute reflection with bind(attribute) and the reserved --attr-* properties, DOM text through content, and state initialized from an attribute."
+navLabel: "Data binding & DOM"
+group: Concepts
+type: Concept
+order: 11
+---
+Reactive CSS can connect a state to the document in several ways. Each one has a fixed direction, so a value never loops between the DOM and the state.
+
+| Construct | Direction | Initial value | Owner |
+| --- | --- | --- | --- |
+| `state(v, bind(value))`, `state(v, bind(checked))` | two-way: control ⇄ state | persisted value, else an edited control, else `v` | the control |
+| `:on(change) { --x: set(event(value)); }` | one-way: control → an ancestor's state | the state's initial value; the HTML sets the control | an ancestor (radio groups) |
+| `state(v, bind(attribute))` | one-way: state → attribute | persisted value, else a valid attribute, else `v` | the state's owner |
+| `--attr-<name>: <value>` | one-way: value → attribute | the attribute is restored when no rule applies | the matched element |
+| `content: var(--x)` on an element | one-way: value → DOM text | the original text is restored when no rule applies | the matched element |
+| `state(attr(name, fallback))` | read once, never synchronized | the attribute, else the fallback | none |
+
+## Form controls: bind(value) and bind(checked)
+Add `bind(value)` to a state on a form control, and the control and its state stay equal in both directions. A checkbox uses `bind(checked)` with a boolean state.
+
+```css field.css
+.signup input[name=name] {
+  --name: state("", bind(value));
+}
+
+.signup input[name=name]:when(--name != "") {
+  border-color: #15803d;
+}
+```
+
+Typing updates `--name`. A change of `--name`, from an event rule for example, updates the field. The control keeps all its native behavior.
+
+<Example id="docs-form" size="expanded" />
+
+### Supported controls
+| Control | Modifier | State type | Notes |
+| --- | --- | --- | --- |
+| text, search, email, url, tel, `<textarea>` | `bind(value)` | string: `state("")` | Updated on `input`; during IME composition only at the end |
+| number, range | `bind(value)` | number or dimension | An empty or invalid field leaves the state unchanged |
+| checkbox | `bind(checked)` | boolean | |
+| single `<select>` | `bind(value)` | string, keyword or number | |
+
+- Multiple selects, file, date and color inputs are not supported.
+- Password, one-time-code and payment fields (`autocomplete="cc-…"`) are never bound. Otherwise CSS could read their live values.
+- The rule must be unconditional, with no `@media`, `@supports`, `@container` or `:when()` that could stop it from matching: a binding lasts as long as the element matches.
+- The stylesheet must be trusted: same-origin, or inline with the default `trustInlineStyles`.
+
+### Who can read the state
+The control is the state's owner. Like every state, it can be read only by the owner and its descendants. A text field has no descendants, so in practice only rules for the field itself read a `bind(value)` state.
+
+To show the value somewhere else, give the state to an element that contains both, and copy the value at input time with an [event rule](/docs/events/):
+
+```css preview.css
+.signup {
+  --greeting: state("");
+}
+
+.signup input[name=name]:on(input) {
+  --greeting: set(event(value));
+}
+
+.signup .greeting {
+  content: var(--greeting);
+}
+```
+
+This copy is one-way: changing `--greeting` does not change the field. The live example above uses both forms: `--name` styles the field, and `--greeting` on the form feeds the preview line.
+
+### Radio groups and ancestor state
+A radio group is several controls that share one value, so the state must live on an ancestor. Copy the chosen value into it with a `change` rule:
+
+```css radios.css
+fieldset.size {
+  --size: state("m");
+}
+
+fieldset.size input[type=radio]:on(change) {
+  --size: set(event(value));
+}
+
+fieldset.size:when(--size == "l") {
+  font-size: 1.25rem;
+}
+```
+
+`event(value)` is the `value` of the radio that was chosen. The copy is one-way, so mark the initial radio `checked` in the HTML. A string state (`state("m")`) accepts any value; a keyword state accepts only keywords. To restore it when a form resets, give the state to the `<form>` and add `form:on(reset) { --size: set("m"); }`. The same pattern works for any control that writes an ancestor's state: `:on(input)` for text fields, `event(checked)` for checkboxes.
+
+## Initialization
+For `state(v, bind(value))` and `state(v, bind(checked))`, the first value comes from, in order:
+1. a value stored with [`persist()`](/docs/persistence/), when the state has one and it is valid;
+2. the control, when the user or the browser already changed it from its HTML default (autofill, a restored form, early typing);
+3. the declared initial value `v`, which is then written to the control.
+
+A form reset restores the declared initial value of every `bind(value)` or `bind(checked)` state in that form.
+
+## Native behavior is kept
+- Typing never rewrites the field: the caret and the selection stay where they are.
+- Labels, validation, autofill and form submission work as before. Style validation with native `:invalid` and `:user-invalid`.
+- A range input clamps values, so a state outside its range shows clamped.
+
+## Attribute reflection: state(v, bind(attribute))
+`bind()` with an attribute name mirrors a state into one allowlisted attribute of the element that owns it.
+
+<Example id="docs-toggle" />
+
+- **One-way, state → attribute.** Each state change writes the attribute in the same task, so the DOM never lags behind the state. Changes that scripts make later are not read back: the next state change overwrites them, and one diagnostic says so.
+- **Attribute first.** When the state starts, a valid attribute value in the HTML wins over the declared initial value. A button written as `aria-pressed="true"` starts pressed. An invalid value is reported and ignored. A persisted value wins over both.
+- **Restore.** When the state goes away, the original attribute is restored, but only if it still holds what Reactive CSS wrote.
+- **Types.** Booleans for `aria-expanded`, `aria-pressed` and the other ARIA booleans and for `disabled`, `hidden` and `required`; a number for `aria-valuenow` and `tabindex`; a boolean or a keyword that can hold `mixed` for `aria-checked`.
+
+The initial value is required. `state(bind(aria-expanded))` is rejected with "state() needs an initial value first, e.g. state(false, bind(aria-expanded))": with no attribute in the HTML, there would be no value. Write `state(false, bind(aria-expanded))`.
+
+## --attr-*: attributes from a value
+A custom property named `--attr-<attribute>` writes that attribute on the element the rule matches. The value usually reads a state owned by an ancestor:
+
+```css accordion.css
+.item {
+  --open: state(false);
+}
+
+.item > button:on(click) {
+  --open: toggle();
+}
+
+.item > button {
+  --attr-aria-expanded: var(--open);
+}
+```
+
+<Example id="docs-attr" />
+
+`--attr-` is the only custom-property prefix with DOM semantics. Every other custom property is plain CSS: `--disabled`, `--hidden` or `--aria-expanded` change nothing in the DOM, whatever their names.
+
+### What can be written
+| Attribute | Value | Written as |
+| --- | --- | --- |
+| `disabled`, `hidden`, `required` | boolean | `true` sets the attribute, `false` removes it |
+| `aria-expanded`, `aria-pressed`, `aria-selected`, `aria-disabled`, `aria-hidden`, `aria-busy`, `aria-invalid` | boolean | `"true"` or `"false"` |
+| `aria-checked` | boolean or `mixed` | `"true"`, `"false"` or `"mixed"` |
+| `aria-current` | boolean or a token | `page`, `step`, `location`, `date`, `time`, `true`, `false` |
+| `aria-valuenow` | number | the number |
+| `tabindex` | `0` or `-1` | the number; positive values would reorder the Tab order |
+| `aria-label`, `aria-valuetext`, `data-*` | any text | the text, never parsed as markup |
+
+0.9.0 added `aria-hidden`, `aria-busy`, `aria-checked`, `aria-invalid`, `aria-label`, `aria-valuenow` and `aria-valuetext` to the list.
+
+**Never writable:** event handlers (`on*`), URL attributes (`href`, `src`, `action`, `formaction`, `srcset`, `xlink:href`), `style`, `id`, `class`, `name` and `value`. Any other `--attr-*` name gives a diagnostic and stays a plain custom property.
+
+### Rules
+- **Lower case.** Custom property names are case-sensitive and HTML attribute names are not, so the suffix must be lower case. `--attr-Aria-expanded` is a diagnostic, and nothing is written.
+- **The cascade decides.** Each attribute is its own property, so rules for different attributes combine, and for one attribute specificity, order, layers, `@media`, `:when()` and `!important` pick the winner.
+- **No value restores.** When no rule applies, or the winning value is empty, such as a `when()` without a value for the current case, the attribute returns to what it was before the first write. The counter example below uses `--attr-disabled: when(--count <= 0)` this way.
+- **One owner per attribute.** A `state(…, bind(name))` on the same element owns that attribute; an `--attr-name` for it is ignored with a diagnostic.
+- **Foreign changes win.** If a script changes the attribute after a write, the binding stops writing and does not restore it.
+- **No loops.** Attributes written by Reactive CSS never make reactive rules re-match, and attributes never feed a state, except once at initialization.
+- **HTML meaning is checked.** `disabled` is written only where HTML gives it a meaning, such as buttons and form controls; elsewhere you get one warning and no write.
+- **Not in event rules.** An `:on()` rule describes a moment, so an `--attr-*` declaration inside it is dropped with a warning. Put it in an ordinary rule.
+
+Setting attributes does not make a component accessible by itself: the roles, the keyboard behavior and the pattern are still yours to get right.
+
+<Callout kind="warning" title="Existing --attr-* custom properties">
+
+Before 0.9.0, `--attr-*` names were ordinary custom properties. A stylesheet that already uses names such as `--attr-hidden`, `--attr-disabled` or `--attr-data-id` for another purpose now writes those attributes, in any trusted stylesheet, as soon as Reactive CSS runs on the page. Rename such properties, for example to `--x-hidden`. This is the one change in 0.9.0 that can alter a page that worked with 0.8.1.
+
+</Callout>
+
+The attribute semantics behind `--attr-*` have been tested since 0.5.3. The namespace itself is experimental.
+
+## DOM text: content
+On an element, a `content` declaration whose value reads state also writes the element's DOM text.
+
+```css counter.css
+.counter {
+  --count: state(0);
+}
+
+.counter .inc:on(click) {
+  --count: increment(1);
+}
+
+.counter .value {
+  content: var(--count);
+}
+```
+
+<Example id="docs-counter" />
+
+### When content becomes text
+All of these must hold:
+1. **The rule targets elements.** No selector in its list has a pseudo-element. `::before` and `::after` stay native generated content.
+2. **The value reads state.** It contains `var()`, `when()`, `previous()` or `direction()`.
+3. **The value has no image, counter or attribute.** No `url()`, `image-set()`, `cross-fade()`, `element()`, gradient, `counter()`, `counters()` or `attr()`.
+4. **The stylesheet is trusted**, as for event rules.
+
+Everything else is plain CSS and is left alone: `.v::before { content: var(--n); }`, `content: "x"`, `content: counter(n)` and `content: url(a.png)` on an element.
+
+### How the text is written
+- **The native declaration is kept as written.** On an element, a string or number `content` renders nothing in Chromium and WebKit, so the browser shows only the DOM text.
+- **Text, never markup.** The value is written into one Text node.
+- **Existing children are never removed.** Only an element that is empty or holds a single text node is written. An element with child elements is left as it is, with a diagnostic.
+- **Foreign changes win.** If something else changes that text or adds children, the binding stops writing and does not restore.
+- **The original text returns** when no `content` rule applies any more.
+- **Unsupported values.** The computed value must be one string, number or keyword. A `var()` that resolves to an image at runtime is left to the browser without a diagnostic.
+
+Because the result is real DOM text, unlike generated content, it can be selected, copied, found with the browser's search and read by assistive technology. It is not announced automatically: add `aria-live` in the HTML where that is wanted, as the counter's `<output>` does.
+
+Reactive `content` is experimental. It is not a general replacement for `textContent`: it writes scalar values into leaf elements and nothing more. Its interaction with native `content` has been verified in Chromium and WebKit only; Firefox is unverified.
+
+## State from an attribute: state(attr())
+`attr(name, fallback)` as the initial value reads an attribute of the owner once, when the state starts. After that the state and the attribute are independent.
+
+```css disclosure.css
+.disclosure {
+  --open: state(attr(data-open, false));
+}
+
+.disclosure:when(--open) .body {
+  display: block;
+}
+```
+
+- The fallback gives the type: `attr(data-open, false)` is a boolean, `attr(data-n, 0)` a number. A missing or invalid attribute gives the fallback. 0.8.1 accepted only string fallbacks.
+- It reads the owner element only, never an ancestor, and only in trusted stylesheets.
+- To keep an attribute in sync with a state, use `state(v, bind(attribute))` instead.
+
+## Upgrading from 0.8
+Code written for 0.8 with `bind:`, `text:` or `attr:` is covered in [Migrating from 0.8](/docs/migration/#legacy-08x-compatibility).
+
+## Related
+<Related ids={["reference/bind-state","reference/attr-property","reference/content","reference/state","persistence","migration"]} />

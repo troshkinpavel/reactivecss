@@ -1,0 +1,8 @@
+---
+// Inline code in MDX. Reactive CSS syntax is vermilion with a dotted underline.
+import { isReactiveSnippet } from '~/lib/code/vocabulary';
+const html = await Astro.slots.render('default');
+const text = html.replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
+const rx = isReactiveSnippet(text);
+---
+<code class:list={['font-mono text-[0.86em] [box-decoration-break:clone]', text.length > 24 ? '[overflow-wrap:anywhere]' : 'whitespace-nowrap', rx ? 'rx font-medium' : 'rounded-tag border border-line bg-paper-2 px-[5px] py-px text-ink']} set:html={html} />

@@ -1,0 +1,63 @@
+<!-- Root: state lives in data attributes -->
+<section class="control-center" data-theme="light" data-accent="ember"
+         data-density="comfortable" data-notify="true" data-round="true">
+
+  <!-- Live preview -->
+  <header class="preview">
+    <span class="avatar"></span>
+    <span class="name">Alex Rivera</span>
+    <span class="schedule">Daily</span>
+    <span class="bell">Inbox <span class="badge">3</span></span>
+    <div class="meter"></div>
+  </header>
+
+  <!-- Appearance -->
+  <div class="panel appearance">
+    <h2>Appearance</h2>
+    <div class="setting">Theme
+      <button class="theme-option" data-set="theme:light" aria-pressed="true">Light</button>
+      <button class="theme-option" data-set="theme:dark" aria-pressed="false">Dark</button>
+      <button class="theme-option" data-set="theme:system" aria-pressed="false">System</button>
+    </div>
+    <div class="setting">Accent
+      <button class="swatch" data-set="accent:ember" aria-pressed="true" aria-label="Ember"></button>
+      <button class="swatch" data-set="accent:moss" aria-pressed="false" aria-label="Moss"></button>
+      <button class="swatch" data-set="accent:slate" aria-pressed="false" aria-label="Slate"></button>
+    </div>
+    <div class="setting">Density
+      <button class="density-button">Comfortable</button>
+    </div>
+  </div>
+
+  <!-- Notifications -->
+  <div class="panel notifications">
+    <h2>Notifications</h2>
+    <div class="setting">Notifications <span class="status">On</span>
+      <button class="notify-switch" role="switch" aria-checked="true" aria-label="Notifications"></button>
+    </div>
+    <fieldset class="digest setting">
+      <legend>Digest</legend>
+      <label><input type="radio" name="digest" value="Instant"> Instant</label>
+      <label><input type="radio" name="digest" value="Hourly"> Hourly</label>
+      <label><input type="radio" name="digest" value="Daily" checked> Daily</label>
+    </fieldset>
+  </div>
+
+  <!-- Profile -->
+  <div class="panel profile">
+    <h2>Profile</h2>
+    <label class="setting">Display name <input type="text" value="Alex Rivera"></label>
+    <label class="setting">Round avatar <input type="checkbox" checked></label>
+  </div>
+
+  <!-- Focus goal -->
+  <div class="panel goal">
+    <h2>Daily focus goal</h2>
+    <div class="setting">
+      <button class="minus" aria-label="Fewer sessions">−</button>
+      <output aria-live="polite">4</output>
+      <button class="plus" aria-label="More sessions">+</button>
+      <span class="history"></span>
+    </div>
+  </div>
+</section>

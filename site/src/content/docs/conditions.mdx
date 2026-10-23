@@ -1,0 +1,76 @@
+---
+title: "Conditions"
+description: "when() picks one of two values from a condition, and :when() matches whole rules. Boolean conditions compile to native if() where the browser supports it."
+group: Concepts
+type: Concept
+order: 13
+---
+## when()
+```css syntax.css
+property: when(<condition>, <if-true>, <if-false>?);
+```
+
+The second value is optional. When the condition is unknown, `when()` gives no value at all (the property is `unset`).
+
+<Example id="pricing" />
+
+## Writing conditions
+Conditions use `==`, `!=`, `>`, `<`, `>=`, `<=`, `and`, `or`, `not` and parentheses.
+
+```css compare.css
+.cart .badge {
+  display: when(--items > 0, inline-flex, none);
+}
+
+.page {
+  color-scheme: when(--theme == dark, dark, light);
+}
+
+.panel:when(--open and not --pinned) {
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+}
+```
+
+### Operands
+States, `previous(--x)`, `direction(--x)`, numbers, dimensions, `true`/`false`, keywords and quoted strings. Strings compare exactly and keywords case-insensitively. Units convert where CSS can convert them, so `10px == 7.5pt` is true.
+
+### Bare states must be booleans
+`when(--open, …)` needs `--open` to be a boolean. For numbers, write the comparison: `when(--count > 0, …)`.
+
+## Unknown, not false
+A missing state or an impossible comparison makes the condition unknown rather than false.
+
+| Condition | Result |
+| --- | --- |
+| `--count > 10px` on a number state | Unknown: incompatible types |
+| `--theme == dark` with no owner of `--theme` | Unknown: missing state |
+| `--count > 3` with `--count: state(5)` | True |
+
+An unknown `when()` gives no value and an unknown `:when()` doesn't match. Both log a warning in `ReactiveCSS.diagnostics`.
+
+## :when()
+Use `:when()` when several declarations change together, or when you need more than two outcomes.
+
+<Example id="theme" size="compact" />
+
+## Native if()
+When a condition is made only of boolean states with `and`, `or` and `not`, and the values are static, `when()` compiles to native `if()` in browsers that support it (Chromium and WebKit are tested). The result is identical, with less runtime work.
+
+<Callout kind="caution" title="Native path differences">
+
+With native `if()`, a missing state logs no warning, and a number state of exactly `1` or `0` is read as a boolean. Set `window.ReactiveCSSConfig = { native: false }` to force the runtime path while debugging.
+
+</Callout>
+
+## Fallbacks
+Declare a static value first. Without the runtime, the browser drops the `when()` declaration and keeps the one before it.
+
+```css fallback.css
+.price::after {
+  content: "$10 / month";
+  content: when(--annual, "$96 / year", "$10 / month");
+}
+```
+
+## Related
+<Related ids={["reference/when","reference/when-selector","reference/state","selectors"]} />

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dynamic components — Reactive CSS example</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="../../dist/reactive-css.min.js" defer></script>
+  <!-- Test harness only: mutates the DOM and stylesheets. Not part of Reactive CSS, not needed by the components. -->
+  <script src="harness.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Dynamic components</h1>
+    <p class="note">Each counter card behaves with Reactive CSS only. The <strong>test harness</strong> buttons below are plain JavaScript (<code>harness.js</code>): they insert, remove, move and re-style cards to exercise the library's lifecycle. They are not a Reactive CSS API.</p>
+
+    <section class="harness" aria-label="Test harness (JavaScript)">
+      <h2>Test harness <small>(JavaScript, not Reactive CSS)</small></h2>
+      <div class="buttons">
+        <button type="button" data-h="mount">Mount a card</button>
+        <button type="button" data-h="remove">Remove the first card</button>
+        <button type="button" data-h="move">Move the last card to the top</button>
+        <button type="button" data-h="reinsert">Reinsert the removed card</button>
+        <button type="button" data-h="pending">Click + and remove in one task</button>
+        <button type="button" data-h="sheet">Add / remove the "step 2" stylesheet</button>
+        <button type="button" data-h="recompile">Recompile the label stylesheet</button>
+      </div>
+      <pre class="stats" aria-live="polite">stats appear here</pre>
+    </section>
+
+    <div class="cards" id="cards">
+      <div class="counter" id="c1"><h3>Card 1</h3><button type="button" class="dec">−</button> <span class="n">0</span> <button type="button" class="inc">+</button> <span class="label">count</span></div>
+      <div class="counter" id="c2"><h3>Card 2</h3><button type="button" class="dec">−</button> <span class="n">0</span> <button type="button" class="inc">+</button> <span class="label">count</span></div>
+    </div>
+  </main>
+</body>
+</html>

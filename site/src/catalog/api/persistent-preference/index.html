@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Persistent preference — Reactive CSS example</title>
+</head>
+<body>
+  <main>
+    <p class="kicker">API example 04 · <code>persist()</code> <code>set()</code></p>
+    <h1>Persistent preference</h1>
+    <p class="lede">A UI setting that survives a page reload.</p>
+    <section class="demo prefs" aria-label="List density">
+      <div class="row" role="group" aria-label="Density">
+        <button type="button" class="comfortable" aria-pressed="true">Comfortable</button>
+        <button type="button" class="compact" aria-pressed="false">Compact</button>
+      </div>
+      <ul class="list">
+        <li>Inbox</li>
+        <li>Drafts</li>
+        <li>Archive</li>
+      </ul>
+      <p class="readout">density: <output class="current">comfortable</output></p>
+    </section>
+  </main>
+</body>
+</html>

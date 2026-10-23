@@ -1,0 +1,25 @@
+/* Conditional styles */
+.weather .card {
+  display: flex; align-items: center; gap: 16px; margin-top: 16px; padding: 18px 20px;
+  border: 2px solid var(--line); border-radius: 6px; transition: background-color 300ms, border-color 300ms;
+}
+.weather .flag { display: inline-block; font-size: 40px; line-height: 1; transform-origin: 20% 90%; transition: rotate 300ms; }
+.weather .label { margin: 0; font-size: 24px; font-weight: 600; }
+@keyframes flap { to { rotate: 104deg; } }
+@media (prefers-reduced-motion: reduce) { .weather .flag { animation: none !important; } }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+.weather { --wind: state(1); }
+.weather .calm   { on: click(set(--wind, 1)); attr: aria-pressed when(--wind == 1); }
+.weather .breezy { on: click(set(--wind, 2)); attr: aria-pressed when(--wind == 2); }
+.weather .stormy { on: click(set(--wind, 3)); attr: aria-pressed when(--wind == 3); }
+
+/* when(): one value chosen by a condition */
+.weather .card { background: when(--wind == 3, var(--accent-soft), #eef4f6); }
+
+/* :when(): whole rules that apply while a condition holds */
+.weather:when(--wind >= 2) .flag   { rotate: 90deg; }
+.weather:when(--wind == 3) .flag   { color: var(--accent); animation: flap 350ms ease-in-out infinite alternate; }
+.weather:when(--wind == 3) .card   { border-color: var(--accent); }
+.weather:when(--wind == 2) .label  { text: "Breezy"; }
+.weather:when(--wind == 3) .label  { text: "Stormy"; }

@@ -1,0 +1,46 @@
+/* 08 · Spotlight. Shared theme and layer order: lib/theme.css */
+
+/* ---- Reactive CSS ------------------------------------------------------- */
+
+@layer reactive {
+  /* mouse(…, local): the pointer position from each card's own top-left corner, in px. */
+  .spotlight .card {
+    --x: mouse(x, local);
+    --y: mouse(y, local);
+  }
+}
+
+/* ---- Plain CSS ---------------------------------------------------------- */
+
+@layer components {
+  .spotlight {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    gap: 12px;
+    text-align: start;
+  }
+
+  .card {
+    padding: 20px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-box);
+    background:
+      linear-gradient(var(--surface), var(--surface)) padding-box,
+      linear-gradient(var(--line), var(--line)) border-box;
+    transition: scale 300ms var(--ease);
+
+    h2 { font-size: 1.0625rem; margin-block-end: 6px; }
+    p { color: var(--muted); font-size: .875rem; }
+
+    /* Native gradients turn the coordinates into a glow, only while the pointer is over the card. */
+    @media (hover: hover) {
+      &:hover {
+        background:
+          radial-gradient(240px circle at var(--x) var(--y), color-mix(in oklch, var(--accent) 24%, transparent), transparent 70%) padding-box,
+          linear-gradient(var(--surface), var(--surface)) padding-box,
+          radial-gradient(160px circle at var(--x) var(--y), var(--accent), var(--line) 80%) border-box;
+        scale: 1.02;
+      }
+    }
+  }
+}

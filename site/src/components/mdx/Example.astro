@@ -1,0 +1,7 @@
+---
+import ExampleBlock from '~/components/examples/ExampleBlock.astro';
+import type { ExampleSize } from '~/components/examples/InteractiveExample';
+interface Props { id: string; size?: ExampleSize; controls?: boolean }
+const { size = 'standard' } = Astro.props;
+---
+<div class:list={['mt-2 mb-7', size === 'compact' ? 'max-w-[820px]' : 'max-w-(--container-article)']}><ExampleBlock {...Astro.props} /></div>

@@ -1,0 +1,44 @@
+/* Draggable card */
+.drag .area { position: relative; display: grid; place-items: center; height: 200px; overflow: hidden; border: 1px dashed var(--line); border-radius: 4px; background: #fbfaf8; }
+.drag .card {
+  display: grid; place-items: center; width: 110px; height: 72px; border-radius: 6px;
+  background: var(--ink); color: #fff; font-weight: 600; cursor: grab;
+  user-select: none; -webkit-user-select: none; transition: scale 120ms, box-shadow 120ms;
+}
+.drag .readout { margin: 12px 0 0; }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+/* The section owns the position, so the card and the readout can both use it. --max-x and --max-y
+   are how far the card can move from the centre: wide enough for a 390 px area until it is measured. */
+.drag { --x: state(0px); --y: state(0px); --dragging: state(false); --max-x: state(140px); --max-y: state(64px); }
+
+/* The limits follow the area's real size: it is read when the pointer or the focus enters it
+   (the 112 × 74 px is the card plus the area's 1 px border). */
+.drag .area:on(pointerenter) { --max-x: set((element(width) - 112px) / 2); --max-y: set((element(height) - 74px) / 2); }
+.drag .area:on(focusin) { --max-x: set((element(width) - 112px) / 2); --max-y: set((element(height) - 74px) / 2); }
+
+.drag .card {
+  translate: var(--x) var(--y);
+  touch-action: none;                 /* the browser must not take the gesture for scrolling */
+}
+
+.drag .card:on(drag(start)) { --dragging: set(true); }
+
+/* event(x): the position at drag start plus the distance moved, so drags continue. */
+.drag .card:on(drag) {
+  --x: set(round(clamp(0px - var(--max-x), event(x), var(--max-x)), 1px));
+  --y: set(round(clamp(0px - var(--max-y), event(y), var(--max-y)), 1px));
+}
+
+.drag .card:on(drag(end)) { --dragging: set(false); }
+
+.drag:when(--dragging) .card { cursor: grabbing; scale: 1.05; box-shadow: 0 8px 20px rgb(0 0 0 / 0.2); }
+
+/* A keyboard alternative for the same states. */
+.drag .card:on(keydown(ArrowRight), prevent()) { --x: set(min(var(--x) + 10px, var(--max-x))); }
+.drag .card:on(keydown(ArrowLeft), prevent()) { --x: set(max(var(--x) - 10px, 0px - var(--max-x))); }
+.drag .card:on(keydown(ArrowDown), prevent()) { --y: set(min(var(--y) + 10px, var(--max-y))); }
+.drag .card:on(keydown(ArrowUp), prevent()) { --y: set(max(var(--y) - 10px, 0px - var(--max-y))); }
+
+.drag .x { content: var(--x); }
+.drag .y { content: var(--y); }

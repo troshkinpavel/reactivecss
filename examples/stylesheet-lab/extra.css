@@ -1,0 +1,4 @@
+/* Toggled by the harness: disabled, or switched to a media query that never matches. */
+.lab .flag { text: "extra.css is on"; }
+.lab .inc.inc { on: click(increment(--n, 10)); }
+.lab .step { text: "10"; }

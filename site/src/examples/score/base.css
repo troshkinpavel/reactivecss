@@ -1,0 +1,20 @@
+.score { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.row { display: flex; align-items: center; gap: 20px; }
+.square { width: 48px; height: 48px; }
+.value {
+  display: inline-block;
+  min-width: 2.4ch;
+  font-size: 64px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 72px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+/* The numbers themselves: score.css adds the history. */
+.value::before { counter-reset: n var(--score); content: counter(n); }
+.before::after { counter-reset: b var(--before); content: counter(b); font-family: 'Red Hat Mono', monospace; color: oklch(0.21 0.01 80); }
+.meta { margin: 0; display: flex; align-items: center; gap: 12px; font-size: 13.5px; color: oklch(0.43 0.01 80); }
+.trend { padding: 2px 8px; border: 1px solid oklch(0.21 0.01 80); border-radius: 2px; font-family: 'Red Hat Mono', monospace; font-size: 12.5px; color: oklch(0.21 0.01 80); }
+.trend::after { content: "no change yet"; }
+@keyframes nudge { from { translate: 0 10px; opacity: 0; } }

@@ -1,0 +1,100 @@
+/* 12 · Task List. Shared theme and layer order: lib/theme.css */
+
+/* ---- Reactive CSS ------------------------------------------------------- */
+
+@layer reactive {
+  .tasks {
+    --count: state(0);                               /* the list's state */
+
+    .task { --done: state(false); }                  /* each task's own state, nested inside the list */
+
+    /* One change updates both levels: a mutation changes the nearest owner of its state.
+       The conditions read the state from before the event, so each change counts once. */
+    .task input:on(change) { --done: set(event(checked)); }
+    .task:when(not --done) input:on(change) { --count: increment(1); }
+    .task:when(--done) input:on(change) { --count: decrement(1); }
+
+    .task:when(--done) span { opacity: .45; text-decoration-color: currentColor; }
+
+    /* :just-checked matches after a real check, never on page load. */
+    input:just-checked + span { animation: pop 300ms var(--ease); }
+
+    .done { content: var(--count); }
+    &:changed(--count) .done { animation: pop 300ms var(--ease); }
+
+    .bar span { scale: calc(var(--count) / 5) 1; }
+    &:when(--count == 5) {
+      .bar span { background: oklch(70% 0.17 150); }
+      .party { opacity: 1; translate: 0 0; }
+    }
+  }
+}
+
+/* ---- Plain CSS ---------------------------------------------------------- */
+
+@layer components {
+  .tasks {
+    display: grid;
+    gap: 4px;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-box);
+    background: var(--surface);
+    text-align: start;
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    h2 { font-size: 1.125rem; }
+    .count { color: var(--muted); font-size: .875rem; }
+    .done { display: inline-block; color: var(--fg); font-weight: 700; font-variant-numeric: tabular-nums; }
+  }
+
+  .bar {
+    block-size: 6px;
+    margin-block: 10px 8px;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: var(--line);
+
+    span {
+      display: block;
+      block-size: 100%;
+      background: var(--accent);
+      transform-origin: 0 50%;
+      transition: scale 400ms var(--ease), background-color 300ms;
+    }
+  }
+
+  .task {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-block: 10px;
+    cursor: pointer;
+
+    input { inline-size: 18px; block-size: 18px; margin: 0; accent-color: var(--accent); }
+
+    span {
+      display: inline-block;
+      text-decoration: line-through transparent;
+      transition: opacity 200ms, text-decoration-color 200ms;
+    }
+  }
+
+  .party {
+    margin-block-start: 8px;
+    color: light-dark(oklch(45% 0.13 150), oklch(80% 0.15 150));
+    font-weight: 600;
+    opacity: 0;
+    translate: 0 6px;
+    transition: opacity 300ms, translate 300ms var(--ease);
+  }
+
+  @keyframes pop {
+    50% { scale: 1.08; }
+  }
+}

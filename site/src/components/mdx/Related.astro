@@ -1,0 +1,7 @@
+---
+import { RelatedLinks } from '~/components/docs/Related';
+import { resolveLinks } from '~/lib/content/docs';
+interface Props { ids: string[] }
+const links = await resolveLinks(Astro.props.ids);
+---
+<RelatedLinks links={links} />

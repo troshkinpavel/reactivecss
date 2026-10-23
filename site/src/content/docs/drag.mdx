@@ -1,0 +1,169 @@
+---
+title: "Drag Gestures"
+navLabel: "Drag"
+description: ":on(drag) moves state with the pointer: cards, slider thumbs, split-panel dividers. event(x) and event(y) continue from where the state was, over any number of drags."
+group: Concepts
+type: Guide
+order: 9
+status: experimental
+---
+<Callout kind="experimental">
+
+Drag gestures are new in 0.9.0 and experimental. They are tested in Chromium and WebKit with mouse input and synthetic touch and pen events, but not yet on real touch and pen hardware. Syntax and behavior may still change.
+
+</Callout>
+
+## :on(drag)
+A drag rule runs while the user presses an element and moves the pointer. `:on(drag)` is the same as `:on(drag(move))`: it runs on every move.
+
+```css card.css
+.card {
+  --x: state(0px);
+  --y: state(0px);
+  translate: var(--x) var(--y);
+  touch-action: none;
+}
+
+.card:on(drag) {
+  --x: set(event(x));
+  --y: set(event(y));
+}
+```
+
+[`event(x)`](/docs/event-data/#drag) is "the state's value when the drag started, plus the distance moved". The card follows the pointer, and the next drag continues from where it stopped. Reference: [`:on(drag)`](/docs/reference/drag/).
+
+<Example id="docs-drag" />
+
+The example also clamps the position with `clamp()` and moves the same states with the arrow keys.
+
+## Phases
+| Trigger | Runs |
+| --- | --- |
+| `drag(start)` | Once, when the pointer has moved 3 CSS px from the press |
+| `drag` or `drag(move)` | On every move after the start, the first one included |
+| `drag(end)` | Once, when the drag finishes, however it finishes |
+| `drag(cancel)` | Before `drag(end)`, when the browser cancels the gesture |
+
+```css card.css
+.card {
+  --dragging: state(false);
+}
+
+.card:on(drag(start)) {
+  --dragging: set(true);
+}
+
+.card:on(drag) {
+  --x: set(event(x));
+  --y: set(event(y));
+}
+
+.card:on(drag(end)) {
+  --dragging: set(false);
+}
+
+.card:when(--dragging) {
+  cursor: grabbing;
+  scale: 1.05;
+}
+```
+
+There is no `drag(x)` function: use `event(x)` in a `drag` rule.
+
+## Coordinates
+| Field | Meaning |
+| --- | --- |
+| `event(x)`, `event(y)` | The mutated state at drag start, plus the total pointer distance on that axis. The state must hold `px` or a number. |
+| `event(delta-x)`, `event(delta-y)` | Total distance since the start, in px |
+| `event(movement-x)`, `event(movement-y)` | Distance since the previous drag event, in px |
+| `event(start-x)`, `event(start-y)` | Viewport coordinates of the press |
+| `event(local-x)`, `event(local-y)` | Relative to the element's border box **at drag start** |
+
+Because `event(x)` starts from the state, a position never jumps back to the pointer's start point, and repeated drags add up. Use `event(delta-x)` for the raw displacement of the current drag. The box for local coordinates is read once at the press, so moving the element does not feed back into its own coordinates, and no layout is read per move.
+
+```css split.css
+.split {
+  --left: state(240px);
+  display: flex;
+}
+
+.split .pane {
+  width: var(--left);
+}
+
+.split .divider {
+  touch-action: none;
+  cursor: col-resize;
+}
+
+.split .divider:on(drag) {
+  --left: set(clamp(120px, event(x), 480px));
+}
+```
+
+The divider changes its ancestor's `--left`, which it can reach. `event(x)` starts from that state's value at drag start.
+
+## How a drag runs
+- **Start.** A press arms the gesture on the innermost element on its path with an applicable drag rule. For a mouse it must be the main button. The element must not be `:disabled` or inside `[inert]`. Below 3 CSS px of movement nothing happens: the press and the click stay native.
+- **Pointer capture.** After the start, the element captures the pointer, so moves keep arriving when the pointer leaves the element or the window.
+- **Moves.** Each move runs `drag(move)`. State changes are written once per frame, and the final position is never dropped.
+- **End and cancel.** Releasing the pointer runs `drag(end)`. A `pointercancel`, or a lost pointer capture, runs `drag(cancel)` and then `drag(end)`, so a `set(false)` in `drag(end)` always runs.
+- **Several pointers.** Each pointer has its own gesture, so two fingers can drag two elements at once. A second pointer on an element that is already being dragged is ignored.
+- **Fields inside.** A press in an `input`, `textarea`, `select` or editable element inside a draggable element never starts a drag, so text selection and sliders keep working. Buttons and links inside can start one.
+- **The click after a drag.** The `click` that follows a drag runs no `:on(click)` rule on the dragged element or its ancestors, so a draggable button does not also activate. The native click event itself is untouched.
+- **Moved elements.** Moving the element to another parent during a drag cancels it: the browser releases pointer capture, so `drag(cancel)` and `drag(end)` run.
+- **Removed elements.** When the element is removed, or stops matching its drag rules, the gesture stops without running any phase. A state on an ancestor that `drag(start)` changed keeps its value, so prefer states on the dragged element itself for drag feedback.
+- **Cleanup.** One `pointerdown` listener exists while drag rules exist. Move listeners exist only during a gesture. `stop()` ends every gesture and removes every listener.
+
+### prevent()
+`:on(drag, prevent())` cancels the `pointerdown` that starts the gesture. Use it when the browser's default reaction to the press gets in the way. `stop()` is not available for drag triggers.
+
+## Touch and pen
+On touch screens the browser uses a moving finger to scroll or zoom the page, and then cancels the pointer. A draggable element therefore **needs `touch-action`**:
+
+| Value | Use |
+| --- | --- |
+| `touch-action: none` | Elements that move in both directions |
+| `touch-action: pan-y` | Horizontal drags; vertical swipes still scroll the page |
+| `touch-action: pan-x` | Vertical drags; horizontal swipes still scroll |
+
+Without it, a touch drag scrolls the page and the gesture is cancelled. The development bundle prints a note when a touch drag starts on an element with `touch-action: auto`.
+
+## Accessibility
+A drag has no keyboard equivalent by itself. Always give the same state a keyboard path:
+- `:on(keydown(ArrowRight), prevent())` rules on a focusable element, as in the example above;
+- or a native `<input type="range">` that changes the same value.
+
+Give the element a role and a label that describe what it does, and keep the visible result in sync for screen reader users, for example with `--attr-aria-valuenow`.
+
+```css thumb.css
+.slider {
+  --v: state(0px);
+}
+
+.slider .thumb {
+  translate: var(--v) 0;
+  touch-action: none;
+}
+
+.slider .thumb:on(drag) {
+  --v: set(clamp(0px, event(x), 200px));
+}
+
+.slider .thumb:on(keydown(ArrowRight), prevent()) {
+  --v: set(min(var(--v) + 10px, 200px));
+}
+
+.slider .thumb:on(keydown(ArrowLeft), prevent()) {
+  --v: set(max(var(--v) - 10px, 0px));
+}
+```
+
+## Limitations
+- No native HTML drag and drop (`dragstart`, `drop`, `dataTransfer`): drag rules move state, not data.
+- No sortable lists and no drop targets.
+- Not yet validated on real touch and pen hardware; mouse and synthetic events are tested.
+- Drag needs the `gestures` feature, which also pulls in `events`. See [Custom Bundles](/docs/custom-bundles/).
+
+## Related
+<Related ids={["reference/drag","reference/event","reference/on-rule","event-data","events","state"]} />

@@ -1,0 +1,24 @@
+.wizard {
+  --step: state(1);
+}
+
+.dot:on(click) {
+  --step: set(sibling-index());
+}
+
+.next:on(click) {
+  --step: increment(1);
+}
+
+.panel:nth-var(--step) {
+  display: block;
+}
+
+.dot:nth-var(--step) {
+  background: #1c1917;
+  color: #fff;
+}
+
+.wizard:when(--step == 3) .next {
+  visibility: hidden;
+}

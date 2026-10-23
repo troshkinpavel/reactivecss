@@ -1,0 +1,2 @@
+.t { --on: state(false, bind(aria-pressed)); }
+.t:on(click) { --on: toggle(); }

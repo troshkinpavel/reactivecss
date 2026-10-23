@@ -1,0 +1,21 @@
+/* State history */
+.history .row { justify-content: center; }
+.history .values { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 12px; margin: 20px 0 0; }
+.history .values div { border-top: 1px solid var(--line); padding-top: 8px; }
+.history dt { font-size: 13px; color: var(--ink-2); }
+.history dd { margin: 0; font-size: 22px; font-variant-numeric: tabular-nums; }
+.history .current dd { font-size: 40px; font-weight: 600; }
+.history .arrow { display: inline-block; opacity: 0.2; transition: rotate 250ms, color 250ms, opacity 250ms; }
+
+/* ---- Reactive CSS -------------------------------------------------------------------------- */
+.history       { --score: state(0); }
+.history .up   { on: click(increment(--score)); }
+.history .down { on: click(decrement(--score)); }
+.history .now  { text: var(--score); }
+.history .prev { text: previous(--score); }          /* the value before the last change */
+
+/* direction(): 1 after a rise, -1 after a fall, 0 before any change */
+.history:when(direction(--score) > 0) .word  { text: "up"; }
+.history:when(direction(--score) < 0) .word  { text: "down"; }
+.history:when(direction(--score) > 0) .arrow { opacity: 1; color: #1a7f37; }
+.history:when(direction(--score) < 0) .arrow { opacity: 1; color: var(--accent); rotate: 180deg; }

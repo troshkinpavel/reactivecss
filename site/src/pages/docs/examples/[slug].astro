@@ -1,0 +1,10 @@
+---
+// Former docs walkthroughs → the matching Examples page (src/lib/content/redirects.json).
+import Redirect from '~/layouts/Redirect.astro';
+import r from '~/lib/content/redirects.json';
+export function getStaticPaths() {
+  return (Object.entries(r.walkthroughs) as [string, [string, string]][]).filter(([slug]) => slug).map(([slug, [to, title]]) => ({ params: { slug }, props: { to, title } }));
+}
+const { to, title } = Astro.props;
+---
+<Redirect to={to} title={title} />

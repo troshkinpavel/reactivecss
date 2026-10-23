@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dynamic attributes — Reactive CSS API example</title>
+  <link rel="stylesheet" href="../api.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="kicker">API example 10 · <code>attr:</code></p>
+    <h1>Dynamic attributes</h1>
+    <p class="lede">A quantity from 1 to 5. At each limit, the button gets the real <code>disabled</code> attribute.</p>
+    <section class="demo qty" aria-label="Quantity">
+      <div class="row">
+        <button type="button" class="minus" aria-label="Fewer">−</button>
+        <output class="value" aria-live="polite">1</output>
+        <button type="button" class="plus" aria-label="More">+</button>
+      </div>
+      <p class="readout">− button: <span class="a-minus"></span> · + button: <span class="a-plus"></span></p>
+    </section>
+    <p class="files"><a href="style.css">style.css</a> · <a href="README.md">README</a> · <a href="../">All API examples</a></p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReactiveCSS</title>
+    <link rel="stylesheet" href="./lib/theme.css">
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+
+    <main>
+      <p class="kicker">Reactive CSS · Demos</p>
+      <h1>CSS that reacts</h1>
+      <p class="lede">State, events and DOM bindings written in CSS. Each demo has no JavaScript of its own.</p>
+
+      <ul class="gallery">
+        <li class="card">
+          <div class="preview" aria-hidden="true">
+            <iframe src="./demos/01_-_Counter/index.html" loading="lazy" tabindex="-1" title="Counter preview"></iframe>
+          </div>
+          <div class="info">
+            <span class="num">01</span>
+            <h2><a href="./demos/01_-_Counter/index.html">Counter</a></h2>
+            <p>A number that buttons change, with real disabled buttons at the limits.</p>
+            <p class="apis"><code>state()</code> <code>:on(click)</code> <code>content</code> <code>--attr-disabled</code></p>
+          </div>
+        </li>
+        <li class="card">
+          <div class="preview" aria-hidden="true">
+            <iframe src="./demos/02_-_Tabs/index.html" loading="lazy" tabindex="-1" title="Tabs preview"></iframe>
+          </div>
+          <div class="info">
+            <span class="num">02</span>
+            <h2><a href="./demos/02_-_Tabs/index.html">Tabs</a></h2>
+            <p>Click or arrow keys. One state drives the tabs, the panels and the ARIA attributes.</p>
+            <p class="apis"><code>:nth-var()</code> <code>cycle()</code> <code>prevent()</code> <code>focus</code></p>
+          </div>
+        </li>
+        <li class="card">
+          <div class="preview" aria-hidden="true">
+            <iframe src="./demos/03_-_Drag/index.html" loading="lazy" tabindex="-1" title="Drag preview"></iframe>
+          </div>
+          <div class="info">
+            <span class="num">03</span>
+            <h2><a href="./demos/03_-_Drag/index.html">Drag</a></h2>
+            <p>A card that follows the pointer and stays inside its area. Arrow keys move it too.</p>
+            <p class="apis"><code>:on(drag)</code> <code>event(x)</code> <code>element()</code> <code>clamp()</code></p>
+          </div>
+        </li>
+        <li class="card">
+          <div class="preview" aria-hidden="true">
+            <iframe src="./demos/04_-_Accordion/index.html" loading="lazy" tabindex="-1" title="Accordion preview"></iframe>
+          </div>
+          <div class="info">
+            <span class="num">04</span>
+            <h2><a href="./demos/04_-_Accordion/index.html">Accordion</a></h2>
+            <p>Items that open on their own, with an animated height and aria-expanded.</p>
+            <p class="apis"><code>toggle()</code> <code>when()</code> <code>--attr-aria-expanded</code></p>
+          </div>
+        </li>
+        <li class="card">
+          <div class="preview" aria-hidden="true">
+            <iframe src="./demos/05_-_Context_Menu/index.html" loading="lazy" tabindex="-1" title="Context Menu preview"></iframe>
+          </div>
+          <div class="info">
+            <span class="num">05</span>
+            <h2><a href="./demos/05_-_Context_Menu/index.html">Context Menu</a></h2>
+            <p>A right-click menu that opens where you click, stays inside the desk and closes on Escape or outside.</p>
+            <p class="apis"><code>:on(contextmenu, prevent())</code> <code>event(local-x)</code> <code>outside()</code> <code>focus</code></p>
+          </div>
+        </li>
+        <li class="card">
+          <div class="preview" aria-hidden="true">
+            <iframe src="./demos/06_-_Theme/index.html" loading="lazy" tabindex="-1" title="Theme preview"></iframe>
+          </div>
+          <div class="info">
+            <span class="num">06</span>
+            <h2><a href="./demos/06_-_Theme/index.html">Theme</a></h2>
+            <p>Color scheme and accent for the whole page, kept across reloads.</p>
+            <p class="apis"><code>persist()</code> <code>:root</code> <code>light-dark()</code> <code>--attr-aria-pressed</code></p>
+          </div>
+        </li>
+        <li class="card">
+          <div class="preview" aria-hidden="true">
+            <iframe src="./demos/07_-_Profile_Builder/index.html" loading="lazy" tabindex="-1" title="Profile Builder preview"></iframe>
+          </div>
+          <div class="info">
+            <span class="num">07</span>
+            <h2><a href="./demos/07_-_Profile_Builder/index.html">Profile Builder</a></h2>
+            <p>A form that updates a live card: text, select, range and checkbox, with a check on blur.</p>
+            <p class="apis"><code>event(value)</code> <code>event(checked)</code> <code>:on(reset)</code> <code>:blur</code></p>
+          </div>
+        </li>
+        <li class="card">
+          <div class="preview" aria-hidden="true">
+            <iframe src="./demos/08_-_Spotlight/index.html" loading="lazy" tabindex="-1" title="Spotlight preview"></iframe>
+          </div>
+          <div class="info">
+            <span class="num">08</span>
+            <h2><a href="./demos/08_-_Spotlight/index.html">Spotlight</a></h2>
+            <p>Cards with a glow and a lit border that follow the pointer.</p>
+            <p class="apis"><code>mouse(x, local)</code> <code>radial-gradient()</code></p>
+          </div>
+        </li>
+        <li class="card">
+          <div class="preview" aria-hidden="true">
+            <iframe src="./demos/09_-_Palette/index.html" loading="lazy" tabindex="-1" title="Palette preview"></iframe>
+          </div>
+          <div class="info">
+            <span class="num">09</span>
+            <h2><a href="./demos/09_-_Palette/index.html">Palette</a></h2>
+            <p>Random palettes with a name on every click, and blobs that drift on their own.</p>
+            <p class="apis"><code>random()</code> <code>pick()</code> <code>live()</code></p>
+          </div>
+        </li>
+        <li class="card">
+          <div class="preview" aria-hidden="true">
+            <iframe src="./demos/10_-_History/index.html" loading="lazy" tabindex="-1" title="History preview"></iframe>
+          </div>
+          <div class="info">
+            <span class="num">10</span>
+            <h2><a href="./demos/10_-_History/index.html">History</a></h2>
+            <p>A value that knows what it was and which way it moved.</p>
+            <p class="apis"><code>previous()</code> <code>direction()</code> <code>:changed()</code></p>
+          </div>
+        </li>
+        <li class="card">
+          <div class="preview" aria-hidden="true">
+            <iframe src="./demos/11_-_Scroll_Reveal/index.html" loading="lazy" tabindex="-1" title="Scroll Reveal preview"></iframe>
+          </div>
+          <div class="info">
+            <span class="num">11</span>
+            <h2><a href="./demos/11_-_Scroll_Reveal/index.html">Scroll Reveal</a></h2>
+            <p>Steps that fade in as they scroll into view, with a native scroll progress bar.</p>
+            <p class="apis"><code>visible()</code> <code>animation-timeline</code></p>
+          </div>
+        </li>
+        <li class="card">
+          <div class="preview" aria-hidden="true">
+            <iframe src="./demos/12_-_Task_List/index.html" loading="lazy" tabindex="-1" title="Task List preview"></iframe>
+          </div>
+          <div class="info">
+            <span class="num">12</span>
+            <h2><a href="./demos/12_-_Task_List/index.html">Task List</a></h2>
+            <p>Each task owns its state and the list counts them, with a progress bar and a finish line.</p>
+            <p class="apis"><code>nested state</code> <code>:when(not …)</code> <code>:just-checked</code></p>
+          </div>
+        </li>
+      </ul>
+
+      <p class="credits">
+        Made by <a href="https://x.com/troshkin_pavel">@troshkin_pavel</a> ·
+        <a href="https://github.com/troshkinpavel/reactivecss">GitHub</a> ·
+        <a href="https://reactivecss.com">reactivecss.com</a>
+      </p>
+    </main>
+
+  </body>
+</html>

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Element size — Reactive CSS API example</title>
+  <link rel="stylesheet" href="../api.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="kicker">API example 07 · <code>element()</code> <code>bind:</code></p>
+    <h1>Element size</h1>
+    <p class="lede">A card reads its own measured width and scales its content with it.</p>
+    <section class="demo size" aria-label="Measured card">
+      <label class="row">Card width <input type="range" class="width" min="160" max="480" step="10" value="300"></label>
+      <div class="card">
+        <p class="big" aria-hidden="true">Aa</p>
+        <p class="readout">set: <span class="set">300</span> px · measured: <span class="measured"></span> px</p>
+      </div>
+    </section>
+    <p class="files"><a href="style.css">style.css</a> · <a href="README.md">README</a> · <a href="../">All API examples</a></p>
+  </main>
+</body>
+</html>

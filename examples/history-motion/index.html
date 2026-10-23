@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>History and motion — Reactive CSS example</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>History and motion</h1>
+    <p class="note">The state engine keeps the previous value and the direction of the last change. Motion is native CSS: a transition on the bar, and a keyframe pulse started by <code>:changed()</code>. Both turn off under reduced motion.</p>
+
+    <section class="meter" id="meter" aria-label="Level">
+      <p class="value" aria-live="polite">Level <span class="cur">5</span></p>
+      <p class="hist">Previous <span class="prev">5</span> · direction <span class="dir">0</span> · <span class="word">no change yet</span></p>
+      <div class="track" aria-hidden="true"><span class="bar"></span></div>
+      <p class="buttons">
+        <button type="button" class="down">Down</button>
+        <button type="button" class="up">Up</button>
+        <button type="button" class="jump">+5</button>
+        <button type="button" class="reset">Reset to 5</button>
+      </p>
+    </section>
+  </main>
+</body>
+</html>

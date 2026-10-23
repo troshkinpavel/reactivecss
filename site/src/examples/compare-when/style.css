@@ -1,0 +1,12 @@
+.card {
+  --theme: state(light);
+  background: when(
+    --theme == dark,
+    #171717,
+    #ffffff
+  );
+}
+
+.card .mode:on(click) {
+  --theme: cycle(light, dark);
+}

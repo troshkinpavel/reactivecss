@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Input binding — Reactive CSS API example</title>
+  <link rel="stylesheet" href="../api.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../../../dist/reactive-css.min.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="kicker">API example 08 · <code>bind:</code> <code>text:</code></p>
+    <h1>Input binding</h1>
+    <p class="lede">Type in a native field; the page text follows.</p>
+    <section class="demo binding" aria-label="Input binding">
+      <label for="name">Your name</label>
+      <input id="name" class="name" type="text" autocomplete="off" spellcheck="false">
+      <p class="out">Hello, <span class="greet">stranger</span>!</p>
+      <p class="compare readout"><span>As DOM text (<code>text:</code>): <span class="greet-2">stranger</span></span>
+        <span class="generated">As generated content (<code>content:</code>): </span></p>
+    </section>
+    <p class="files"><a href="style.css">style.css</a> · <a href="README.md">README</a> · <a href="../">All API examples</a></p>
+  </main>
+</body>
+</html>
