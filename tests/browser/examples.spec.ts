@@ -629,6 +629,7 @@ test.describe('prevent() in the demos (0.7.0)', () => {
     expect(await page.evaluate(() => document.documentElement.scrollHeight > innerHeight)).toBe(true);
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.focus('#t-profile');
+    await settle(page); // with Linux fonts the tabs start below the fold: WebKit scrolls the focused tab into view asynchronously
     const y0 = await scrollY(page);
     await page.keyboard.press('End'); // End and Home scroll natively in both engines
     await page.keyboard.press('Home');

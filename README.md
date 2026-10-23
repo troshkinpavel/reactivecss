@@ -240,7 +240,7 @@ It has been verified with the MCP Inspector and the official MCP TypeScript SDK 
 
 ## Browser support
 
-The build targets Chrome and Edge 111+, Firefox 128+ and Safari 16.4+. Automated tests run in Chromium and WebKit (Playwright engine builds). Firefox and real touch devices are not verified yet. Details: [docs/compatibility.md](docs/compatibility.md).
+The build targets Chrome and Edge 111+, Firefox 128+ and Safari 16.4+. Automated tests run in Chromium, WebKit and Firefox (Playwright engine builds; Firefox in CI). Real touch devices are not verified yet. Details: [docs/compatibility.md](docs/compatibility.md).
 
 CSS minifiers delete empty rules, so a modifier-only rule such as `a:on(click, prevent()) {}` disappears. Use whitespace-only minification for these stylesheets.
 

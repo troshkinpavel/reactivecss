@@ -4,10 +4,10 @@ Test date: 2026-10-18. Machine: Apple M4 Max, macOS 27.0 (arm64). Harness: Playw
 
 | | Chromium | WebKit | Firefox |
 |---|---|---|---|
-| Version tested | 156.0.8078.4 (headless shell) | 27.2 (Playwright build) | Playwright Firefox 1555: **did not start** |
+| Version tested | 156.0.8078.4 (headless shell) | 27.2 (Playwright build) | 157.0 (Playwright build, Linux CI) |
 | Unit tests (engine-independent, Node) | 49/49 | — | — |
-| Browser tests | 106 / 106; also 106 / 106 with the CPU throttled 4× (`RCSS_CPU_THROTTLE=4`) | 102 / 102 (4 heap snapshot and listener tests are Chromium-only: they need the DevTools protocol) | **not run** |
-| Status | Verified | Verified (engine) | **Unverified** |
+| Browser tests | 106 / 106; also 106 / 106 with the CPU throttled 4× (`RCSS_CPU_THROTTLE=4`) | 102 / 102 (4 heap snapshot and listener tests are Chromium-only: they need the DevTools protocol) | 423 / 430, 7 skipped (0.9.0 suite, 2026-10-23; see [Firefox](#firefox)) |
+| Status | Verified | Verified (engine) | Verified (engine, CI) |
 
 ## What the browser tests verify
 
@@ -48,4 +48,12 @@ Every row below passes in Chromium and WebKit.
 
 ## Firefox
 
-Playwright's Firefox does not start on the development machine, including when the binary is started directly with an explicit profile. The error is "Could not find profile folder". The bundle is not quarantined, so this is an environment problem, not an application one. To verify Firefox, run `npm run test:firefox` on a machine where Playwright's Firefox starts (for example Linux). Until then there is no automated Firefox coverage. **Manual:** all 20 examples passed user-reported manual testing in Firefox, as well as in Chrome and Safari, for 0.7.1 (`docs/browser-validation-0.7.1.md`). The build targets Firefox 128+, the version that added `CSS.registerProperty`.
+Since 0.9.0 the full browser suite runs in Firefox on every pull request and push to `main`: the `library-firefox` job in `.github/workflows/test.yml`, in the `mcr.microsoft.com/playwright:v1.64.1-noble` image. A Firefox failure fails the run, as a Chromium or WebKit failure does. The 7 skipped tests are 6 Chromium-only tests (they use the DevTools protocol for heap snapshots, listeners or raw input) and the native-only `random()` sharing keys: Firefox has no native `random()`, so the runtime polyfills it, and the tests check that path instead.
+
+Playwright's Firefox does not start on the macOS development machine ("Could not find profile folder"), so run it locally in the same image:
+
+```bash
+docker run --rm --ipc=host -e HOME=/root -v "$PWD":/w -v rcss_ff_nm:/w/node_modules -w /w mcr.microsoft.com/playwright:v1.64.1-noble sh -c "npm ci && npm run build && npx playwright test --project=firefox"
+```
+
+Firefox has no CSS typed arithmetic (`round(var(--x) / 1px)` is invalid there), so the examples print px values as numbers with `round(tan(atan2(var(--x), 1000px)) * 1000)`, which works in all three engines. **Manual:** all 20 examples passed user-reported manual testing in Firefox, as well as in Chrome and Safari, for 0.7.1 (`docs/browser-validation-0.7.1.md`). The build targets Firefox 128+, the version that added `CSS.registerProperty`.
