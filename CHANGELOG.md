@@ -2,6 +2,11 @@
 
 All notable changes. 0.9.0 is the first version published to npm, as `@reactivecss/core`; earlier versions were local builds.
 
+## 0.9.1 (unreleased)
+
+### Fixed
+- **`element()` froze at the end of a long transition.** When a size change driven by something else (a transition) ended during the feedback guard's two-frame check, the guard took it for a loop: the value froze a few px short of the final size, with a wrong "feeds back into the element's own size" warning. It happened mostly on slow frames (WebKit under load). Before freezing, the guard now writes the current size once more: a real loop changes the size again and is frozen as before; a finished change does not, and updates resume.
+
 ## 0.9.0 — The 0.9 language
 
 A new way to write behavior, built on the 0.8 runtimes. **The 0.8 syntax keeps working.**

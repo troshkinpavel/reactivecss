@@ -12,8 +12,9 @@
 // - Feedback guard: `width: calc(element(width) + 10px)` would grow forever. When a size keeps
 //   changing in the same direction every frame right after its own value was written, writes
 //   pause for two frames. If the size then keeps changing, something else drives it (a
-//   transition, a drag) and updates resume; if it stops, it was a loop: the value freezes and a
-//   warning names the element.
+//   transition, a drag) and updates resume. If it stops, the current size is written once more:
+//   a loop answers by changing the size again, and the value freezes with a warning that names
+//   the element; a change that just ended (a transition's last frame) does not, and updates resume.
 
 import { defineFunction, runtimeStats, type Ctx, type Instance } from '../core/registry';
 import { frame } from '../core/scheduler';
@@ -100,15 +101,25 @@ class SizeInstance implements Instance {
 
   /** Stop writing for two frames: does the size keep changing without us? */
   private probe() {
-    this.probing = true;
-    this.changedWhileProbing = false;
-    frame(() => frame(() => {
-      this.probing = false;
+    this.pause(() => {
       this.streak = 0;
       if (this.changedWhileProbing) { this.ctx.notify(); return; } // driven from elsewhere: resume
-      this.frozen = true;
-      warn(`element(${this.axis}) on ${describeElement(this.ctx.el)} feeds back into the element's own size (for example width: calc(element(width) + 10px)). Its value is frozen at ${fmt(this.subject[this.axis])}px. Measure a parent or a child instead.`);
-    }));
+      // It stopped: a loop, or a change that has just ended. Write the current size once to tell.
+      this.wrote = true;
+      this.ctx.notify();
+      this.pause(() => {
+        if (!this.changedWhileProbing) return; // the change had ended: the written size is current
+        this.frozen = true;
+        warn(`element(${this.axis}) on ${describeElement(this.ctx.el)} feeds back into the element's own size (for example width: calc(element(width) + 10px)). Its value is frozen at ${fmt(this.subject[this.axis])}px. Measure a parent or a child instead.`);
+      });
+    });
+  }
+
+  /** Two frames in which measurements are only recorded (changedWhileProbing), then `then`. */
+  private pause(then: () => void) {
+    this.probing = true;
+    this.changedWhileProbing = false;
+    frame(() => frame(() => { this.probing = false; then(); }));
   }
 
   get() {
