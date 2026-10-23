@@ -5,7 +5,7 @@ description: Write, review, validate and migrate Reactive CSS 0.9.0 (state(), :o
 
 # Reactive CSS 0.9.0
 
-Reactive CSS adds state, event rules and DOM bindings to plain CSS. One script runs it; there is no JavaScript to write. Status: experimental, not published yet (0.9.0 local release candidate).
+Reactive CSS adds state, event rules and DOM bindings to plain CSS. One script runs it; there is no JavaScript to write. Status: experimental, published on npm (@reactivecss/core 0.9.0).
 
 ## Workflow
 

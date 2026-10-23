@@ -24,7 +24,7 @@ test('knowledge describes the library version it was built from', () => {
   assert.equal(k.reactivecss.version, lib.version);
   assert.equal(k.reactivecss.version, '0.9.0');
   assert.equal(k.reactivecss.package, '@reactivecss/core');
-  assert.equal(k.reactivecss.published, false);
+  assert.equal(k.reactivecss.published, true);
   assert.ok(k.registry.features.length > 60);
   assert.equal(k.catalog.features.length, 15);
 });

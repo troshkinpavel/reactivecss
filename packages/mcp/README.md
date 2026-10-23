@@ -2,7 +2,7 @@
 
 The official [Model Context Protocol](https://modelcontextprotocol.io) server for [Reactive CSS](https://reactivecss.com). It gives AI coding agents accurate, offline knowledge of the Reactive CSS **0.9.0** API, real examples, and tools that validate, analyze and migrate Reactive CSS with the library's own compiler.
 
-> **Status: prepared, not published.** Neither this package nor `@reactivecss/core` is on npm yet, and reactivecss.com is not live. Until publication, run the server from a local build ([Install](#install)). The commands that use `npx -y @reactivecss/mcp` are for after publication.
+- **npm:** [`@reactivecss/mcp`](https://www.npmjs.com/package/@reactivecss/mcp), for [`@reactivecss/core`](https://www.npmjs.com/package/@reactivecss/core) 0.9.0. Reactive CSS is experimental. Documentation links in answers point to [reactivecss.com](https://reactivecss.com).
 
 - **Supported Reactive CSS version:** 0.9.x (knowledge of 0.9.0). The server version is independent: `reactivecss.supports` in `package.json` says which library versions it describes.
 - **Transport:** stdio only. Read-only: no file writes, no network, no shell, no JavaScript execution.
@@ -10,33 +10,29 @@ The official [Model Context Protocol](https://modelcontextprotocol.io) server fo
 
 ## Install
 
-### From this repository (works now)
-
-```bash
-cd packages/mcp
-npm install
-npm run build
-```
-
-The server is `packages/mcp/dist/index.js`. To try it as an installed package, create a tarball and install it in your project:
-
-```bash
-npm pack
-```
-
-```bash
-npm install --save-dev ./reactivecss-mcp-0.1.0.tgz
-```
-
-### From npm (planned, after publication)
+Your MCP client starts the server. Point it at the npm package:
 
 ```bash
 npx -y @reactivecss/mcp
 ```
 
+Run on its own, the server waits for MCP messages on stdin. To keep it in a project's dev dependencies instead:
+
+```bash
+npm install --save-dev @reactivecss/mcp
+```
+
+Then use `npx -p @reactivecss/mcp reactivecss-mcp` as the command. Name the package: the unscoped name `reactivecss-mcp` is not this project on npm.
+
 ## Client configuration
 
-These snippets are **illustrative**. Check your client's documentation for the exact file and format. Replace the path with the absolute path to `dist/index.js` on your machine.
+**Verified:** the server was tested over stdio with the official MCP TypeScript SDK client (this package's protocol tests) and with the MCP Inspector:
+
+```bash
+npx @modelcontextprotocol/inspector npx -y @reactivecss/mcp
+```
+
+The snippets below follow each client's documented format, but were **not tested** in those clients. Check your client's documentation for the exact file.
 
 Clients that use an `mcpServers` object (Claude Desktop, Cursor and others):
 
@@ -44,8 +40,8 @@ Clients that use an `mcpServers` object (Claude Desktop, Cursor and others):
 {
   "mcpServers": {
     "reactivecss": {
-      "command": "node",
-      "args": ["/absolute/path/to/packages/mcp/dist/index.js"]
+      "command": "npx",
+      "args": ["-y", "@reactivecss/mcp"]
     }
   }
 }
@@ -56,7 +52,7 @@ VS Code (`.vscode/mcp.json`):
 ```json
 {
   "servers": {
-    "reactivecss": { "type": "stdio", "command": "node", "args": ["/absolute/path/to/packages/mcp/dist/index.js"] }
+    "reactivecss": { "type": "stdio", "command": "npx", "args": ["-y", "@reactivecss/mcp"] }
   }
 }
 ```
@@ -64,10 +60,8 @@ VS Code (`.vscode/mcp.json`):
 Claude Code:
 
 ```bash
-claude mcp add reactivecss -- node /absolute/path/to/packages/mcp/dist/index.js
+claude mcp add reactivecss -- npx -y @reactivecss/mcp
 ```
-
-After publication, replace `"command": "node", "args": [ … ]` with `"command": "npx", "args": ["-y", "@reactivecss/mcp"]`.
 
 ## Tools
 
@@ -160,13 +154,13 @@ A validation request and its answer (abridged):
 - `validate_css` cannot see the DOM (see Scope). Native `random()` calls are reported as using the `values` feature, because native support is decided in the browser.
 - `migrate_css` rewrites only the cases that have a safe 0.9 form; it lists the others for manual review.
 - Sizes are given only for feature sets measured at build time (each profile and each feature alone); others are not estimated.
-- Documentation links point to reactivecss.com, which is not live yet.
 
 ## Development
 
-The package builds from the library source in this repository (`../../src`, `../../tools`, `../../site/src/catalog`):
+Source: [`packages/mcp`](https://github.com/troshkinpavel/reactivecss/tree/main/packages/mcp). The package builds from the library source in this repository (`../../src`, `../../tools`, `../../site/src/catalog`). To run a local build, use `node /absolute/path/to/packages/mcp/dist/index.js` as the client command.
 
 ```bash
+npm install
 npm run build          # dist/: compiler, knowledge, server; AGENTS.md and the Skill
 npm run typecheck
 npm test               # build, unit tests and protocol tests (a real stdio process)
