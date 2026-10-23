@@ -365,26 +365,29 @@ test.describe('drag', () => {
     expect(await prop(page, '.card', '--x')).toBe('75px');
   });
 
-  test('a late lostpointercapture from the previous release does not cancel the next drag (WebKit on Linux)', async ({ page }) => {
+  test('a drag starts no text selection and no native drag, so the next drag still runs (WebKit on Linux froze)', async ({ page }) => {
+    // The fixture has text beside the card (.cancels). Unprevented, the first press started a text selection
+    // that grew over that text; the second press then started a native drag of the selection, and WebKit
+    // for Linux delivered no more pointer events: the second drag stopped after its first move.
     await fixture(page, 'drag');
-    await page.evaluate(() => document.querySelector('.card')!.addEventListener('pointerdown', (e) => ((window as any).pid = (e as PointerEvent).pointerId)));
+    await page.evaluate(() => {
+      const w = window as any; w.cancelled = [];
+      for (const t of ['selectstart', 'dragstart']) document.addEventListener(t, (e) => w.cancelled.push(`${t}:${e.defaultPrevented}`));
+    });
+    await drag(page, '.card', 40, 30);
+    expect(await page.evaluate(() => getSelection()!.toString())).toBe('');
+    await drag(page, '.card', 25, -10);
+    expect([await prop(page, '.card', '--x'), await prop(page, '.card', '--y')]).toEqual(['65px', '20px']);
+    // Every engine: during a gesture the browser's own selection and drag are cancelled.
     const b = (await page.locator('.card').boundingBox())!;
-    const x = b.x + b.width / 2, y = b.y + b.height / 2;
-    await page.mouse.move(x, y);
+    await page.mouse.move(b.x + 10, b.y + 10);
     await page.mouse.down();
-    await page.mouse.move(x + 10, y + 4, { steps: 3 });
-    // The card still holds the capture, so this event belongs to an earlier gesture.
-    expect(await page.evaluate(() => {
-      const c = document.querySelector('.card')!, id = (window as any).pid;
-      const held = c.hasPointerCapture(id);
-      c.dispatchEvent(new PointerEvent('lostpointercapture', { pointerId: id, bubbles: true }));
-      return held;
-    })).toBe(true);
-    await page.mouse.move(x + 25, y - 10, { steps: 3 });
+    const during = await page.evaluate(() => ['selectstart', 'dragstart'].map((t) => { const e = new Event(t, { bubbles: true, cancelable: true }); document.querySelector('.card')!.dispatchEvent(e); return e.defaultPrevented; }));
     await page.mouse.up();
-    await frames(page);
-    expect([await prop(page, '.card', '--x'), await prop(page, '.card', '--y')]).toEqual(['25px', '-10px']);
-    expect(await prop(page, '.card', '--dragging')).toBe('0');
+    expect(during).toEqual([true, true]);
+    expect((await page.evaluate(() => (window as any).cancelled)).every((x: string) => x.endsWith(':true'))).toBe(true);
+    // Outside a gesture, text selects as usual.
+    expect(await page.evaluate(() => { const e = new Event('selectstart', { bubbles: true, cancelable: true }); document.body.dispatchEvent(e); return e.defaultPrevented; })).toBe(false);
   });
 
   test('the dragging state is on during the drag only; below the threshold nothing happens', async ({ page }) => {

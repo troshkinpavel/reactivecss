@@ -77,7 +77,7 @@ Report: `docs/release-0.9.0-hardening.md`.
 - **Types:** the `.d.ts` files get explicit `.js` extensions (`tools/fix-dts.mjs`) and now resolve under `moduleResolution` `node16` and `nodenext` too. This was a 0.8.1 blocker.
 - **Smaller code:** one parser path for `focus:`, `text:`, `attr:` and `--attr-*`.
 - **Fixed: Firefox exposed `autocomplete="one-time-code"` fields to `bind:`, `attr()` and `persist()`** (0.8 as well). Firefox reports tokens it does not know as an empty `autocomplete` property, so the attribute is now read instead.
-- **Fixed: a second drag could be cancelled at once on WebKit for Linux,** by a late `lostpointercapture` from the first drag's release. It is now ignored while the element still has the pointer captured.
+- **Fixed: a drag selected page text, and on WebKit for Linux the next drag froze.** The press was not kept from starting a text selection, so a drag left nearby text selected; the next press on that selection started a native drag, which on WebKit for Linux takes all further pointer input, and the drag stopped after its first move. `selectstart` and `dragstart` are now cancelled while a drag gesture is armed (this also keeps images and links inside a draggable element from starting a native drag).
 - **Production console hint** says `npx -p @reactivecss/core reactive-css explain`: the unscoped npm package `reactive-css` is a different project.
 
 ### Changed
@@ -86,7 +86,7 @@ Report: `docs/release-0.9.0-hardening.md`.
 - **`attr()` fallbacks:** in `state()` and `set()` the fallback may be any value (`attr(data-n, 0)`); in 0.8 it had to be a quoted string.
 - **`prevent()` and `:on(…, prevent)`** keep form-control keys for `keyup` too.
 - **Focus requests** are also armed by `pointerup` and `submit`, which only 0.9 triggers produce.
-- **Sizes:** `reactive-css.min.js` grew from 117,830 B to 151,472 B after hardening (gzip from 39,715 to 49,936, brotli from 34,983 to 43,811); the pre-hardening candidate was 162,675 B. The `events` feature grew from +11.3 KB to +32.5 KB. The new features add +2.2 KB (`gestures`), +3.8 KB (`persist`) and +0.9 KB (`blur`). Measured; see `docs/release-0.9.0-preparation.md`, section 4. With the API cleanup and the release fixes, the final 0.9.0 build is 149,139 B (gzip level 9: 49,281 B), and the compact bundle 128,595 B (42,545 B).
+- **Sizes:** `reactive-css.min.js` grew from 117,830 B to 151,472 B after hardening (gzip from 39,715 to 49,936, brotli from 34,983 to 43,811); the pre-hardening candidate was 162,675 B. The `events` feature grew from +11.3 KB to +32.5 KB. The new features add +2.2 KB (`gestures`), +3.8 KB (`persist`) and +0.9 KB (`blur`). Measured; see `docs/release-0.9.0-preparation.md`, section 4. With the API cleanup and the release fixes, the final 0.9.0 build is 149,177 B (gzip level 9: 49,298 B), and the compact bundle 128,633 B (42,558 B).
 
 ### Fixed
 - Nothing user-visible: 0.8.1 behavior is unchanged. The 0.8.1 browser suite passes on 0.9.0. Assertions were updated only for the additive changes: the feature count, the `rule` kind, the `describe()` keys, the two message changes above, and `aria-label` and `aria-hidden` becoming writable.

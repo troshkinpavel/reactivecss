@@ -168,9 +168,9 @@ The package also exports `@reactivecss/core/auto` (the self-starting bundle), `@
 
 | File | Minified | gzip |
 |---|---:|---:|
-| `reactive-css.min.js` | 149,139 B | 49,281 B |
-| `reactive-css.compact.min.js` (same runtime, shorter `describe()` registry) | 128,595 B | 42,545 B |
-| `reactive-css.js` (development build, full diagnostic messages) | 266,288 B | 69,484 B |
+| `reactive-css.min.js` | 149,177 B | 49,298 B |
+| `reactive-css.compact.min.js` (same runtime, shorter `describe()` registry) | 128,633 B | 42,558 B |
+| `reactive-css.js` (development build, full diagnostic messages) | 266,372 B | 69,516 B |
 
 **Custom bundles** contain only the features your stylesheets use. The CLI builds them, with `esbuild`:
 

@@ -9,6 +9,9 @@
 // - pointermove, pointerup, pointercancel and lostpointercapture are listened to only while a
 //   gesture is armed, and only for the gesture's pointer. Moves run synchronously; the state
 //   engine coalesces style writes per frame, so the final position is never dropped.
+// - While a gesture is armed, selectstart and dragstart are cancelled: the press must not start a
+//   text selection or a native drag of the content. On WebKit for Linux a native drag (of a
+//   selection left by the previous drag, an image or a link) takes all further pointer input.
 // - The element's box is read once at pointerdown: local coordinates during the drag are
 //   relative to it (no layout read per move, and no feedback when the element moves).
 
@@ -46,7 +49,11 @@ function moveListeners(on: boolean) {
   document[m]('pointerup', onUp as EventListener, opts(true));
   document[m]('pointercancel', onCancel as EventListener, opts(true));
   document[m]('lostpointercapture', onCancel as EventListener, opts(true));
+  document[m]('selectstart', preventNative, opts(false));
+  document[m]('dragstart', preventNative, opts(false));
 }
+
+const preventNative = (e: Event) => e.preventDefault();
 
 function onDown(e: PointerEvent) {
   if (gestures.has(e.pointerId) || (e.pointerType === 'mouse' && e.button !== 0)) return;
@@ -114,8 +121,6 @@ function onUp(e: PointerEvent) {
 function onCancel(e: PointerEvent) {
   const g = gestures.get(e.pointerId);
   if (!g || (e.type === 'lostpointercapture' && e.target !== g.el)) return;
-  // A late lostpointercapture from the previous gesture's release (WebKit on Linux) is not a loss of this one.
-  if (e.type === 'lostpointercapture' && g.el.hasPointerCapture?.(g.id)) return;
   end(g);
   if (!g.started || gone(g)) return;
   run(g, 'cancel', e);

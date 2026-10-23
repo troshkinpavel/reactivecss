@@ -37,9 +37,9 @@ Full list: `CHANGELOG.md`.
 
 | File | Minified | gzip (level 9) |
 |---|---:|---:|
-| `reactive-css.min.js` (full) | 149,139 B | 49,281 B |
-| `reactive-css.compact.min.js` (same runtime, shorter registry) | 128,595 B | 42,545 B |
-| `reactive-css.js` (development) | 266,288 B | 69,484 B |
+| `reactive-css.min.js` (full) | 149,177 B | 49,298 B |
+| `reactive-css.compact.min.js` (same runtime, shorter registry) | 128,633 B | 42,558 B |
+| `reactive-css.js` (development) | 266,372 B | 69,516 B |
 
 ## Tested and not tested
 
