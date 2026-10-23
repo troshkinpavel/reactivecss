@@ -62,8 +62,9 @@ const CHECKS: Record<string, (page: Page, browserName: string) => Promise<void>>
     const first = await level();
     expect(Number.isInteger(first) && first >= 0 && first <= 100).toBe(true);
     await expect.poll(async () => (await stats(page)).intervals).toBe(1);
-    // A new value within one interval (2 s); a random value can repeat, so allow two intervals.
-    await expect.poll(level, { timeout: 4500 }).not.toBe(first);
+    // A new value within one interval (2 s). A random value can repeat, and a tick can land late on a
+    // loaded runner (WebKit CI, 2 workers: 4.5 s missed the second tick once), so allow three intervals.
+    await expect.poll(level, { timeout: 6500 }).not.toBe(first);
     // Bar, readout and value agree once the 700 ms transition settles. Read together: the next tick
     // can change the level while the bar is still moving (slow frames under load).
     await expect.poll(() => page.evaluate(() => {
