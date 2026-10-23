@@ -1,8 +1,8 @@
 # Changelog
 
-All notable changes. This project is not published; versions are local builds.
+All notable changes. 0.9.0 is the first version published to npm, as `@reactivecss/core`; earlier versions were local builds.
 
-## 0.9.0 — The 0.9 language (local, unpublished)
+## 0.9.0 — The 0.9 language
 
 A new way to write behavior, built on the 0.8 runtimes. **The 0.8 syntax keeps working.**
 - **Design:** `docs/rfc-v0.9.0-language.md`.

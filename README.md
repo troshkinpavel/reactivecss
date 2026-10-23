@@ -46,7 +46,7 @@ One small runtime reads your stylesheets and wires them up.
 The button owns the state, each click increments it, and the span shows it as text. No application JavaScript is involved, but the Reactive CSS runtime has to be loaded.
 
 > [!NOTE]
-> **0.9.0 is experimental and not published yet.** The npm packages `@reactivecss/core` and `@reactivecss/mcp` and the website reactivecss.com are prepared, but not live. Everything below works from this repository today: see [Installation](#installation).
+> **0.9.0 is experimental.** `@reactivecss/core` is on npm. The MCP server `@reactivecss/mcp` and the website reactivecss.com are prepared, but not live yet. See [Installation](#installation).
 
 ## Why Reactive CSS?
 
@@ -134,7 +134,7 @@ Several of these APIs are experimental, among them `:on()`, drag, `persist()`, `
 
 The runtime is one script with no dependencies. Once it loads, it processes the document by itself.
 
-**From this repository (works now).** It needs Node.js 22 or later.
+**From this repository.** It needs Node.js 22 or later.
 
 ```bash
 npm ci
@@ -148,9 +148,9 @@ Copy `dist/reactive-css.min.js` next to your page and load it with `defer`:
 <script src="reactive-css.min.js" defer></script>
 ```
 
-To use it as an npm dependency before publication, run `npm pack`, then `npm install path/to/reactivecss-core-0.9.0.tgz` in your project.
+To try a local build as an npm dependency, run `npm pack`, then `npm install path/to/reactivecss-core-0.9.0.tgz` in your project.
 
-**From npm (pending publication).**
+**From npm.**
 
 ```bash
 npm install @reactivecss/core
@@ -178,7 +178,7 @@ The package also exports `@reactivecss/core/auto` (the self-starting bundle), `@
 node tools/reactive-css.mjs analyze public/ --build public/reactive-css.min.js
 ```
 
-After publication, with `@reactivecss/core` and `esbuild` installed in your project, the same command is `npx reactive-css`. Without a local install, name the package: `npx -p @reactivecss/core -p esbuild reactive-css …` (the unscoped npm package `reactive-css` is a different project). Details: [Installation](site/src/content/docs/installation.mdx) and [Custom bundles](docs/bundle-builder-0.8.md).
+With `@reactivecss/core` and `esbuild` installed in your project, the same command is `npx reactive-css`. Without a local install, name the package: `npx -p @reactivecss/core -p esbuild reactive-css …` (the unscoped npm package `reactive-css` is a different project). Details: [Installation](site/src/content/docs/installation.mdx) and [Custom bundles](docs/bundle-builder-0.8.md).
 
 <a name="experiments"></a>
 
