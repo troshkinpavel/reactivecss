@@ -385,14 +385,14 @@ test.describe('update path (attr: performance experiment)', () => {
       const g0 = (window as any).__gcs;
       const per: number[] = [];
       for (let i = 0; i < 20; i++) { const g = (window as any).__gcs; (bs[i] as HTMLElement).click(); per.push((window as any).__gcs - g); }
-      return { per, total: (window as any).__gcs - g0 };
+      // Counted in the same task as the clicks: the frame's re-read can run before the next evaluate() arrives.
+      return { per, total: (window as any).__gcs - g0, after: (window as any).__gcs as number };
     });
     // 3 bindings per component (.dv, i, u), read twice (the first pass writes): 6 per click,
     // for the 20th click as for the first (0.5.3 re-read earlier clicks' bindings too: 6, 12, 18…).
     expect(new Set(r.per)).toEqual(new Set([6]));
-    const before = await page.evaluate(() => (window as any).__gcs);
     await frames(page, 2);
-    expect(await page.evaluate(() => (window as any).__gcs) - before).toBe(20 * 3); // frame re-read, once each
+    expect(await page.evaluate(() => (window as any).__gcs) - r.after).toBe(20 * 3); // frame re-read, once each
     // still correct: the chained attribute (an attribute selector on a written attribute) settled in the same task
     expect(await page.$$eval('.dv', (ds) => ds.slice(0, 20).every((d) => d.getAttribute('data-c') === '1' && d.querySelector('u')!.getAttribute('data-x') === 'on' && d.querySelector('i')!.getAttribute('data-on') === '1'))).toBe(true);
   });
