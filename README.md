@@ -1,6 +1,28 @@
-# Reactive CSS
+<h1 align="center">Reactive CSS</h1>
 
-Reactive CSS adds state, events, conditions and DOM bindings to the CSS you already write. You load one script, and your stylesheets can handle simple interactions without extra JavaScript.
+<p align="center"><strong>Make CSS reactive.</strong></p>
+
+<p align="center">
+State, events, conditions and DOM bindings in the CSS you already write.<br>
+One small runtime reads your stylesheets and wires them up.
+</p>
+
+<p align="center">
+  <a href="https://github.com/troshkinpavel/reactivecss/actions/workflows/test.yml"><img alt="CI" src="https://github.com/troshkinpavel/reactivecss/actions/workflows/test.yml/badge.svg"></a>
+  <a href="package.json"><img alt="Version" src="https://img.shields.io/github/package-json/v/troshkinpavel/reactivecss?label=version"></a>
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/github/license/troshkinpavel/reactivecss"></a>
+  <img alt="Status: experimental" src="https://img.shields.io/badge/status-experimental-d9481e">
+</p>
+
+<p align="center">
+  <a href="site/src/content/docs/">Documentation</a> ·
+  <a href="site/src/catalog/">Examples</a> ·
+  <a href="#playground">Playground</a> ·
+  <a href="#experiments">Experiments</a> ·
+  <a href="packages/mcp/README.md">MCP server</a>
+</p>
+
+---
 
 ```css
 .counter {
@@ -21,91 +43,118 @@ Reactive CSS adds state, events, conditions and DOM bindings to the CSS you alre
 <script src="reactive-css.min.js" defer></script>
 ```
 
-> **Status: 0.9.0, experimental and not published yet.** The npm package `@reactivecss/core` and the website `reactivecss.com` are prepared but not live. The syntax can still change before 1.0. Until publication, install from a local build ([Installation](#installation)).
+The button owns the state, each click increments it, and the span shows it as text. No application JavaScript is involved, but the Reactive CSS runtime has to be loaded.
 
-## What it does
+> [!NOTE]
+> **0.9.0 is experimental and not published yet.** The npm packages `@reactivecss/core` and `@reactivecss/mcp` and the website reactivecss.com are prepared, but not live. Everything below works from this repository today: see [Installation](#installation).
 
-The runtime reads your stylesheets and finds the reactive parts: `state()`, `:on()`, `:when()`, mutations such as `increment()`. It compiles them to standard CSS and custom properties, and then updates only the elements that use them. The browser still does all styling, transitions and animations. Rules without reactive syntax stay native CSS and are not changed.
+## Why Reactive CSS?
 
-It is not a framework, not a replacement for JavaScript, and not a programming language. It is for interface state that you would otherwise wire up with a few event listeners: menus, tabs, toggles, counters, form mirrors, drag handles, simple wizards.
+A lot of interface behavior is small: a menu that opens, a tab that switches, a field that mirrors another, a card that follows the pointer. With plain HTML and CSS, each of these usually needs a few event listeners that set classes and attributes.
 
-## A second example
+Reactive CSS lets the stylesheet say it directly. Selectors say *when* something happens, declarations say *what* changes, and the browser still does all styling, transitions and animations. Rules without reactive syntax stay native CSS.
+
+It is not a framework, a build step or a replacement for JavaScript. It is a CSS-first way to write the interactions that don't need one.
+
+## What you can build
+
+**State and mutations.** A state belongs to the element that declares it. Its descendants read it and change it.
 
 ```css
-.menu {
-  --open: state(false);
-}
-.menu > button {
-  --attr-aria-expanded: var(--open);   /* writes the real attribute */
-}
-.menu > button:on(click) {
-  --open: toggle();
-}
-.menu:on(outside(click)) {
-  --open: set(false);
-}
-.menu:on(keydown(Escape)) {
-  --open: set(false);
-}
-.menu:when(--open) > ul {
-  display: block;
-}
+.stepper { --n: state(1); }
+.stepper .more:on(click) { --n: increment(1); }
+.stepper .double:on(click) { --n: set(clamp(1, var(--n) * 2, 64)); }
+
+.palette { --tone: state(warm); }
+.palette:on(click) { --tone: cycle(warm, cool, mono); }
 ```
 
-A state belongs to the element that declares it. Its descendants read it and change it, so the button and the list both reach `--open` through `.menu`.
+**Events.** DOM events and keys, clicks outside an element, and the `prevent()` and `stop()` modifiers.
 
-## Core features
+```css
+.menu { --open: state(false); }
+.menu > button:on(click) { --open: toggle(); }
+.menu:on(keydown(Escape)) { --open: set(false); }
+.menu:on(outside(click)) { --open: set(false); }
 
-| Area | Syntax |
-|---|---|
-| State | `state(value)`, with `persist("key")` (kept across reloads) and `bind(value)` (two-way with a form control) |
-| Events | `:on(click)`, `:on(keydown(Enter))`, `:on(outside(click))`, `:on(drag(move))`, with the modifiers `prevent()` and `stop()` |
-| Mutations | `set()`, `toggle()`, `increment()`, `decrement()`, `cycle()`, with `event(…)` fields such as `event(local-x)` |
-| Conditions | `:when(--open)`, `when(--on, a, b)`, comparisons and `and` / `or` / `not` |
-| DOM | `content: var(--x)` (element text), `--attr-*` (attributes), `focus: when(…)` (focus requests) |
-| History | `previous()`, `direction()`, `:changed()` |
-| Values | `mouse()`, `element()`, `viewport()`, `visible()`, `live()`, `random()`, `pick()` |
+form { --sent: state(false); }
+form:on(submit, prevent()) { --sent: set(true); }
+```
 
-Every feature has a status in the registry: run `ReactiveCSS.describe()` in the browser, or read `dist/features.json`. The full language reference is in [docs/library-reference.md](docs/library-reference.md). The changes from 0.8 are in [docs/migration-0.9.md](docs/migration-0.9.md).
+**Conditions.** As a selector with `:when()`, or as a value with `when()`.
+
+```css
+.menu:when(--open) > ul { display: block; }
+.cart:when(--items > 0) .badge { visibility: visible; }
+.switch { background: when(--on, #f2542d, #d9d5cf); }
+```
+
+**DOM bindings.** Real attributes, element text and focus.
+
+```css
+.menu > button { --attr-aria-expanded: var(--open); }
+.counter .value { content: var(--count); }
+.dialog input { focus: when(--open); }
+```
+
+**Form inputs.** Two-way binding between a control and its own state.
+
+```css
+.signup input[name=name] { --name: state("", bind(value)); }
+.signup input[name=name]:when(--name != "") { border-color: #15803d; }
+```
+
+**Persistence.** A state that survives reloads.
+
+```css
+:root { --dark: state(false, persist("theme")); }
+```
+
+**Pointer and drag.** Event data read at the moment of the event, and drags that continue from where they stopped.
+
+```css
+.card { --x: state(0px); --y: state(0px); translate: var(--x) var(--y); touch-action: none; }
+.card:on(drag) { --x: set(event(x)); --y: set(event(y)); }
+.pad { --hit: state(0px); }
+.pad:on(pointerdown) { --hit: set(event(local-x)); }
+```
+
+**Geometry and motion.** Live values from the pointer and the element, and a selector that matches right after a change.
+
+```css
+.spotlight { --mx: mouse(x, local); --w: element(width); }
+.counter:changed(--count) .value { animation: flash 300ms; }
+```
+
+**Native CSS, first.** Transitions, animations, `@media`, layers and custom properties work unchanged. Where native CSS such as `if()` does the same job, the runtime uses it.
+
+Several of these APIs are experimental, among them `:on()`, drag, `persist()`, `bind()`, `--attr-*`, `content` and `focus:`. The status of every feature is in the [language reference](docs/library-reference.md) and in `ReactiveCSS.describe()`.
 
 ## Installation
 
-### From a local build (works now)
+The runtime is one script with no dependencies. Once it loads, it processes the document by itself.
+
+**From this repository (works now).** It needs Node.js 22 or later.
 
 ```bash
-npm install
+npm ci
 npm run build
 ```
 
-Copy `dist/reactive-css.min.js` to the folder your site serves, and load it with `defer`:
+Copy `dist/reactive-css.min.js` next to your page and load it with `defer`:
 
 ```html
 <link rel="stylesheet" href="style.css">
 <script src="reactive-css.min.js" defer></script>
 ```
 
-The script starts by itself. To use it as an npm dependency before publication, create a tarball with `npm pack` and install that file:
+To use it as an npm dependency before publication, run `npm pack`, then `npm install path/to/reactivecss-core-0.9.0.tgz` in your project.
 
-```bash
-npm pack
-```
-
-```bash
-npm install path/to/reactivecss-core-0.9.0.tgz
-```
-
-### From npm (after publication)
+**From npm (pending publication).**
 
 ```bash
 npm install @reactivecss/core
 ```
-
-| Import | Contents |
-|---|---|
-| `@reactivecss/core` | The ES module API: `start()`, `stop()`, `refresh()`, `compile()`, `describe()`, `diagnostics`… with TypeScript declarations |
-| `@reactivecss/core/auto` | The full browser bundle, which starts itself |
-| `@reactivecss/core/bundle` | The custom bundle builder API (Node.js, needs `esbuild`) |
-| `@reactivecss/core/catalog.json` | The feature catalog |
 
 ```js
 import { start } from '@reactivecss/core';
@@ -113,94 +162,124 @@ import { start } from '@reactivecss/core';
 start();
 ```
 
-After publication, npm CDNs such as jsDelivr and unpkg can serve the files of the package directly. Pin an exact version in production.
+The package also exports `@reactivecss/core/auto` (the self-starting bundle), `@reactivecss/core/bundle` (the custom bundle builder, for Node.js) and `@reactivecss/core/catalog.json`.
 
-## Bundles
+**Bundles.** Measured from the 0.9.0 build:
 
-| File | Minified | gzip | What it is |
-|---|---:|---:|---|
-| `dist/reactive-css.min.js` | 149,039 B | 49,253 B | Full: every feature and the complete feature registry |
-| `dist/reactive-css.compact.min.js` | 128,495 B | 42,516 B | Compact: the same runtime and features, with a shorter `describe()` registry |
-| `dist/reactive-css.js` | 266,168 B | 69,461 B | Development build: not minified, full diagnostic messages |
-| Custom | smaller | | Only the features you select, built with the `reactive-css` CLI |
+| File | Minified | gzip |
+|---|---:|---:|
+| `reactive-css.min.js` | 149,039 B | 49,253 B |
+| `reactive-css.compact.min.js` (same runtime, shorter `describe()` registry) | 128,495 B | 42,516 B |
+| `reactive-css.js` (development build, full diagnostic messages) | 266,168 B | 69,461 B |
 
-Sizes are from the 0.9.0 build (gzip level 9). The minified bundles report problems as stable codes. Decode them offline:
-
-```bash
-npx reactive-css explain "RCSS-P001⟦:on()⟧⟦events⟧⟦events⟧"
-```
-
-Custom bundles need `esbuild` (an optional peer dependency):
+**Custom bundles** contain only the features your stylesheets use. The CLI builds them, with `esbuild`:
 
 ```bash
-npx reactive-css analyze public/ --build public/reactive-css.min.js
+node tools/reactive-css.mjs analyze public/ --build public/reactive-css.min.js
 ```
 
-Reference: [docs/bundle-builder-0.8.md](docs/bundle-builder-0.8.md).
+After publication, the same command is `npx reactive-css`. Details: [Installation](site/src/content/docs/installation.mdx) and [Custom bundles](docs/bundle-builder-0.8.md).
 
-## AI coding agents (MCP)
+<a name="experiments"></a>
 
-`packages/mcp/` is `@reactivecss/mcp`, a Model Context Protocol server that gives coding agents the 0.9.0 reference, examples, and validation, feature analysis and migration with the library's own compiler. It is offline and read-only, and runs over stdio. It is not published yet. Build it from this repository (after `npm run build` in the root):
+## Experiments: Perihelion
+
+<table>
+<tr>
+<td>
+
+**001 · Perihelion · motion card**
+
+A foil collector card: 3D tilt, trailing specular light, parallax layers and a spring return. Three editions cycle on click, and a light sweep marks each change.
+
+The interaction is Reactive CSS, and the rendering is native CSS: `mouse(local)` and `element()` for the pointer and the card's size, `:on(pointerenter)` for hover as a state, `cycle()` and `:changed()` for the editions. There is no application JavaScript.
+
+[Source](site/experiments/perihelion/) · [How it works](site/experiments/perihelion/README.md)
+
+On the website, at `/experiments/` and `/experiments/perihelion/` (not live yet: [run the site locally](#playground) to see them).
+
+</td>
+</tr>
+</table>
+
+Experiments show what Reactive CSS can do beyond menus and counters: light, depth and motion. Each one is a stylesheet and the runtime.
+
+## AI agents · Official MCP server
+
+[`@reactivecss/mcp`](packages/mcp/README.md) is a Model Context Protocol server. It gives coding agents current knowledge of Reactive CSS 0.9.0, so the CSS they write uses the syntax that actually runs. It works offline and read-only, over stdio.
+
+- **API reference:** syntax, status, parameters and common mistakes for every API.
+- **Documentation search** across the reference, the examples and the migration guide.
+- **CSS validation** with the library's own compiler: stable diagnostic codes, and fixes where they are safe.
+- **Examples** from the maintained catalog.
+- **Feature and bundle analysis:** which features a stylesheet uses, and the custom bundle it needs.
+- **Migration** of 0.8 declarations (`on:`, `bind:`, `text:`, `attr:`) to their 0.9 forms.
+
+It is not on npm yet. Build it from `packages/mcp/` and point your MCP client at it, as the [package README](packages/mcp/README.md) describes. It has been verified with the MCP Inspector. Other clients are documented, but not tested yet.
+
+## Philosophy
+
+- **Stay close to CSS.** Reactive rules look like the CSS around them: selectors, declarations and custom properties.
+- **Native first.** When the platform already does something well, use it. Reactive CSS fills the gaps.
+- **Declarative behavior.** Say what changes and when, not how to wire it up.
+- **JavaScript stays available.** For logic, data and APIs, JavaScript is the better tool, and it works alongside the runtime.
+- **No unnecessary abstraction.** No components, no virtual DOM, no build step.
+- **One runtime for many interactions.** The script loads once, and every interactive pattern on the page shares it.
+
+## Browser support
+
+The build targets Chrome and Edge 111+, Firefox 128+ and Safari 16.4+. Automated tests run in Chromium and WebKit (Playwright engine builds). Firefox and real touch devices are not verified yet. Details: [docs/compatibility.md](docs/compatibility.md).
+
+CSS minifiers delete empty rules, so a modifier-only rule such as `a:on(click, prevent()) {}` disappears. Use whitespace-only minification for these stylesheets.
+
+## Documentation and links
+
+| | |
+|---|---|
+| [Documentation](site/src/content/docs/) | Guides: getting started, state, events, conditions, binding, drag, persistence and more |
+| [Language reference](docs/library-reference.md) | Every function, selector and declaration, with its status |
+| [Migration from 0.8](docs/migration-0.9.md) | The 0.9 form of every 0.8 declaration |
+| [Examples](site/src/catalog/) | One-feature API examples and complete interfaces, in 0.9 syntax |
+| [Experiments](site/experiments/) | Perihelion, and more when they are finished |
+| [MCP server](packages/mcp/README.md) | `@reactivecss/mcp`, for coding agents |
+| [Changelog](CHANGELOG.md) | Every release, with its reports |
+| [Security](SECURITY.md) | The trust model, and how to report a vulnerability |
+
+<a name="playground"></a>
+
+The website, with the Playground, the live examples, the experiments and the bundle builder, will be at **reactivecss.com** when it launches. Until then, run it locally:
 
 ```bash
-cd packages/mcp && npm install && npm run build
+npm ci && npm run build
+cd site && npm ci && npm run dev
 ```
 
-Then point your MCP client at `node /absolute/path/to/packages/mcp/dist/index.js`. Client configuration and the tool list: [packages/mcp/README.md](packages/mcp/README.md).
-
-## Browser support and limitations
-
-- **Build target:** Chrome and Edge 111+, Firefox 128+, Safari 16.4+. Details in [docs/compatibility.md](docs/compatibility.md).
-- **Tested:** automated tests run in Chromium and WebKit (Playwright engine builds, not Chrome or Safari releases).
-- **Not verified:** Firefox has manual results from 0.7.1 only, and no automated run on the development machine. Real touch and pen devices are not verified.
-- **Experimental APIs:** most of the 0.9 language is marked experimental in the registry: `:on()` and `event()`, drag, `prevent()`, `persist()`, `bind()`, `--attr-*`, `content`, `focus:`, `:blur` and `element()`. `state()`, the mutations, `:when()` and the history and value functions are stable.
-- **CSS minifiers remove empty rules.** A rule with only modifiers, such as `a:on(click, prevent()) {}`, is deleted by esbuild, csso and Lightning CSS. Use whitespace-only minification for these stylesheets.
-- **Security:** the runtime only reads CSS that the page already trusts. See [docs/security.md](docs/security.md) and [SECURITY.md](SECURITY.md).
+Then open `http://localhost:4321/`. The Playground is at `/playground/`.
 
 ## Repository
 
 | Path | Contents |
 |---|---|
-| `src/` | Library source (TypeScript) |
-| `tools/` | The `reactive-css` CLI and the bundle builder |
-| `tests/` | Unit, distribution and browser tests |
-| `examples/` | Runnable examples and the demo lab |
-| `docs/` | Language reference, design notes and release history |
-| `benchmarks/` | Performance harness and recorded results |
-| `packages/mcp/` | `@reactivecss/mcp`, the MCP server for coding agents |
-| `site/` | The documentation website (Astro), a separate private npm project |
-| `codepen/` | The demos packaged for CodePen, with a copy of the 0.9.0 runtime |
+| [`src/`](src/) | The runtime (TypeScript) |
+| [`tools/`](tools/) | The `reactive-css` CLI and the bundle builder |
+| [`tests/`](tests/) | Unit, distribution and browser tests |
+| [`packages/mcp/`](packages/mcp/) | The MCP server |
+| [`site/`](site/README.md) | The website (Astro) |
+| [`examples/`](examples/) | The library's demo lab and earlier examples, some in 0.8 syntax (which still works) |
+| [`docs/`](docs/) | Reference, design notes and release history |
+| [`benchmarks/`](benchmarks/) | Performance harness and results |
+| [`codepen/`](codepen/) | The demos, packaged for CodePen |
 
-## Development
+## Contributing
 
-Node.js 22 or later.
+Issues and pull requests are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) has the setup and the test commands. Report security problems privately, as [SECURITY.md](SECURITY.md) describes.
 
 ```bash
 npm ci
 npm run build
-npm run typecheck
 npm test
 ```
 
-Browser tests (Chromium and WebKit):
-
-```bash
-npx playwright install chromium webkit
-npm run test:browser
-```
-
-`npm run test:dist` checks the built files: the bundle on a plain page, a Node import and a TypeScript consumer. `npm run verify` runs everything. `npm run serve` serves the examples at `http://localhost:8080/examples/`.
-
-The website, with the Playground, the Examples and the Bundle Builder, is in [site/](site/README.md):
-
-```bash
-cd site && npm ci && npm run dev
-```
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md). Report security problems privately as described in [SECURITY.md](SECURITY.md).
-
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE) © 2026 Pavel Troshkin
