@@ -76,4 +76,28 @@ test.describe('element()', () => {
     expect(await px(page, '.t b', 'width')).toBe('60px');
     expect(await diagnostics(page)).toEqual([]);
   });
+
+  test('a size change that stops during the loop check is not mistaken for a loop', async ({ page }) => {
+    // Each element grows 2px a frame, for a different number of frames, so for some of them the growth
+    // stops during the guard's two-frame pause, as a transition can end there on a slow frame.
+    const N = Array.from({ length: 16 }, (_, i) => 24 + i);
+    await open(page, {
+      head: '<style>.g { --w: element(width); width: 100px; height: 4px }</style>',
+      body: N.map((n) => `<div class="g" data-n="${n}"></div>`).join(''),
+    });
+    const synced = () => page.$$eval('.g', (els) => els.map((e) => getComputedStyle(e).getPropertyValue('--w') === getComputedStyle(e).width));
+    await expect.poll(synced).toEqual(N.map(() => true));
+    await page.evaluate(() => new Promise<void>((done) => {
+      const els = [...document.querySelectorAll<HTMLElement>('.g')];
+      let f = 0;
+      const step = () => {
+        f++;
+        for (const e of els) if (f <= +e.dataset.n!) e.style.width = `${100 + 2 * f}px`;
+        if (f < 60) requestAnimationFrame(step); else done();
+      };
+      requestAnimationFrame(step);
+    }));
+    await expect.poll(synced).toEqual(N.map(() => true)); // every value reaches the final size
+    expect(await diagnostics(page)).toEqual([]);
+  });
 });
