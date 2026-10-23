@@ -63,9 +63,12 @@ test.describe('events that on: does not accept (0.5.1)', () => {
     const d = (await diagnostics(page)).join('\n');
     for (const e of UNSUPPORTED) expect(d, e).toContain(`got "${e}(increment(--n))"`);
     // dispatching the real events changes nothing
-    await page.evaluate(() => document.querySelectorAll('.u').forEach((f) => {
-      for (const t of ['focusin', 'animationend', 'transitionend', 'submit', 'reset']) f.dispatchEvent(new Event(t, { bubbles: true }));
-    }));
+    await page.evaluate(() => {
+      document.addEventListener('submit', (e) => e.preventDefault()); // Firefox submits (navigates) on an untrusted submit event
+      document.querySelectorAll('.u').forEach((f) => {
+        for (const t of ['focusin', 'animationend', 'transitionend', 'submit', 'reset']) f.dispatchEvent(new Event(t, { bubbles: true, cancelable: true }));
+      });
+    });
     await frames(page);
     expect(await page.$$eval('.u', (els) => els.map((e) => getComputedStyle(e).getPropertyValue('--n').trim()))).toEqual(UNSUPPORTED.map(() => '0'));
   });

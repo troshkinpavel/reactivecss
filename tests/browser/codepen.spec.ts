@@ -11,7 +11,9 @@ const HARNESS = `<!doctype html><html><head><meta charset="utf-8"></head><body><
     const f = document.getElementById('preview');
     f.onload = () => res();
     const meta = csp ? '<meta http-equiv="Content-Security-Policy" content="' + csp + '">' : '';
-    f.srcdoc = '<!doctype html><html><head><meta charset="utf-8">' + meta + (scriptFirst ? RUNTIME : '') + '<style id="pen">' + css + '<\\/style></head><body>' + html + (scriptFirst ? '' : RUNTIME) + '</body></html>';
+    const doc = '<!doctype html><html><head><meta charset="utf-8">' + meta + (scriptFirst ? RUNTIME : '') + '<style id="pen">' + css + '<\\/style></head><body>' + html + (scriptFirst ? '' : RUNTIME) + '</body></html>';
+    // With a CSP, a real same-origin URL (as CodePen serves its preview): Firefox does not count a srcdoc document as 'self'.
+    if (csp) f.src = '/t/preview.html?doc=' + encodeURIComponent(doc); else f.srcdoc = doc;
   });
   window.editCSS = (css) => { document.getElementById('preview').contentDocument.getElementById('pen').textContent = css; };
   window.rt = () => document.getElementById('preview').contentWindow.ReactiveCSS;
@@ -19,6 +21,7 @@ const HARNESS = `<!doctype html><html><head><meta charset="utf-8"></head><body><
 
 async function harness(page: Page) {
   await page.route('**/t/codepen.html', (r) => r.fulfill({ contentType: 'text/html', body: HARNESS }));
+  await page.route(/\/t\/preview\.html\?/, (r) => r.fulfill({ contentType: 'text/html', body: new URL(r.request().url()).searchParams.get('doc')! }));
   await page.goto('/t/codepen.html');
 }
 async function pen(page: Page, html: string, css: string, o: { scriptFirst?: boolean; csp?: string; dev?: boolean } = {}): Promise<FrameLocator> {

@@ -593,11 +593,14 @@ test.describe('demo lab (0.5.3)', () => {
     expect(names).toHaveLength(20); // 12 + the eight 0.7.1 validation examples
     const frame = page.frameLocator('.frame');
     for (const name of names) {
+      // A click reloads the frame, even for the example shown on load (the first one): mark the
+      // current document so the wait below cannot match it just before it is replaced (Firefox).
+      await page.waitForFunction(() => { const w = (document.querySelector('.frame') as HTMLIFrameElement).contentWindow as any; return w?.ReactiveCSS && (w.__shown = true); });
       await page.click(`.examples li[data-name="${name}"] a`);
       await expect(page.locator('.frame')).toHaveAttribute('src', `../${name}/`);
       await page.waitForFunction((n) => {
         const w = (document.querySelector('.frame') as HTMLIFrameElement).contentWindow as any;
-        return w?.location.pathname === `/examples/${n}/` && w.document.readyState === 'complete' && w.ReactiveCSS?.stats().sheets >= 1;
+        return !w?.__shown && w?.location.pathname === `/examples/${n}/` && w.document.readyState === 'complete' && w.ReactiveCSS?.stats().sheets >= 1;
       }, name);
       expect(await page.$eval('.frame', (f) => ((f as HTMLIFrameElement).contentWindow as any).ReactiveCSS.diagnostics), name).toEqual([]);
       await expect(page.locator('.source')).toContainText('## 8. Manual test checklist');

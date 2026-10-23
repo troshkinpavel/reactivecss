@@ -84,10 +84,12 @@ const CHECKS: Record<string, (page: Page, browserName: string) => Promise<void>>
     await expect.poll(async () => Math.abs((await px('--x')) - 80)).toBeLessThan(1);
     expect(Math.abs((await px('--y')) - 50)).toBeLessThan(1);
     const [x, y] = [await cs(page, '.pad', '--x'), await cs(page, '.pad', '--y')];
-    await expect.poll(() => cs(page, '.dot', 'translate')).toBe(`${x} ${y}`);
+    // Firefox computes lengths in single precision (--y 120.00000762939453px, translate 120px): compare to 0.01px.
+    const two = (s: string) => s.split(' ').map((v) => parseFloat(v).toFixed(2)).join(' ');
+    await expect.poll(() => cs(page, '.dot', 'translate').then(two)).toBe(two(`${x} ${y}`));
     expect(await cs(page, '.coords', 'counter-reset', '::after')).toBe(`x ${Math.round(parseFloat(x))} y ${Math.round(parseFloat(y))}`);
     await page.mouse.move(pad.x + pad.width + 40, pad.y - 40); // outside: the dot rests in the middle
-    await expect.poll(() => cs(page, '.dot', 'translate')).toBe(`${pad.width / 2}px ${pad.height / 2}px`);
+    await expect.poll(() => cs(page, '.dot', 'translate').then(two)).toBe(two(`${pad.width / 2}px ${pad.height / 2}px`));
   },
 
   async 'element-size'(page) {

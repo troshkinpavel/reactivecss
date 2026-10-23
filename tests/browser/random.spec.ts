@@ -10,6 +10,9 @@ const NO_STEP = `<script>{ const s = CSS.supports.bind(CSS); CSS.supports = (...
 const px = (page: Page, sel: string, prop: string) => page.$$eval(sel, (els, p) => els.map((e) => parseFloat(getComputedStyle(e).getPropertyValue(p))), prop);
 const many = (n: number, cls = 'r') => `<i class="${cls}"></i>`.repeat(n);
 const distinct = (a: number[]) => new Set(a).size;
+// The real capability, as the runtime checks it: Firefox has no native random(), so the "native"
+// tests assert the polyfilled path there.
+const hasNative = (page: Page) => page.evaluate(() => CSS.supports('width', 'random(0px, 100px)'));
 
 test.describe('declarations: native when supported, polyfilled when not', () => {
   const css = '.r { display: block; width: random(0px, 100px); height: random(10px, 20px, 5px); rotate: random(0deg, 90deg); animation-duration: random(1s, 2s) }';
@@ -17,10 +20,15 @@ test.describe('declarations: native when supported, polyfilled when not', () => 
   test('full native support: the calls stay native CSS, no bindings, per-element values', async ({ page }) => {
     await open(page, { head: `<style>${css}</style>`, body: many(8) });
     await frames(page);
-    // Chromium serializes native random() with its internal sharing key: match the arguments only.
-    expect(await sheetCSS(page)).toMatch(/width: random\([^)]*0px, 100px\)/);
-    expect(await sheetCSS(page)).toMatch(/height: random\([^)]*10px, 20px, 5px\)/);
-    expect((await stats(page)).bindings).toBe(0);
+    if (await hasNative(page)) {
+      // Chromium serializes native random() with its internal sharing key: match the arguments only.
+      expect(await sheetCSS(page)).toMatch(/width: random\([^)]*0px, 100px\)/);
+      expect(await sheetCSS(page)).toMatch(/height: random\([^)]*10px, 20px, 5px\)/);
+      expect((await stats(page)).bindings).toBe(0);
+    } else {
+      expect(await sheetCSS(page)).toMatch(/width: var\(--rcss-/);
+      expect((await stats(page)).bindings).toBeGreaterThan(20);
+    }
     const w = await px(page, '.r', 'width'), h = await px(page, '.r', 'height');
     expect(distinct(w)).toBeGreaterThan(4);
     for (const v of w) expect(v >= 0 && v <= 100).toBe(true);
@@ -43,7 +51,7 @@ test.describe('declarations: native when supported, polyfilled when not', () => 
     await open(page, { head: NO_STEP + `<style>${css}</style>`, body: many(6) });
     await frames(page);
     const t = await sheetCSS(page);
-    expect(t).toMatch(/width: random\([^)]*0px, 100px\)/);
+    expect(t).toMatch(await hasNative(page) ? /width: random\([^)]*0px, 100px\)/ : /width: var\(--rcss-/);
     expect(t).toMatch(/height: var\(--rcss-/);
     for (const v of await px(page, '.r', 'height')) expect([10, 15, 20]).toContain(v);
   });
@@ -62,6 +70,7 @@ test.describe('declarations: native when supported, polyfilled when not', () => 
   });
 
   test('native-only sharing keys are never claimed: --name, element-scoped, property-scoped, fixed', async ({ page }) => {
+    test.skip(!(await hasNative(page)), 'no native random(): the next test covers its diagnostic');
     await open(page, { head: `<style>.k { width: random(--k, 0px, 100px); height: random(--k, 0px, 100px) } .e { width: random(element-scoped, 0px, 100px); height: random(element-scoped, 0px, 100px) }
       .p { width: random(property-scoped, 0px, 100px) } .f { width: random(fixed 0.5, 0px, 100px) } .c { --n: state(0) }</style>`, body: many(4, 'k') + many(4, 'e') + many(4, 'p') + many(2, 'f') + '<div class="c"></div>' });
     await frames(page);
@@ -104,17 +113,18 @@ test.describe('event time and mixed pages', () => {
     await open(page, { head: `<style id="s">.n { width: random(0px, 100px) } .l { width: live(random(0px, 100px), 100ms) } .b { --x: state(0) } .b:on(click) { --x: set(random(0, 9, 1)) }</style>`,
       body: many(3, 'n') + many(3, 'l') + '<button class="b">b</button>' });
     await frames(page);
+    const native = await hasNative(page), bindings = native ? 4 : 7; // polyfilled: one more per .n element
     const before = await px(page, '.l', 'width');
     await page.waitForTimeout(350);
     expect(await px(page, '.l', 'width')).not.toEqual(before); // live() re-rolls (runtime)
-    expect((await stats(page)).bindings).toBe(4); // three live() bindings and the :on() candidate: the native call has none
+    expect((await stats(page)).bindings).toBe(bindings); // three live() bindings and the :on() candidate: the native call has none
     await page.click('.b');
     await frames(page);
     expect([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]).toContain(await page.$eval('.b', (e) => +getComputedStyle(e).getPropertyValue('--x')));
     for (let i = 0; i < 5; i++) await page.evaluate((i) => { document.getElementById('s')!.textContent += `\n.x${i} { color: red }`; }, i);
     await frames(page);
-    expect((await stats(page)).bindings).toBe(4);
-    expect(await sheetCSS(page)).toMatch(/width: random\([^)]*0px, 100px\)/);
+    expect((await stats(page)).bindings).toBe(bindings);
+    if (native) expect(await sheetCSS(page)).toMatch(/width: random\([^)]*0px, 100px\)/);
     expect(await diagnostics(page)).toEqual([]);
   });
 });

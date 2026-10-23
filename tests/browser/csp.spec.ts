@@ -10,9 +10,9 @@ const css = `.plain { color: rgb(1, 2, 3) }
   .t { --v: live(pick(4px), 50ms); display: block; width: var(--v) }`;
 const body = '<p class="plain">p</p><div class="c"><button>b</button><i></i></div><b class="t"></b>';
 
-/** Collects CSP violations reported on the page. */
+/** Collects CSP violations reported on the page, except the browser's own /favicon.ico request (Firefox). */
 async function violations(page: Page) {
-  return page.evaluate(() => (window as any).__csp ?? []);
+  return (await page.evaluate(() => (window as any).__csp ?? [])).filter((v: string) => !v.endsWith('/favicon.ico'));
 }
 const watchViolations = (page: Page) => page.addInitScript(() => {
   (window as any).__csp = [];

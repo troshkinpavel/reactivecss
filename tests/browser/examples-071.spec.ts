@@ -295,7 +295,7 @@ test.describe('H. stylesheet lifecycle lab', () => {
     await finish(page, problems);
   });
 
-  test('a swapped state sheet that downloads slowly: the state keeps its value until the new sheet applies, then restarts', async ({ page }) => {
+  test('a swapped state sheet that downloads slowly: the state keeps its value until the new sheet applies, then restarts', async ({ page, browserName }) => {
     // Reproduces a slower runner (Linux CI): the replacement for the sheet that declares --n arrives late.
     let release!: () => void;
     const held = new Promise<void>((res) => { release = res; });
@@ -306,10 +306,16 @@ test.describe('H. stylesheet lifecycle lab', () => {
     expect(Number(before)).toBeGreaterThan(0);
     await page.click('[data-h="decl"]');
     await frames(page, 5);
-    expect(await page.textContent('.lab .n')).toBe(before); // still the old sheet's state while the new one downloads
-    await page.click('.inc');
-    await frames(page);
-    expect(Number(await page.textContent('.lab .n'))).toBeGreaterThan(Number(before)); // and it still works
+    if (browserName === 'firefox') {
+      // Firefox drops a <link>'s old sheet as soon as its href changes, before the new file arrives
+      // (Chromium and WebKit keep it applied): there is no old state to keep meanwhile.
+      expect(await page.$eval('#decl', (l) => (l as HTMLLinkElement).sheet === null)).toBe(true);
+    } else {
+      expect(await page.textContent('.lab .n')).toBe(before); // still the old sheet's state while the new one downloads
+      await page.click('.inc');
+      await frames(page);
+      expect(Number(await page.textContent('.lab .n'))).toBeGreaterThan(Number(before)); // and it still works
+    }
     release();
     await expect.poll(() => page.$eval('.lab .count', (e) => getComputedStyle(e).fontWeight)).toBe('700');
     await expect.poll(() => page.textContent('.lab .n')).toBe('0'); // the new declaring sheet restarts it

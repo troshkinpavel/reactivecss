@@ -26,4 +26,4 @@ Often enough, and preferred:
 ## Limitations
 - **Before the first measurement**, the value is empty: the readout is blank for one frame.
 - **Feedback loops:** a rule that sets the card's width from its own measured width is detected and frozen with a warning. Here only the height changes with `--w`, and only the width is measured.
-- **Readout support:** the readout needs CSS typed arithmetic (`length / length`), which the tested Chromium and WebKit support.
+- **Readout:** `tan(atan2(length, 1000px)) * 1000` turns the px length into a number. The shorter `round(var(--w) / 1px)` needs CSS typed arithmetic, which Firefox does not have.

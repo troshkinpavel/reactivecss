@@ -13,4 +13,4 @@
 .size .set   { text: var(--width); }
 .size .card  { width: min(var(--width) * 1px, 100% - 34px); --w: element(width); }   /* border box */
 .size .big   { font-size: calc(var(--w) / 6); }                       /* follows the measured width */
-.size .measured::after { counter-reset: w round(var(--w) / 1px); content: counter(w); }
+.size .measured::after { counter-reset: w round(tan(atan2(var(--w), 1000px)) * 1000); content: counter(w); }   /* px → number in every engine; Firefox has no typed arithmetic (length / 1px) */

@@ -17,6 +17,7 @@
 .tracker .pad { --x: mouse(x, local); --y: mouse(y, local); }
 .tracker .pad:hover .dot { translate: var(--x) var(--y); }
 .tracker .pad:hover .coords::after {
-  counter-reset: x round(var(--x) / 1px) y round(var(--y) / 1px);    /* native: px → number */
+  /* px → number in every engine; Firefox has no typed arithmetic (length / 1px) */
+  counter-reset: x round(tan(atan2(var(--x), 1000px)) * 1000) y round(tan(atan2(var(--y), 1000px)) * 1000);
   content: "x " counter(x) "  y " counter(y);
 }
