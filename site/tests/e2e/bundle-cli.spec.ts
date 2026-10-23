@@ -241,6 +241,18 @@ const exec = (cmd: string, cwd: string) => {
   return { status: r.status, out: (r.stdout + r.stderr).split(realpathSync(cwd) + '/').join('…/').split(cwd + '/').join('…/').trim() };
 };
 
+// gzip output depends on the platform's zlib (Node bundles a SIMD zlib whose level-9 output differs between
+// x64 Linux and Apple silicon by a few tenths of a percent). The guide shows the numbers measured on one
+// machine, so the gzip size may differ by up to 1 %; everything else, minified and brotli sizes included, is exact.
+const GZIP_TOLERANCE = 0.01;
+const nearGzip = (got: number, shown: number) => Math.abs(got - shown) <= shown * GZIP_TOLERANCE;
+function expectSameOutput(got: string, shown: string, cmd: string) {
+  const re = /(\d+) B gzip/g, g = [...got.matchAll(re)].map((m) => +m[1]!), s = [...shown.matchAll(re)].map((m) => +m[1]!);
+  expect(g.length, `${cmd}: gzip figures`).toBe(s.length);
+  g.forEach((v, i) => expect(nearGzip(v, s[i]!), `${cmd}: ${v} B gzip vs ${s[i]} shown`).toBe(true));
+  expect(got.replace(re, 'N B gzip'), cmd).toBe(shown.replace(re, 'N B gzip'));
+}
+
 test('every command the Custom Bundles guide shows prints the output it shows', () => {
   const dir = scratchProject();
   mkdirSync(join(dir, 'public'));
@@ -252,14 +264,16 @@ test('every command the Custom Bundles guide shows prints the output it shows', 
     b.lang === 'txt' && b.label.startsWith('npx reactive-css ') ? [{ cmd: b.label, shown: b.code }]
     : b.lang === 'sh' && BLOCKS[i + 1]?.label === 'output' ? [{ cmd: b.code, shown: BLOCKS[i + 1]!.code }] : []);
   expect(pairs.length).toBeGreaterThanOrEqual(6);
-  for (const { cmd, shown } of pairs) expect(exec(cmd, dir).out, cmd).toBe(shown.trim());
+  for (const { cmd, shown } of pairs) expectSameOutput(exec(cmd, dir).out, shown.trim(), cmd);
   // Every other command it shows runs too.
   for (const b of BLOCKS.filter((x) => x.lang === 'sh' && x.code.startsWith('npx reactive-css'))) expect(exec(b.code, dir).status, b.code).toBe(0);
   // The manifest it shows is what that build wrote (it leaves out two long lists).
   const shownManifest = JSON.parse(BLOCKS.find((b) => b.label === 'reactive-css.min.manifest.json')!.code);
   exec('npx reactive-css build --features events,conditions,focus --out public/reactive-css.min.js', dir);
   const manifest = JSON.parse(readFileSync(join(dir, 'public/reactive-css.min.manifest.json'), 'utf8'));
-  expect({ ...manifest, provides: undefined, modules: undefined }).toEqual({ ...shownManifest, provides: undefined, modules: undefined });
+  expect(nearGzip(manifest.sizes.gzip, shownManifest.sizes.gzip), `manifest gzip ${manifest.sizes.gzip} vs ${shownManifest.sizes.gzip} shown`).toBe(true);
+  const sameButGzip = (m: any) => ({ ...m, provides: undefined, modules: undefined, sizes: { ...m.sizes, gzip: undefined } });
+  expect(sameButGzip(manifest)).toEqual(sameButGzip(shownManifest));
   // The Node API script it shows writes the same bytes as the CLI.
   const cli = readFileSync(join(dir, 'public/reactive-css.min.js'));
   writeFileSync(join(dir, 'build-reactive-css.mjs'), BLOCKS.find((b) => b.label === 'build-reactive-css.mjs')!.code);

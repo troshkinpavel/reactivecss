@@ -34,9 +34,9 @@ test.describe('A. focus transitions', () => {
     await page.click('.open-jump');
     await page.click('#jump1');
     await frames(page);
-    // Focus is not moved out of the popover: Chromium focused the clicked button, WebKit focuses
-    // nothing on click (<body>). Either way, never the panel heading behind the popover.
-    expect(await active(page)).toBe(browserName === 'webkit' ? 'body' : 'jump1');
+    // Focus is not moved out of the popover: Chromium focuses the clicked button, WebKit on macOS
+    // focuses nothing on click (<body>), WebKit on Linux the button. Never the panel heading behind it.
+    expect(browserName === 'webkit' ? ['body', 'jump1'] : ['jump1']).toContain(await active(page));
     expect(await page.textContent('.status .n')).toBe('1');
     // keyboard: Enter on Next focuses the next panel's heading
     await page.keyboard.press('Escape'); // closes the popover natively
@@ -285,13 +285,37 @@ test.describe('H. stylesheet lifecycle lab', () => {
     await h('labels'); // recompile: v2, with a condition on the state
     await expect.poll(() => cell('label')).toBe('labels v2, n ≥ 3');
     expect(await page.textContent('.lab .n')).toBe('22'); // the state survived a recompilation of a sheet that uses it
-    await h('decl'); // the state's own sheet swapped
-    await expect.poll(() => page.textContent('.lab .count')).toMatch(/n = \d+/);
-    const afterDecl = await page.textContent('.lab .n');
-    expect(afterDecl).toBe('0'); // swapping the sheet that DECLARES the state restarts it (README, section 5)
+    await h('decl'); // the state's own sheet swapped: the new file still has to download
+    // Wait for the swap itself (state-v2.css makes .count bold), not for text that was already there.
+    await expect.poll(() => page.$eval('.lab .count', (e) => getComputedStyle(e).fontWeight)).toBe('700');
+    await expect.poll(() => page.textContent('.lab .n')).toBe('0'); // swapping the sheet that DECLARES the state restarts it (README, section 5)
     await page.setViewportSize({ width: 500, height: 700 });
     await h('refresh'); // media change: text: re-reads on refresh()
     expect(await cell('media')).toBe('narrow (600px or less)');
+    await finish(page, problems);
+  });
+
+  test('a swapped state sheet that downloads slowly: the state keeps its value until the new sheet applies, then restarts', async ({ page }) => {
+    // Reproduces a slower runner (Linux CI): the replacement for the sheet that declares --n arrives late.
+    let release!: () => void;
+    const held = new Promise<void>((res) => { release = res; });
+    await page.route('**/state-v2.css', async (r) => { await held; await r.continue(); });
+    const problems = await visit(page, 'stylesheet-lab');
+    for (let i = 0; i < 2; i++) { await page.click('.inc'); await frames(page); }
+    const before = await page.textContent('.lab .n');
+    expect(Number(before)).toBeGreaterThan(0);
+    await page.click('[data-h="decl"]');
+    await frames(page, 5);
+    expect(await page.textContent('.lab .n')).toBe(before); // still the old sheet's state while the new one downloads
+    await page.click('.inc');
+    await frames(page);
+    expect(Number(await page.textContent('.lab .n'))).toBeGreaterThan(Number(before)); // and it still works
+    release();
+    await expect.poll(() => page.$eval('.lab .count', (e) => getComputedStyle(e).fontWeight)).toBe('700');
+    await expect.poll(() => page.textContent('.lab .n')).toBe('0'); // the new declaring sheet restarts it
+    await page.click('.inc');
+    await frames(page);
+    expect(Number(await page.textContent('.lab .n'))).toBeGreaterThan(0); // the restarted state is live
     await finish(page, problems);
   });
 });

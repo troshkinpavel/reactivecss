@@ -2,6 +2,7 @@
 // every API example route, DOM text, attributes, prevent(), focus:, reset, source, breadcrumbs.
 import { readdirSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
+import { openSearch } from './search';
 
 // 0.9: the site's own API examples plus the two library ones the catalog reuses (src/lib/content/catalog.ts).
 const dirs = (p: string) => readdirSync(new URL(p, import.meta.url), { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name);
@@ -183,8 +184,7 @@ test('breadcrumbs: no repeated labels, no self links, Advanced under Examples', 
 
 test('search: one result per example, no generated anchors', async ({ page }) => {
   await page.goto('/');
-  await page.keyboard.press('ControlOrMeta+k');
-  const input = page.getByRole('combobox', { name: 'Search' });
+  const input = await openSearch(page);
   for (const q of ['attribute sync', 'dropdown menu', 'counter']) {
     await input.fill(q);
     await expect.poll(() => page.getByRole('option').count()).toBeGreaterThan(0);

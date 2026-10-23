@@ -2,6 +2,7 @@
 // the docs sidebar, from related pages and examples, and through search.
 import { expect, test } from '@playwright/test';
 import api from '../../src/content/api/entries.json' with { type: 'json' };
+import { openSearch } from './search';
 
 // 0.9: the 0.8 declarations are kept at their URLs but listed only on the migration page.
 const shipped = api.filter((e) => !('removal' in e) && e.category !== 'Legacy');
@@ -36,8 +37,7 @@ test('prevent() and stop() are reachable from Events, :on(), outside() and the e
 
 test('search finds the features by name', async ({ page }) => {
   await page.goto('/docs/introduction/');
-  await page.keyboard.press('ControlOrMeta+k');
-  const input = page.getByRole('combobox', { name: 'Search' });
+  const input = await openSearch(page);
   for (const [q, href] of [['prevent', '/docs/reference/prevent/'], ['prevent()', '/docs/reference/prevent/'], ['focus', '/docs/reference/focus-declaration/'], ['aria-disabled', '/docs/reference/attr-property/'], ['stop()', '/docs/reference/prevent/'], ['attr', '/docs/reference/attr'], ['custom bundle', '/docs/custom-bundles/']] as const) {
     await input.fill(q);
     await expect.poll(() => page.getByRole('option').evaluateAll((os) => os.slice(0, 6).map((o) => o.getAttribute('href') ?? '')), { message: `${q} → ${href}` })

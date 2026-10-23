@@ -168,9 +168,9 @@ The package also exports `@reactivecss/core/auto` (the self-starting bundle), `@
 
 | File | Minified | gzip |
 |---|---:|---:|
-| `reactive-css.min.js` | 149,039 B | 49,253 B |
-| `reactive-css.compact.min.js` (same runtime, shorter `describe()` registry) | 128,495 B | 42,516 B |
-| `reactive-css.js` (development build, full diagnostic messages) | 266,168 B | 69,461 B |
+| `reactive-css.min.js` | 149,139 B | 49,281 B |
+| `reactive-css.compact.min.js` (same runtime, shorter `describe()` registry) | 128,595 B | 42,545 B |
+| `reactive-css.js` (development build, full diagnostic messages) | 266,288 B | 69,484 B |
 
 **Custom bundles** contain only the features your stylesheets use. The CLI builds them, with `esbuild`:
 
@@ -178,7 +178,7 @@ The package also exports `@reactivecss/core/auto` (the self-starting bundle), `@
 node tools/reactive-css.mjs analyze public/ --build public/reactive-css.min.js
 ```
 
-After publication, the same command is `npx reactive-css`. Details: [Installation](site/src/content/docs/installation.mdx) and [Custom bundles](docs/bundle-builder-0.8.md).
+After publication, with `@reactivecss/core` and `esbuild` installed in your project, the same command is `npx reactive-css`. Without a local install, name the package: `npx -p @reactivecss/core -p esbuild reactive-css …` (the unscoped npm package `reactive-css` is a different project). Details: [Installation](site/src/content/docs/installation.mdx) and [Custom bundles](docs/bundle-builder-0.8.md).
 
 <a name="experiments"></a>
 

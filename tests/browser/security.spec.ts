@@ -13,6 +13,22 @@ test('bind: never exposes password, one-time-code or payment fields', async ({ p
   expect((await diagnostics(page)).filter((d) => /bind: is refused/.test(d))).toHaveLength(3);
 });
 
+test('a sensitive autocomplete token is read from the attribute, not the property (as Firefox reports it)', async ({ page }) => {
+  // Firefox returns "" from .autocomplete for tokens it does not know, such as one-time-code. Emulate that
+  // here, so every engine checks that bind:, bind(value) and attr() still refuse the field.
+  await open(page, {
+    head: `<style>.f { --s: state(""); --a: state(attr(data-x, "none")) } .f input.old { bind: --s } .f b::before { content: var(--s) }
+      .f i { display: none } .f input.new { --v: state("", bind(value)) } .f input.new:when(--v != "") + i { display: block }</style>`,
+    body: `<div class="f" data-x="ok"><input autocomplete="one-time-code" class="old" id="a"><input autocomplete="one-time-code" class="new" id="b"><i>seen</i><b></b></div>
+      <script>for (const id of ['a', 'b']) Object.defineProperty(document.getElementById(id), 'autocomplete', { get: () => '' });</script>`,
+  });
+  for (const id of ['#a', '#b']) await page.fill(id, 'secret');
+  await frames(page);
+  expect(await page.$eval('.f b', (e) => getComputedStyle(e, '::before').content)).toBe('""');
+  expect(await page.$eval('.f i', (e) => getComputedStyle(e).display)).toBe('none');
+  expect((await diagnostics(page)).filter((d) => /refused/.test(d)).length).toBeGreaterThanOrEqual(2);
+});
+
 test('bound text is an inert CSS string, whatever the user types', async ({ page }) => {
   await open(page, {
     head: `<style>.f { --s: state("") } .f input { bind: --s } .f b::before { content: var(--s) } .victim { display: block; width: 5px }</style>`,

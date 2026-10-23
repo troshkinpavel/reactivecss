@@ -3,6 +3,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
+import { openSearch } from './search';
 
 const PAGES = ['/', '/docs/getting-started/', '/docs/reference/', '/docs/reference/state/', '/docs/simplify-css/', '/docs/migration/', '/docs/reference/on-rule/', '/examples/control-center/', '/playground/', '/design-system/', '/vision/', '/docs/performance/', '/examples/score-history/', '/bundle-builder/', '/docs/custom-bundles/', '/docs/installation/', '/examples/', '/examples/counter/', '/examples/tabs/', '/examples/context-menu/', '/examples/dropdown/', '/experiments/', '/docs/mcp/'];
 
@@ -61,8 +62,7 @@ test('removed features say so and point to the replacement', async ({ page }) =>
 
 test('search: ⌘K opens it, results come from the index, Enter navigates, Escape closes', async ({ page }) => {
   await page.goto('/docs/introduction/');
-  await page.keyboard.press('ControlOrMeta+k');
-  const input = page.getByRole('combobox', { name: 'Search' });
+  const input = await openSearch(page);
   await expect(input).toBeFocused();
   await expect(page.getByRole('option')).toHaveCount(6);
   await input.fill('nth-var');
@@ -149,8 +149,7 @@ test('accessibility: no serious or critical axe violations', async ({ page }) =>
 
 test('search indexes the 0.5.1–0.7.0 reference, the Vision page, performance, library demos and the 0.8.0 bundle pages', async ({ page }) => {
   await page.goto('/');
-  await page.keyboard.press('ControlOrMeta+k');
-  const input = page.getByRole('combobox', { name: 'Search' });
+  const input = await openSearch(page);
   for (const [q, href] of [['prevent', '/docs/reference/prevent/'], ['focus declaration', '/docs/reference/focus-declaration/'], ['animationend', '/docs/reference/on-value/'], ['evolving', '/vision/'], ['latency', '/docs/performance/'], ['notification center', '/examples/notification-center/'], ['bundle builder', '/bundle-builder/'], ['analyzer', '/docs/custom-bundles/'], ['jsDelivr', '/docs/installation/']] as const) {
     await input.fill(q);
     // Results arrive asynchronously; poll until one of the first five points at the page.

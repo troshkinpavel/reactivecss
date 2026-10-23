@@ -84,7 +84,7 @@ try {
       ...(built ? [`Built ${built.outfile}${a.complete ? '' : ' (the full runtime: the analysis is incomplete, so this is not a minimal selection)'}`, report(built.manifest)] : []),
     ].join('\n'));
   } else {
-    console.log('Usage: reactive-css <features|resolve|build|analyze> … (see docs/bundle-builder-0.8.md)');
+    console.log('Usage: reactive-css <features|resolve|build|analyze|explain> … (see docs/bundle-builder-0.8.md)');
     process.exit(cmd ? 1 : 0);
   }
 } catch (e) {

@@ -85,7 +85,7 @@ All tools are read-only (`readOnlyHint`), return JSON in `structuredContent` (an
 
 ### Diagnostic codes
 
-- `RCSS-<area><nnn>`: the library's own diagnostic codes (the same codes as production bundles; `npx reactive-css explain` decodes them). `causes` lists nested codes.
+- `RCSS-<area><nnn>`: the library's own diagnostic codes (the same codes as production bundles; `npx -p @reactivecss/core reactive-css explain` decodes them). `causes` lists nested codes.
 - `MCP-*`: checks this server adds on top of the compiler's output:
 
 | Code | Severity | Meaning |

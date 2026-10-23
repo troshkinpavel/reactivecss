@@ -79,4 +79,4 @@ If the Reactive CSS MCP server (`@reactivecss/mcp`) is configured, use it instea
 - `validate_css` on every stylesheet you write or change; fix every error and warning;
 - `analyze_features` and `suggest_bundle` to pick a custom bundle; `migrate_css` for 0.8 syntax.
 
-Without it: `npx reactive-css analyze <files>` lists the features a stylesheet uses and its legacy declarations.
+Without it: `npx -p @reactivecss/core -p esbuild reactive-css analyze <files>` lists the features a stylesheet uses and its legacy declarations.

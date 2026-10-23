@@ -3,6 +3,7 @@
 // it shows are run with the CLI in bundle-cli.spec.ts.
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
+import { openSearch } from './search';
 
 const data = JSON.parse(readFileSync(new URL('../../src/generated/bundles.json', import.meta.url), 'utf8'));
 const nf = new Intl.NumberFormat('en-US');
@@ -91,8 +92,7 @@ test('the analyzer’s limits and the diagnostics are stated', async ({ page }) 
 
 test('search finds the guide', async ({ page }) => {
   await page.goto('/');
-  await page.keyboard.press('ControlOrMeta+k');
-  const input = page.getByRole('combobox', { name: 'Search' });
+  const input = await openSearch(page);
   for (const q of ['custom bundles', 'modular runtime', 'css analyzer', 'feature dependencies', 'cli build']) {
     await input.fill(q);
     await expect.poll(() => page.getByRole('option').evaluateAll((os) => os.slice(0, 5).map((o) => o.getAttribute('href') ?? '')), { message: q })

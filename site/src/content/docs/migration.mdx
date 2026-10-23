@@ -176,7 +176,7 @@ Rules with declarations survive all of them. For stylesheets with Reactive CSS, 
 **Find the 0.8 syntax.** `reactive-css analyze` with `--json` lists the legacy declarations of each file, with their 0.9 form:
 
 ```sh terminal
-npx reactive-css analyze --json styles/
+npx -p @reactivecss/core -p esbuild reactive-css analyze --json styles/
 ```
 
 ```json output (excerpt)
@@ -192,7 +192,7 @@ npx reactive-css analyze --json styles/
 **Read production diagnostics.** The minified bundles report problems as stable codes with their values, for example `RCSS-P001⟦:on()⟧⟦events⟧⟦events⟧`. Decode a message offline:
 
 ```sh terminal
-npx reactive-css explain "RCSS-P001⟦:on()⟧⟦events⟧⟦events⟧"
+npx -p @reactivecss/core reactive-css explain "RCSS-P001⟦:on()⟧⟦events⟧⟦events⟧"
 ```
 
 ```txt output

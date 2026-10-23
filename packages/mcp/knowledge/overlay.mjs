@@ -396,7 +396,7 @@ export const COMPATIBILITY = {
   csp: 'Works under a strict Content-Security-Policy (no eval, no inline scripts needed).',
   stylesheets: ['Same-origin linked and inline stylesheets are processed.', 'Cross-origin sheets with CORS: states work, event and focus rules are dropped as untrusted.', '@import-ed sheets are not processed.', 'Shadow-root stylesheets are not processed.'],
   legacy: '0.8 syntax (on:, text:, attr:, bind:) keeps working in 0.9. The one possible break: custom properties named --attr-<allowlisted> now write attributes.',
-  productionDiagnostics: 'Minified bundles report diagnostics as codes such as RCSS-P012⟦…⟧; decode them with npx reactive-css explain "<message>" or use reactive-css.js for full messages.',
+  productionDiagnostics: 'Minified bundles report diagnostics as codes such as RCSS-P012⟦…⟧; decode them with npx -p @reactivecss/core reactive-css explain "<message>" or use reactive-css.js for full messages.',
 };
 
 /** Topics of the maintained examples (site/src/catalog), for get_example. */

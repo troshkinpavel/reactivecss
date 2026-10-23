@@ -365,6 +365,28 @@ test.describe('drag', () => {
     expect(await prop(page, '.card', '--x')).toBe('75px');
   });
 
+  test('a late lostpointercapture from the previous release does not cancel the next drag (WebKit on Linux)', async ({ page }) => {
+    await fixture(page, 'drag');
+    await page.evaluate(() => document.querySelector('.card')!.addEventListener('pointerdown', (e) => ((window as any).pid = (e as PointerEvent).pointerId)));
+    const b = (await page.locator('.card').boundingBox())!;
+    const x = b.x + b.width / 2, y = b.y + b.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + 10, y + 4, { steps: 3 });
+    // The card still holds the capture, so this event belongs to an earlier gesture.
+    expect(await page.evaluate(() => {
+      const c = document.querySelector('.card')!, id = (window as any).pid;
+      const held = c.hasPointerCapture(id);
+      c.dispatchEvent(new PointerEvent('lostpointercapture', { pointerId: id, bubbles: true }));
+      return held;
+    })).toBe(true);
+    await page.mouse.move(x + 25, y - 10, { steps: 3 });
+    await page.mouse.up();
+    await frames(page);
+    expect([await prop(page, '.card', '--x'), await prop(page, '.card', '--y')]).toEqual(['25px', '-10px']);
+    expect(await prop(page, '.card', '--dragging')).toBe('0');
+  });
+
   test('the dragging state is on during the drag only; below the threshold nothing happens', async ({ page }) => {
     await fixture(page, 'drag');
     const b = (await page.locator('.card').boundingBox())!;

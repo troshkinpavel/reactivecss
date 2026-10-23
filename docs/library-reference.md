@@ -74,7 +74,7 @@ reactive-css build --features events,conditions,focus --out public/reactive-css.
 
 - **Features:** `core` (always), `events`, `gestures` (0.9), `persist` (0.9), `conditions`, `nth-var`, `history`, `forms`, `text`, `attributes`, `focus`, `blur` (0.9), `values`, `dynamic`, `geometry`.
 - **Requirements** are added automatically (`focus` and `gestures` need `events`).
-- **Sizes (0.9.0):** about 76 KB minified for `basic` (state, `:on()` and `on:`), against 148 KB (49.9 KB gzip) for the full bundle (0.8.1: 52 KB and 115 KB). Production bundles report diagnostics as codes; decode them with `npx reactive-css explain`. Details: [docs/release-0.9.0-hardening.md](release-0.9.0-hardening.md).
+- **Sizes (0.9.0):** about 76 KB minified for `basic` (state, `:on()` and `on:`), against 148 KB (49.9 KB gzip) for the full bundle (0.8.1: 52 KB and 115 KB). Production bundles report diagnostics as codes; decode them with `npx -p @reactivecss/core reactive-css explain`. Details: [docs/release-0.9.0-hardening.md](release-0.9.0-hardening.md).
 - **Missing features:** a feature left out is reported in `ReactiveCSS.diagnostics` with the feature it needs, never silently ignored.
 - **Fallback:** the analyzer recommends the full runtime when it cannot see every stylesheet.
 

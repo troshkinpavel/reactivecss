@@ -99,7 +99,8 @@ export const readsAttributes = (e: Expr): boolean =>
 const SENSITIVE = /^(current-password|new-password|one-time-code|cc-|webauthn)/i;
 export function sensitive(el: Element) {
   return (el.tagName === 'INPUT' && (el as HTMLInputElement).type === 'password')
-    || (el as HTMLInputElement).autocomplete?.split(/\s+/).some((t) => SENSITIVE.test(t));
+    // The attribute, not the IDL property: Firefox's .autocomplete is "" for tokens it does not know (one-time-code).
+    || el.getAttribute('autocomplete')?.split(/\s+/).some((t) => SENSITIVE.test(t));
 }
 
 function attribute(e: Extract<Expr, { k: 'attr' }>, el: Element): Typed {

@@ -18,7 +18,7 @@ const searchButton = (wide: boolean) => (
   <button
     type="button"
     data-search-open=""
-    className={`flex h-[34px] items-center gap-6 rounded-block border border-line bg-paper pr-1.5 pl-3 text-sm text-mute max-[899px]:h-10 ${wide ? 'w-60 max-[899px]:w-auto' : ''}`}
+    className={`flex h-[34px] items-center gap-6 rounded-block border border-line bg-paper pr-1.5 pl-3 text-sm text-mute max-[899px]:h-10 max-[359px]:pl-2 ${wide ? 'w-60 max-[899px]:w-auto' : ''}`}
   >
     <span className="flex-1 text-left">Search<span className="visually-hidden"> documentation</span>{!wide && ' docs'}</span>
     <span className="max-[899px]:hidden" aria-hidden="true"><Kbd>⌘K</Kbd></span>
@@ -43,7 +43,7 @@ export function SiteHeader({ variant = 'app', context, contextHref, links, menuT
   );
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-[oklch(0.985_0.004_85/0.96)] backdrop-blur-[8px]">
-      <div className={`flex h-(--height-header) items-center ${home ? 'mx-auto max-w-(--container-marketing) gap-6 px-(--gutter)' : 'gap-[18px] px-(--gutter-app) max-[419px]:gap-3'}`}>
+      <div className={`flex h-(--height-header) items-center ${home ? 'mx-auto max-w-(--container-marketing) gap-6 px-(--gutter)' : 'gap-[18px] px-(--gutter-app) max-[419px]:gap-3 max-[359px]:gap-2'}`}>
         {!home && menuButton}
         <Logo />
         {home ? <Tag className="max-[419px]:hidden">experimental</Tag> : context && (contextHref

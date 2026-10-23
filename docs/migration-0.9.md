@@ -78,7 +78,7 @@ The design and the exact semantics are in [rfc-v0.9.0-language.md](rfc-v0.9.0-la
 
 ## Production builds and tools
 
-- **Diagnostics in production bundles are codes:** `RCSS-P012⟦…⟧`. Decode them offline with `npx reactive-css explain "<message>"`, or load `reactive-css.js` for full text.
+- **Diagnostics in production bundles are codes:** `RCSS-P012⟦…⟧`. Decode them offline with `npx -p @reactivecss/core reactive-css explain "<message>"`, or load `reactive-css.js` for full text.
 - **Do not remove empty rules** from stylesheets with Reactive CSS. `a:on(click, prevent()) {}` (an event rule with only modifiers) is empty on purpose. esbuild (`minify`), csso and lightningcss delete such rules. Use whitespace-only minification for these sheets.
 - **Native `random()`:** the current draft writes the step as a plain third value, `random(0px, 100px, 10px)`. Browsers that support it handle it natively; others get the Reactive CSS polyfill. `by 10px` keeps working.
 

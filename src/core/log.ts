@@ -36,7 +36,7 @@ export function warn(message: string): void {
   // Production build: one summary line instead of one line per problem.
   else if (!summarized) {
     summarized = true;
-    setTimeout(() => console.warn(`[reactive-css] ${diagnostics.length} issue(s). See ReactiveCSS.diagnostics: codes such as RCSS-P001 are explained by \`npx reactive-css explain\` (dist/diagnostics.json), or load reactive-css.js for full messages.`));
+    setTimeout(() => console.warn(`[reactive-css] ${diagnostics.length} issue(s). See ReactiveCSS.diagnostics: codes such as RCSS-P001 are explained by \`npx -p @reactivecss/core reactive-css explain\` (dist/diagnostics.json), or load reactive-css.js for full messages.`));
   }
 }
 

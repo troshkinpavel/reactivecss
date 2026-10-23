@@ -122,7 +122,7 @@ test.describe('text: in a section hidden by CSS (wizard)', () => {
 
 test.describe('attr: that depends on :has(:invalid) (wizard)', () => {
   test('engine: :has(:invalid) applies after a required <select> is enabled', async ({ page, browserName }) => {
-    test.fail(browserName === 'webkit', 'WebKit bug (Playwright WebKit 2370): removing disabled from a required, empty <select> does not invalidate :has(:invalid), although matches() is true. No Reactive CSS on this page.');
+    test.fail(browserName === 'webkit' && process.platform === 'darwin', 'macOS WebKit bug (Playwright WebKit 2370; fixed in the Linux build): removing disabled from a required, empty <select> does not invalidate :has(:invalid), although matches() is true. No Reactive CSS on this page.');
     await page.setContent(`<style>.f .b { color: rgb(0, 128, 0) } .f:has(:invalid) .b { color: rgb(255, 0, 0) }</style>
       <form class="f"><select class="t" required disabled><option value="">-</option><option>x</option></select><button type="button" class="b">Go</button></form>`);
     await page.evaluate(() => document.querySelector('.t')!.removeAttribute('disabled'));

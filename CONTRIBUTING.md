@@ -9,7 +9,7 @@ Open an issue with:
 - the smallest HTML and CSS that shows the problem;
 - what you expected, and what happened;
 - the browser and its version;
-- the output of `ReactiveCSS.diagnostics` in the console. Production bundles report codes such as `RCSS-P001⟦…⟧`: decode them with `npx reactive-css explain "<code>"`, or use the development build `reactive-css.js`.
+- the output of `ReactiveCSS.diagnostics` in the console. Production bundles report codes such as `RCSS-P001⟦…⟧`: decode them with `npx -p @reactivecss/core reactive-css explain "<code>"`, or use the development build `reactive-css.js`.
 
 Report security problems privately, as described in [SECURITY.md](SECURITY.md), not in a public issue.
 

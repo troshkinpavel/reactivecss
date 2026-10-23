@@ -19,7 +19,7 @@ benchmarks/audit/results/**/*.log
 
 # Website build output and caches (site/.gitignore covers the same paths for the site on its own)
 site/dist/
-site/.astro/
+**/.astro/
 site/storybook-static/
 site/test-results/
 site/playwright-report/
@@ -36,6 +36,8 @@ site/playwright-report/
 /site/playwright.admin.config.ts
 /site/docs/admin-control-center.md
 /site/docs/admin-release-workflow-validation.md
+# Release operator notes: npm account details, kept local.
+/docs/release-0.9.0-npm.md
 
 # Secrets and local configuration
 .env

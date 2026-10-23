@@ -29,7 +29,7 @@ order: 41
 - **Drag** is pointer gestures only, not HTML drag and drop. On touch screens the element needs `touch-action: none`, or the browser scrolls instead. Moving the element to another parent during a drag cancels the gesture. A drag has no keyboard path by itself: add key rules or a native control.
 - **`persist()`** falls back to an ordinary, non-persisted state when storage is unavailable (private mode, sandboxed iframes) or full, with one note. It never stores password, one-time-code or payment fields.
 - **`:changed()`** stays matched by an infinite animation until the next change.
-- **Production diagnostics** are codes such as `RCSS-P001⟦…⟧`. Decode them with `npx reactive-css explain` or use the development bundle.
+- **Production diagnostics** are codes such as `RCSS-P001⟦…⟧`. Decode them with `npx -p @reactivecss/core reactive-css explain` or use the development bundle.
 
 ## Experimental functions
 - **`element()`** measures the border box and lags one frame behind a resize. A long monotonic resize driven by something else pauses updates for two frames every half second while the loop guard checks it.

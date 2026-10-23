@@ -30,7 +30,7 @@ That is all: the script processes the document by itself once it runs.
 ### Development build and diagnostics
 - **`reactive-css.js`** is the same runtime, not minified. It logs a console warning with the full text of each problem.
 - **The minified bundles** (full, compact and custom) log one summary line instead, and report each problem as a stable code with its values, such as `RCSS-P001⟦:on()⟧⟦events⟧⟦events⟧`. `ReactiveCSS.diagnostics` lists every one.
-- **Decode a code offline** with `npx reactive-css explain "<message>"`, which needs no esbuild, or switch to `reactive-css.js` while you debug. The codes and their texts are in `dist/diagnostics.json`.
+- **Decode a code offline** with `npx -p @reactivecss/core reactive-css explain "<message>"`, which needs no esbuild, or switch to `reactive-css.js` while you debug. The codes and their texts are in `dist/diagnostics.json`.
 
 ## npm
 npm is the package's distribution channel once it is published. Until then, install it from a local pack of the library. The package as it is prepared:

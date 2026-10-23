@@ -27,7 +27,7 @@ Or load `dist/reactive-css.min.js` with `<script defer>`. npm CDNs (jsDelivr, un
 - **Drag gestures:** `:on(drag(start | move | end | cancel))`, where `event(x)` and `event(y)` continue from the previous position.
 - **State modifiers:** `persist("key")` and `bind(value | checked)`.
 - **DOM integration:** `content: var(--x)` as element text, `--attr-*` for an allowlist of attributes, `focus: when(…)`, and the `:blur` selector.
-- **Production diagnostic codes** (`RCSS-…`), decoded offline with `npx reactive-css explain`.
+- **Production diagnostic codes** (`RCSS-…`), decoded offline with `npx -p @reactivecss/core reactive-css explain`.
 - **Custom bundles:** the `reactive-css` CLI and `@reactivecss/core/bundle` build bundles with only the features a site uses.
 - The 0.8 declarations (`on:`, `text:`, `attr:`, `bind:`) keep working. See `docs/migration-0.9.md`.
 
@@ -37,9 +37,9 @@ Full list: `CHANGELOG.md`.
 
 | File | Minified | gzip (level 9) |
 |---|---:|---:|
-| `reactive-css.min.js` (full) | 149,039 B | 49,253 B |
-| `reactive-css.compact.min.js` (same runtime, shorter registry) | 128,495 B | 42,516 B |
-| `reactive-css.js` (development) | 266,168 B | 69,461 B |
+| `reactive-css.min.js` (full) | 149,139 B | 49,281 B |
+| `reactive-css.compact.min.js` (same runtime, shorter registry) | 128,595 B | 42,545 B |
+| `reactive-css.js` (development) | 266,288 B | 69,484 B |
 
 ## Tested and not tested
 

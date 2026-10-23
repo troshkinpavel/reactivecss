@@ -114,6 +114,8 @@ function onUp(e: PointerEvent) {
 function onCancel(e: PointerEvent) {
   const g = gestures.get(e.pointerId);
   if (!g || (e.type === 'lostpointercapture' && e.target !== g.el)) return;
+  // A late lostpointercapture from the previous gesture's release (WebKit on Linux) is not a loss of this one.
+  if (e.type === 'lostpointercapture' && g.el.hasPointerCapture?.(g.id)) return;
   end(g);
   if (!g.started || gone(g)) return;
   run(g, 'cancel', e);

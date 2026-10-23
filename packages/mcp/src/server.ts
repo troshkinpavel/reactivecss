@@ -133,7 +133,7 @@ export function createServer(): McpServer {
       recommendation: full
         ? 'Every feature is needed: use the prebuilt full bundle (dist/reactive-css.min.js) or the compact one (dist/reactive-css.compact.min.js, same runtime, shorter describe() registry).'
         : `A custom bundle with ${r.features.join(', ')}.`,
-      build: full ? undefined : `npx reactive-css build --features ${r.features.filter((f) => f !== 'core').join(',') || 'core'} --out public/reactive-css.min.js`,
+      build: full ? undefined : `npx -p @reactivecss/core -p esbuild reactive-css build --features ${r.features.filter((f) => f !== 'core').join(',') || 'core'} --out public/reactive-css.min.js`,
       sizes: measured ? { ...measured.sizes, measuredAs: measured.label, method: k.sizes.method } : null,
       sizesNote: measured ? `Measured when this server was built, with Reactive CSS ${k.sizes.measuredWith}.` : 'This exact feature set was not measured: build it to know its size (the build manifest reports it). No estimate is given.',
       reference: { prebuilt, note: 'Prebuilt bundles measured when this server was built.' },

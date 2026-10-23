@@ -13,7 +13,7 @@ Reactive CSS adds state, event rules and DOM bindings to plain CSS. One script r
 2. **Declare state** on the element that owns it, or on a container shared by everything that reads or changes it.
 3. **Change it** in `:on()` rules that contain only mutations; **show it** with `:when()`, `var()`, `when()`, `content` and `--attr-*` in ordinary rules.
 4. **Validate.** With the MCP server, call `validate_css` and fix every error and warning; call `get_api_reference` or `get_example` before using syntax you are unsure of. Without it, follow the rules below exactly.
-5. **Bundle.** `analyze_features` / `suggest_bundle` (or `npx reactive-css analyze`) for the smallest bundle.
+5. **Bundle.** `analyze_features` / `suggest_bundle` (or `npx -p @reactivecss/core -p esbuild reactive-css analyze`) for the smallest bundle.
 6. **Migrate** 0.8 code (`on:`, `text:`, `attr:`, `bind:` on the control itself) with `migrate_css`, then review its manual items.
 
 ## Syntax
