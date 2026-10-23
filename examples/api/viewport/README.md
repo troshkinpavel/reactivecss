@@ -8,7 +8,7 @@ API example 15. Open `index.html` through a local server (`npm run serve`, then 
 ## APIs used
 - `viewport(width)`, `viewport(height)`: replaced by `100dvw` and `100dvh` when the stylesheet is compiled.
 
-Native CSS prints the numbers (`round(var(--vw) / 1px)` with counters) and scales the bar.
+Native CSS prints the numbers (`round(tan(atan2(var(--vw), 1000px)) * 1000)` with counters) and scales the bar.
 
 ## How to interact
 Resize the browser window, or rotate a phone.
@@ -21,4 +21,4 @@ This *is* native CSS: write `100dvw` and `100dvh` directly if you prefer. `viewp
 
 ## Limitations
 - The value is the dynamic viewport (`dv*` units). Mobile browsers change it when their toolbars show or hide; use `svh` or `lvh` units for the stable sizes.
-- **Readout support:** the readout needs CSS typed arithmetic (`length / length`), which the tested Chromium and WebKit support.
+- **Readout:** `tan(atan2(length, 1000px)) * 1000` turns the px length into a number. The shorter `round(var(--vw) / 1px)` needs CSS typed arithmetic, which Firefox does not have.

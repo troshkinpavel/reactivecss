@@ -7,6 +7,7 @@
 /* ---- Reactive CSS -------------------------------------------------------------------------- */
 /* viewport() compiles to 100dvw / 100dvh: plain CSS that the browser keeps current. No script runs. */
 .vp { --vw: viewport(width); --vh: viewport(height); }
-.vp .fill { scale: min(1, var(--vw) / 1600px) 1; }
-.vp .w::after { counter-reset: w round(var(--vw) / 1px); content: counter(w); }   /* native: px → number */
-.vp .h::after { counter-reset: h round(var(--vh) / 1px); content: counter(h); }
+.vp .fill { scale: min(1, tan(atan2(var(--vw), 1600px))) 1; }   /* = var(--vw) / 1600px, without typed arithmetic */
+/* px → number in every engine; Firefox has no typed arithmetic (length / 1px) */
+.vp .w::after { counter-reset: w round(tan(atan2(var(--vw), 1000px)) * 1000); content: counter(w); }
+.vp .h::after { counter-reset: h round(tan(atan2(var(--vh), 1000px)) * 1000); content: counter(h); }
