@@ -15,7 +15,7 @@ concurrency:
 jobs:
   library:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,7 +30,24 @@ jobs:
         run: npx vitest run --dir tests/dist && npx tsc -p tests/dist/tsconfig.json
       - name: Package contents
         run: npm pack --dry-run
-      - run: npx playwright install --with-deps chromium webkit
+      # Browsers are cached per Playwright version (the lockfile): a cold download once took 28 minutes.
+      # Saved right after the install, so a failing test does not throw the download away.
+      - name: Restore Playwright browsers
+        id: pw-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-webkit-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium webkit
+      - if: steps.pw-cache.outputs.cache-hit != 'true'
+        name: Save Playwright browsers
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-webkit-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium webkit
       - run: npx playwright test --project=chromium --project=webkit
       - uses: actions/upload-artifact@v4
         if: failure()
@@ -88,7 +105,24 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
-      - run: npx playwright install --with-deps chromium
+      # Browsers are cached per Playwright version (the lockfile): a cold download once took 28 minutes.
+      # Saved right after the install, so a failing test does not throw the download away.
+      - name: Restore Playwright browsers
+        id: pw-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ hashFiles('site/package-lock.json') }}
+      - if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+      - if: steps.pw-cache.outputs.cache-hit != 'true'
+        name: Save Playwright browsers
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ hashFiles('site/package-lock.json') }}
+      - if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
       # Chromium only, and screenshot baselines (recorded on macOS) are not compared: the full
       # Chromium + WebKit run with screenshots is `npm run test:e2e` locally.
       - run: npx playwright test --project=chromium --ignore-snapshots
@@ -111,5 +145,22 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - run: npx playwright install --with-deps firefox
+      # Browsers are cached per Playwright version (the lockfile): a cold download once took 28 minutes.
+      # Saved right after the install, so a failing test does not throw the download away.
+      - name: Restore Playwright browsers
+        id: pw-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-firefox-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps firefox
+      - if: steps.pw-cache.outputs.cache-hit != 'true'
+        name: Save Playwright browsers
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-firefox-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps firefox
       - run: npx playwright test --project=firefox
