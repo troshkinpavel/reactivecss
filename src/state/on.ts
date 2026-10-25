@@ -187,6 +187,7 @@ export function ruleWatcher(match: string, spec: OnRuleSpec, sheet?: CSSStyleShe
   const entry: Candidate = { spec, sheet };
   return {
     selector: match,
+    followsOwned: true,
     add(el) {
       const list = candidates.get(el);
       if (list) list.push(entry); else candidates.set(el, [entry]);

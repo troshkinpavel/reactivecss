@@ -333,12 +333,62 @@ function rewrite(sheet: CSSStyleSheet, css: string): { keep: number; original: s
   let lead = 0;
   while (lead < all.length && (/^@(import|namespace|charset)\b/i.test(all[lead]) || /^@layer\b[^{]*;$/i.test(all[lead]))) lead++;
   const parts = all.slice(lead);
-  for (let i = rules.length - 1; i >= keep; i--) sheet.deleteRule(i);
-  for (const p of parts) {
-    // A rule the browser rejects here is one it would also have dropped when parsing the file.
-    try { sheet.insertRule(p, sheet.cssRules.length); } catch { /* dropped, like the original parse */ }
+  if (!(worthAligning(parts.length) && replaceRules(sheet, keep, parts, serialized(parts)))) {
+    for (let i = sheet.cssRules.length - 1; i >= keep; i--) sheet.deleteRule(i);
+    for (const p of parts) {
+      // A rule the browser rejects here is one it would also have dropped when parsing the file.
+      try { sheet.insertRule(p, sheet.cssRules.length); } catch { /* dropped, like the original parse */ }
+    }
   }
   return { keep, original };
+}
+
+/**
+ * Aligning costs a parse and a serialization per rule; what it saves is restyling the elements
+ * that unchanged rules match. With fewer elements than rules (a small page, or a sheet loaded
+ * before its content), replacing every rule is cheaper.
+ */
+const worthAligning = (rules: number) => document.getElementsByTagName('*').length >= rules;
+
+/** The browser's serialization of each rule text, or undefined when it is not one-to-one (a rule the browser rejects, no constructable sheets). */
+function serialized(parts: string[]): string[] | undefined {
+  try {
+    const c = new CSSStyleSheet();
+    c.replaceSync(parts.join('\n'));
+    return c.cssRules.length === parts.length ? [...c.cssRules].map((r) => r.cssText) : undefined;
+  } catch { return undefined; }
+}
+
+/**
+ * Makes the sheet's rules from `keep` on equal `parts`, deleting and inserting only the rules that
+ * differ: re-inserting an unchanged rule makes Chromium restyle and re-lay out everything it
+ * matches (about a quarter of the start-up time at 10,000 components). Rules are compared by the
+ * browser's serialization (`want`); inserted rules use the source text. Returns false when it
+ * cannot vouch for the result, and the caller then replaces every rule.
+ */
+function replaceRules(sheet: CSSStyleSheet, keep: number, parts: string[], want: string[] | undefined): boolean {
+  if (!want) return false;
+  const live = [...sheet.cssRules].slice(keep).map((r) => r.cssText);
+  const ahead = new Map<string, number>(); // occurrences of each wanted text from position j on
+  for (const t of want) ahead.set(t, (ahead.get(t) ?? 0) + 1);
+  let i = 0;
+  try {
+    for (let j = 0; j < want.length; j++) {
+      // Live rules not wanted anywhere ahead were removed or changed by compilation.
+      while (i < live.length && live[i] !== want[j] && !ahead.get(live[i])) { sheet.deleteRule(keep + i); live.splice(i, 1); }
+      ahead.set(want[j], ahead.get(want[j])! - 1);
+      if (live[i] === want[j]) { i++; continue; }
+      sheet.insertRule(parts[j], keep + i);
+      live.splice(i, 0, want[j]);
+      i++;
+    }
+    for (let k = live.length - 1; k >= i; k--) sheet.deleteRule(keep + k);
+  } catch { return false; }
+  // The serialization came from another sheet; check that this one ended up the same.
+  const rules = sheet.cssRules;
+  if (rules.length - keep !== want.length) return false;
+  for (let j = 0; j < want.length; j++) if (rules[keep + j].cssText !== want[j]) return false;
+  return true;
 }
 
 function drop(el: Source) {
@@ -349,9 +399,12 @@ function drop(el: Source) {
   rec.cleanups.forEach((fn) => fn());
   // Restore the original rules if the same sheet is still attached (not replaced or removed).
   if (el.isConnected && el.sheet === rec.sheet) {
-    for (let i = rec.sheet.cssRules.length - 1; i >= rec.keep; i--) rec.sheet.deleteRule(i);
-    for (const t of rec.original) {
-      try { rec.sheet.insertRule(t, rec.sheet.cssRules.length); } catch { /* serialized by the browser: valid */ }
+    // The original texts are the browser's serialization already: they are their own `want`.
+    if (!(worthAligning(rec.original.length) && replaceRules(rec.sheet, rec.keep, rec.original, rec.original))) {
+      for (let i = rec.sheet.cssRules.length - 1; i >= rec.keep; i--) rec.sheet.deleteRule(i);
+      for (const t of rec.original) {
+        try { rec.sheet.insertRule(t, rec.sheet.cssRules.length); } catch { /* serialized by the browser: valid */ }
+      }
     }
   }
   runtimeStats.sheets--;

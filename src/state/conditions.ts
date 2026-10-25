@@ -136,6 +136,8 @@ defineSelector({
         selector: compound,
         add: (el) => { matches.set(el, new WhenMatch(el, cond, attr)); },
         remove: (el) => { matches.get(el)?.dispose(); matches.delete(el); },
+        // Moved inside the document: the nearest owner of its states may be another one now.
+        move: (el) => { for (const r of matches.get(el)?.refs ?? []) r.invalidate(); },
       };
       watch(w);
       return () => unwatch(w);
