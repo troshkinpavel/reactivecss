@@ -1,6 +1,6 @@
 ---
 title: "MCP Server"
-description: "Give your AI coding agent accurate Reactive CSS 0.9.0 knowledge. The @reactivecss/mcp server provides documentation, API lookup, code validation, examples, migration guidance and bundle recommendations to any MCP-compatible client."
+description: "Give your AI coding agent accurate Reactive CSS 0.9.1 knowledge. The @reactivecss/mcp server provides documentation, API lookup, code validation, examples, migration guidance and bundle recommendations to any MCP-compatible client."
 group: Integrations
 type: Guide
 order: 39
@@ -16,7 +16,7 @@ order: 39
 <Facts>
   <Fact label="Package">`@reactivecss/mcp`</Fact>
   <Fact label="Source">[`packages/mcp/`](https://github.com/troshkinpavel/reactivecss/tree/main/packages/mcp)</Fact>
-  <Fact label="Targets">Reactive CSS 0.9.0</Fact>
+  <Fact label="Targets">Reactive CSS 0.9.1</Fact>
   <Fact label="Provides">7 tools · 8 resources · 4 prompts</Fact>
 </Facts>
 
@@ -25,7 +25,7 @@ Language models learn from whatever Reactive CSS they saw in training, which is 
 
 The MCP server gives the agent the current documentation and a validator, so it can check its own output before showing it to you.
 
-- **Current syntax.** Answers come from the 0.9.0 reference, not from training data.
+- **Current syntax.** Answers come from the 0.9.1 reference, not from training data.
 - **Checked code.** The agent can validate a stylesheet with the library's own compiler, and fix what the runtime would reject.
 - **Migration help.** Older declarations such as `on:`, `bind:` and `text:` are mapped to their 0.9.0 forms.
 - **Smaller bundles.** The agent can recommend Full, Compact or a Custom bundle from the features your CSS uses.
@@ -111,7 +111,7 @@ Each client keeps its MCP configuration in a different place, and VS Code uses a
 </Callout>
 
 ## [3] Check that it works
-Ask your agent a question only the current docs can answer, such as how to read the click position in an event rule. A connected agent should look it up and answer with `set(event(client-x))` inside a `:on(click)` rule, stored in a length state such as `state(0px)`, citing the 0.9.0 reference.
+Ask your agent a question only the current docs can answer, such as how to read the click position in an event rule. A connected agent should look it up and answer with `set(event(client-x))` inside a `:on(click)` rule, stored in a length state such as `state(0px)`, citing the 0.9.1 reference.
 
 ## Supported clients
 The server speaks MCP over stdio, the transport every client listed here supports.
@@ -158,7 +158,7 @@ An agent asked for a disclosure menu first produces older syntax. It calls `vali
 
 <Callout kind="warning" title="Validation result">
 
-Two warnings: `on:` (`MCP-legacy-on`) and `attr:` (`MCP-legacy-attr`) are 0.8 syntax. They still run in 0.9.0, but the current forms are `:on(click)` for the event and `--attr-aria-expanded` for the attribute.
+Two warnings: `on:` (`MCP-legacy-on`) and `attr:` (`MCP-legacy-attr`) are 0.8 syntax. They still run in 0.9.1, but the current forms are `:on(click)` for the event and `--attr-aria-expanded` for the attribute.
 
 </Callout>
 
@@ -183,7 +183,7 @@ No errors or warnings. `suggest_bundle` recommends a custom bundle with `core`, 
 ## Limits
 - The server describes Reactive CSS. It doesn't run your page or see your DOM.
 - Validation checks syntax and API usage, not visual results. Test in a browser.
-- Answers target 0.9.0. They also apply to 0.9.1, which changed no syntax or API. Use the server version that matches your runtime.
+- Answers target 0.9.1. They also apply to 0.9.0, which has the same syntax and API. Use the server version that matches your runtime.
 
 <NpmState pkg="mcp" published>
 

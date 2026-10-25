@@ -1,6 +1,6 @@
 {
   "name": "@reactivecss/mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Official Model Context Protocol server for Reactive CSS: API reference, examples, validation, feature analysis, bundle suggestions and 0.8 → 0.9 migration for AI coding agents. Offline, read-only, stdio.",
   "keywords": [
     "mcp",
