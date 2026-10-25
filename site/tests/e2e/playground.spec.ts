@@ -1,4 +1,4 @@
-// The Playground as a developer tool: HTML and CSS edits run for real in the 0.9.0 runtime,
+// The Playground as a developer tool: HTML and CSS edits run for real in the 0.9.1 runtime,
 // drafts survive preset switches, problems are visible, the page survives invalid input, and the
 // preview stays sandboxed.
 import { expect, test, type Page } from '@playwright/test';
@@ -17,10 +17,10 @@ test.beforeEach(async ({ page }) => {
   await expect(status(page)).toHaveText(new RegExp(RUNNING), { timeout: 10_000 });
 });
 
-test('opens on Toggle with the CSS tab; the runtime in the preview is 0.9.0', async ({ page }) => {
+test('opens on Toggle with the CSS tab; the runtime in the preview is 0.9.1', async ({ page }) => {
   await expect(preset(page, 'Toggle')).toHaveAttribute('aria-checked', 'true');
   await expect(page.getByRole('tab', { name: 'CSS' })).toHaveAttribute('aria-selected', 'true');
-  expect(await frame(page).locator('body').evaluate(() => (window as any).ReactiveCSS.version)).toBe('0.9.0');
+  expect(await frame(page).locator('body').evaluate(() => (window as any).ReactiveCSS.version)).toBe('0.9.1');
 });
 
 test('an edit restarts the preview with the new stylesheet', async ({ page }) => {

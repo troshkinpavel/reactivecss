@@ -13,7 +13,7 @@ export const BROWSER_RESULTS = '848';
  * The latest release report, for the homepage status line. tests/unit/version.test.ts fails when
  * the installed library is newer, so this is updated with every release.
  */
-export const LATEST = { version: '0.9.0', browserResults: BROWSER_RESULTS, file: 'docs/release-0.9.0-hardening.md §J' };
+export const LATEST = { version: '0.9.1', browserResults: '944', file: 'CHANGELOG.md (0.9.1, Notes)' };
 
 export const METRICS: Metric[] = [
   { value: '14.0 ms', label: 'median input-to-correct-frame latency, idle, 100 widgets; plain JavaScript 13.6 ms. Last measured for 0.7.0', source: '0.7.0 report §10 · headless Chromium 156' },
