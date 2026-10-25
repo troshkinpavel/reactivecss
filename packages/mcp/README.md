@@ -4,7 +4,7 @@ The official [Model Context Protocol](https://modelcontextprotocol.io) server fo
 
 - **npm:** [`@reactivecss/mcp`](https://www.npmjs.com/package/@reactivecss/mcp), for [`@reactivecss/core`](https://www.npmjs.com/package/@reactivecss/core) 0.9.x. Reactive CSS is experimental. Documentation links in answers point to [reactivecss.com](https://reactivecss.com).
 
-- **Supported Reactive CSS version:** 0.9.x. The npm release 0.1.0 has knowledge of 0.9.0; a build from this repository has knowledge of 0.9.1. 0.9.1 changed no syntax or API. The server version is independent: `reactivecss.supports` in `package.json` says which library versions it describes.
+- **Supported Reactive CSS version:** 0.9.x. The npm release 0.1.1 has knowledge of 0.9.1 (0.1.0 had 0.9.0). 0.9.1 changed no syntax or API. The server version is independent: `reactivecss.supports` in `package.json` says which library versions it describes.
 - **Transport:** stdio only. Read-only: no file writes, no network, no shell, no JavaScript execution.
 - **Runtime:** Node.js 22 or later. Dependencies: `@modelcontextprotocol/server` (the official TypeScript SDK, v2) and `zod`.
 
@@ -150,7 +150,7 @@ A validation request and its answer (abridged):
 
 ## Limitations
 
-- Knowledge is a snapshot of the Reactive CSS version it was built from (0.9.0 for the npm release 0.1.0). Older versions are supported by availability filtering (`version`), not by their own descriptions.
+- Knowledge is a snapshot of the Reactive CSS version it was built from (0.9.1 for the npm release 0.1.1). Older versions are supported by availability filtering (`version`), not by their own descriptions.
 - `validate_css` cannot see the DOM (see Scope). Native `random()` calls are reported as using the `values` feature, because native support is decided in the browser.
 - `migrate_css` rewrites only the cases that have a safe 0.9 form; it lists the others for manual review.
 - Sizes are given only for feature sets measured at build time (each profile and each feature alone); others are not estimated.
