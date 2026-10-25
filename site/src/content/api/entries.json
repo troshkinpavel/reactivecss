@@ -424,7 +424,7 @@
     ],
     "limits": [
       "Not a template language and not a general replacement for `textContent`: one value per element.",
-      "Firefox is not verified: how it renders `content` strings on elements has not been tested."
+      "Tested in Chromium, WebKit and Firefox engine builds (Playwright); real browser releases are not verified."
     ],
     "related": [
       "reference/attr-property",
@@ -1277,7 +1277,7 @@
       "There is no `once` modifier: guard the rule with a state, `.b:when(not --done):on(click) { --done: set(true); }`.",
       "A `click` rule with `prevent()` on a container also cancels clicks on links, buttons and form controls inside it (see the incorrect example above).",
       "Minifiers that remove empty rules (esbuild `minify` or `minifySyntax`, csso, Lightning CSS) delete modifier-only rules such as `a:on(click, prevent()) {}`. Use whitespace-only minification.",
-      "Firefox has no automated test run; see [Browser compatibility](/docs/compat/) for the manual, user-reported pass."
+      "Tested in Chromium, WebKit and Firefox engine builds (Playwright); see [Browser compatibility](/docs/compat/)."
     ],
     "related": [
       "reference/on-rule",

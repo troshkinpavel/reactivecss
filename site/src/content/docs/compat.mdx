@@ -1,28 +1,35 @@
 ---
 title: "Browser Compatibility"
-description: "What has been verified for 0.9.0 and how: automated engine tests in Chromium and WebKit, what is still manual, native-first behavior, build-tool requirements and compatibility with the 0.8 syntax."
+description: "What has been verified for 0.9.1 and how: automated engine tests in Chromium, WebKit and Firefox, an iOS Simulator smoke check, what is still manual, native-first behavior, build-tool requirements and compatibility with the 0.8 syntax."
 group: Project
 type: Project
 order: 40
 ---
 ## Verification status
-| Target | Version tested | Status for 0.9.0 |
-| --- | --- | --- |
-| Chromium | 156.0.8078.4, Playwright | All browser suites pass; 427 tests pass with the CPU throttled 4× |
-| WebKit | 27.2, Playwright build | All browser suites pass |
-| Firefox | Playwright Firefox, build 1555 | **Not run.** It fails to launch on the development machine ("Could not find profile folder"), so Firefox has no automated coverage |
-| Real Safari (macOS, iOS) | — | **Manual, pending** |
-| Touch and pen hardware | — | **Manual, pending.** Drag is tested with synthesized pointer events only |
-| Screen readers | — | **Manual, pending** |
-| CodePen | — | **Manual, pending.** A local CodePen-like harness passes; codepen.io itself was not used |
+| Target | Version tested | How | Status for 0.9.1 |
+| --- | --- | --- | --- |
+| Chromium | 156.0.8078.4, Playwright | CI (Linux) and locally (macOS) | All browser suites pass |
+| WebKit | 27.2, Playwright build | CI (Linux) and locally (macOS) | All browser suites pass |
+| Firefox | 157.0, Playwright build | CI (Linux) and Docker with CI's image | All browser suites pass (7 tests skipped, see [Verifying Firefox](#verifying-firefox)) |
+| iOS Simulator | Mobile Safari 26.4, iPhone 17 simulator | One smoke page, by hand | **Smoke check only.** The three 0.9.1 runtime changes pass; the full suite does not run there |
+| Real Safari (macOS) | — | — | **Manual, pending** |
+| Physical phones and tablets (iOS, Android) | — | — | **Not tested** |
+| Touch and pen hardware | — | — | **Not tested.** Drag is tested with synthesized pointer events only |
+| Screen readers | — | — | **Manual, pending** |
+| CodePen | — | — | **Manual, pending.** A local CodePen-like harness passes; codepen.io itself was not used |
 
-Automated figures from the library's `docs/release-0.9.0-hardening.md` (§F): 848 browser tests passed and 6 skipped across Chromium and WebKit, and 188 unit tests passed. The skipped tests need the Chromium DevTools protocol. Engines ran with Playwright 1.64.1 on one Apple M4 Max with macOS 27.0.1. The manual checks are listed in the library's `docs/manual-validation-0.9.md`.
+0.9.1 results, from the library's CHANGELOG:
+- **CI and Docker.** Every pull request and push to `main` runs the library suite in GitHub Actions, in the `mcr.microsoft.com/playwright:v1.64.1-noble` image (Playwright 1.64.1, Linux). Chromium and WebKit: 944 browser tests passed, 6 skipped (they need the Chromium DevTools protocol). Firefox: 468 passed, 7 skipped. 196 unit tests passed. The same commands were also run locally in that image with Docker.
+- **Local engines.** Chromium and WebKit, the same 944 tests, on one Apple M4 Max with macOS 27.0.1.
+- **iOS Simulator.** A smoke page that checks the 0.9.1 changes (unchanged `CSSRule` objects kept, event rules re-matched in the same task and through `bind()`, a moved `:when()` element reading its new owner) passed in Mobile Safari 26.4 on an iPhone 17 simulator. A simulator runs on the Mac's CPU; it is not a physical device.
 
-For 0.7.1, a manual pass of the 20 library examples in real Google Chrome, Safari and Firefox was user-reported, without logs or browser versions. It is not repeated for 0.9.0 and does not cover the 0.9 syntax.
+For 0.9.0, 427 tests also passed with the CPU throttled 4× in Chromium. That run was not repeated for 0.9.1. The manual checks are listed in the library's `docs/manual-validation-0.9.md`.
+
+For 0.7.1, a manual pass of the 20 library examples in real Google Chrome, Safari and Firefox was user-reported, without logs or browser versions. It is not repeated for 0.9.x and does not cover the 0.9 syntax.
 
 <Callout kind="caution" title="What “tested” means">
 
-WebKit here is Playwright's WebKit build, not a Safari release. No claim is made for Firefox, Edge, real Safari, mobile browsers or assistive technology until those checks are done.
+WebKit here is Playwright's WebKit build, and Firefox is Playwright's Firefox build on Linux; neither is a browser release. The iOS Simulator check is a smoke test, not the full suite. No claim is made for Edge, real Safari, physical phones and tablets, touch and pen hardware or assistive technology until those checks are done.
 
 </Callout>
 
@@ -60,7 +67,7 @@ Rules with declarations survive all of these tools. Use whitespace-only minifica
 Since 0.9.0, a custom property named `--attr-<attribute>` with an allowlisted suffix writes that attribute, in any trusted stylesheet. A third-party stylesheet that uses such names for its own purposes would now write attributes. Rename those properties. See [DOM Integration](/docs/binding/#--attr--attributes-from-a-value).
 
 ## 0.8 syntax
-The 0.8 declarations `on:`, `bind:`, `text:`, `attr:` and `focus:` keep working in 0.9.0. All 0.8.1 browser suites pass, and one test page runs the 0.8 and 0.9 syntax side by side, with the full bundle and with a trimmed custom bundle. Behavior differences are listed in [Migrating from 0.8](/docs/migration/#differences-to-know).
+The 0.8 declarations `on:`, `bind:`, `text:`, `attr:` and `focus:` keep working in 0.9. All 0.8.1 browser suites pass, and one test page runs the 0.8 and 0.9 syntax side by side, with the full bundle and with a trimmed custom bundle. Behavior differences are listed in [Migrating from 0.8](/docs/migration/#differences-to-know).
 
 ## Known WebKit engine limitations
 Both were reproduced in Playwright's WebKit with no Reactive CSS on the page, so they are engine bugs, not library bugs. Each has a test that will report when WebKit fixes it, and a workaround that works in both engines:
@@ -82,6 +89,7 @@ The build targets Chrome and Edge 111+, Firefox 128+ and Safari 16.4+. Event rul
 - 0.8.0: custom bundles (a bundle without features reports each missing one; the five profiles run real interfaces under a strict CSP and clean up), every example on the bundle the analyzer picks for it, and a `<link>` `href` swap race.
 - 0.8.1: the pre-beta regressions: Enter and typed keys that move focus no longer activate the new target, `:changed()` ignores unrelated animations, fast choices on bound radios and checkboxes (in one task, by arrow keys, cancelled clicks), and the `bind:` listener released by `stop()` and by removing the last bound control.
 - 0.9.0: event rules (cascade, modifiers, transactions, keyboard), event-time expressions, drag with synthesized mouse, touch and pen events, persistence including storage failures, `bind()` in `state()`, `--attr-*`, reactive `content`, focus requests and `:blur`; the native `random()` matrix; conditional at-rules, nesting and linked sheets; the CodePen-like harness; and each custom bundle under a strict CSP.
+- 0.9.1: unchanged stylesheet rules keep their `CSSRule` objects, event rules re-match their selector at dispatch (DOM changes in the same task, `bind()` and `--attr-*` attributes), a moved `:when()` element reads its new owner, and the `element()` feedback guard at the end of a long transition.
 - Five Content-Security-Policies with real headers, security regressions, and the minified bundle alone on a plain page.
 
 ## Feature detection
@@ -93,4 +101,10 @@ The build targets Chrome and Edge 111+, Firefox 128+ and Safari 16.4+. Event rul
 | `ResizeObserver` `borderBoxSize` | Used directly | Content box |
 
 ## Verifying Firefox
-Run `npm run test:firefox` in the library on a machine where Playwright's Firefox starts. Until then, Firefox is unverified for 0.9.0.
+The `library-firefox` CI job runs the full browser suite in Firefox on every pull request and push to `main`, and a Firefox failure fails the run. The 7 skipped tests are 6 Chromium-only tests (DevTools protocol) and the native-only `random()` sharing keys, because Firefox has no native `random()` and the runtime polyfills it.
+
+Playwright's Firefox does not start on macOS ("Could not find profile folder"), so run it locally in CI's image:
+
+```sh
+docker run --rm --ipc=host -e HOME=/root -v "$PWD":/w -v rcss_ff_nm:/w/node_modules -w /w mcr.microsoft.com/playwright:v1.64.1-noble sh -c "npm ci && npm run build && npx playwright test --project=firefox"
+```
