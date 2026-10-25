@@ -212,7 +212,7 @@ Experiments show what Reactive CSS can do beyond menus and counters: light, dept
 
 ## AI agents · Official MCP server
 
-[`@reactivecss/mcp`](packages/mcp/README.md) is a Model Context Protocol server. It gives coding agents current knowledge of Reactive CSS 0.9.0, so the CSS they write uses the syntax that actually runs. It works offline and read-only, over stdio.
+[`@reactivecss/mcp`](packages/mcp/README.md) is a Model Context Protocol server. It gives coding agents current knowledge of Reactive CSS 0.9, so the CSS they write uses the syntax that actually runs. It works offline and read-only, over stdio.
 
 - **API reference:** syntax, status, parameters and common mistakes for every API.
 - **Documentation search** across the reference, the examples and the migration guide.
