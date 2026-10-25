@@ -135,7 +135,7 @@ const knowledge = {
   name: '@reactivecss/mcp',
   version: JSON.parse(readFileSync(join(PKG, 'package.json'), 'utf8')).version,
   reactivecss: {
-    version: libPkg.version, package: libPkg.name, status: 'experimental, published on npm (@reactivecss/core 0.9.0)',
+    version: libPkg.version, package: libPkg.name, status: `experimental, published on npm (@reactivecss/core ${libPkg.version})`,
     homepage: libPkg.homepage, published: true,
   },
   builtAt: new Date().toISOString(),

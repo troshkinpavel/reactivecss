@@ -1,4 +1,4 @@
-// Curated agent knowledge for Reactive CSS 0.9.0, layered on the library's own data.
+// Curated agent knowledge for Reactive CSS 0.9.1, layered on the library's own data.
 //
 // The API registry (src/core/features.ts via describe()) and the feature catalog
 // (src/features/catalog.ts) are the source of truth: they come into dist/knowledge.json at build
@@ -386,11 +386,11 @@ export const NATIVE_FIRST = [
   { need: 'Drag and drop between containers, sortable lists', native: 'HTML drag and drop with JavaScript', note: ':on(drag) moves one element with the pointer; it has no drop targets.' },
 ];
 
-/** Compatibility facts for 0.9.0 (README, docs/release-0.9.0-hardening.md, docs/compatibility.md). */
+/** Compatibility facts for 0.9.1 (README, docs/compatibility.md). */
 export const COMPATIBILITY = {
   buildTarget: 'Chrome and Edge 111+, Firefox 128+, Safari 16.4+',
-  tested: 'Automated tests in Chromium 156 and WebKit 27.2 (Playwright engine builds), not Chrome or Safari releases.',
-  notVerified: ['Firefox (no automated run for 0.9.0)', 'real Safari', 'real touch and pen hardware (drag)', 'screen readers'],
+  tested: 'Automated tests in Chromium, WebKit and Firefox (Playwright engine builds; Firefox in CI), not Chrome, Safari or Firefox releases.',
+  notVerified: ['real Safari', 'real touch and pen hardware (drag)', 'screen readers'],
   nativeCss: 'Stylesheets without reactive syntax are not processed. Reactive sheets are rewritten only around the reactive parts; native :focus, :focus-visible, ::before content, calc(), :has() and if() are untouched.',
   minifiers: 'CSS minifiers that remove empty rules (esbuild minify, csso, lightningcss) delete modifier-only :on() rules such as a:on(click, prevent()) {}. Use whitespace-only minification for Reactive stylesheets.',
   csp: 'Works under a strict Content-Security-Policy (no eval, no inline scripts needed).',
