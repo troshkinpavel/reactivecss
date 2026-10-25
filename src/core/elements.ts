@@ -11,6 +11,11 @@ export interface Watcher {
   remove(el: Element): void;
   /** Element moved inside the document (removed and re-inserted in one batch). Default: ignore. */
   move?(el: Element): void;
+  /**
+   * Also re-match when an attribute Reactive CSS writes changes (bind(), --attr-*). Only for
+   * event rules: their membership writes nothing, so it cannot feed back.
+   */
+  followsOwned?: boolean;
 }
 
 interface Entry {
@@ -112,13 +117,14 @@ function handle(records: MutationRecord[], endOfBatch = true) {
   /** Subtrees moved within the document (removed and re-inserted in this batch): matches may have ended. */
   const moved = new Set<Element>();
   const changed = new Map<Element, Set<string>>(); // element -> changed attribute names
+  const ownedChanged = new Map<Element, Set<string>>(); // the same, for attributes Reactive CSS writes
   const parents = new Set<Element>();
   for (const r of records) {
     if (r.type === 'attributes') {
       const el = r.target as Element;
-      if (ownedAttributes.get(el)?.has(r.attributeName!)) continue;
-      let names = changed.get(el);
-      if (!names) changed.set(el, (names = new Set()));
+      const into = ownedAttributes.get(el)?.has(r.attributeName!) ? ownedChanged : changed;
+      let names = into.get(el);
+      if (!names) into.set(el, (names = new Set()));
       names.add(r.attributeName!);
       continue;
     }
@@ -136,10 +142,11 @@ function handle(records: MutationRecord[], endOfBatch = true) {
     }
     for (const n of r.addedNodes) if (n instanceof Element && n.isConnected) added.add(n);
   }
+  const plain = [changed], all = [changed, ownedChanged];
   for (const e of entries.values()) {
     // A moved subtree is re-matched both ways (0.9.0 hardening: it kept rules it no longer matched).
     for (const el of added) reconcile(e, el, moved.has(el));
-    for (const [el, names] of changed) {
+    for (const map of e.w.followsOwned ? all : plain) for (const [el, names] of map) {
       // Only watchers whose selector mentions a changed attribute are re-matched.
       if (!el.isConnected || ![...names].some((n) => e.deps.has(n))) continue;
       reconcile(e, el, true);
@@ -172,6 +179,16 @@ export function unwatch(w: Watcher): void {
   if (!e) return;
   entries.delete(w);
   for (const el of [...e.members]) leave(e, el);
+}
+
+/**
+ * Applies mutations not yet delivered to the observer callback, so an event dispatched in the
+ * same task as a DOM change sees the rules that match now.
+ */
+export function flushMutations(): void {
+  if (!observer) return;
+  const records = observer.takeRecords();
+  if (records.length) handle(records);
 }
 
 export function membersOf(w: Watcher): ReadonlySet<Element> {

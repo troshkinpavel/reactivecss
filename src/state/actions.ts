@@ -11,7 +11,7 @@
 import { defineAction, runtimeStats, runtimes, type ActionDef } from '../core/registry';
 import { urgently, sync, activation } from '../core/scheduler';
 import { warn, note, dev, probes } from '../core/log';
-import type { Watcher } from '../core/elements';
+import { flushMutations, type Watcher } from '../core/elements';
 import { resolveCell, warnMissing, describeElement } from './state';
 import { parseTyped, assignable, coerce, serialize, equal, type Typed } from './values';
 import { keyMatches, type KeySpec } from './keys';
@@ -103,6 +103,9 @@ function keyPath(e: Event): EventTarget[] {
 export const extensions: { dispatch?: (e: Event, path: EventTarget[]) => void } = {};
 
 function dispatch(e: Event) {
+  // Which rules apply is decided here, before any action runs: DOM changes made earlier in this
+  // task count; this event's own changes count from the next event on.
+  flushMutations();
   sync(); // an earlier action in this frame may have changed which rules apply
   const path = e.type === 'keydown' || e.type === 'keyup' ? keyPath(e) : e.composedPath();
   activation.event = e;
@@ -171,6 +174,7 @@ export function actionWatcher(match: string, id: number, certain: boolean, set: 
   const outside = [...set.keys()].some((t) => t.startsWith('outside:'));
   return {
     selector: match,
+    followsOwned: true,
     add(el) {
       const list = candidates.get(el);
       if (list) list.push(entry);
