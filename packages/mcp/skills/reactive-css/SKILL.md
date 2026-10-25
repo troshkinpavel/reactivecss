@@ -1,11 +1,11 @@
 ---
 name: reactive-css
-description: Write, review, validate and migrate Reactive CSS 0.9.0 (state(), :on() event rules, mutations, --attr-*, content, focus: when(), drag, persist()). Use when a project loads Reactive CSS or @reactivecss/core, or when the user asks for interactive UI in plain CSS without JavaScript.
+description: Write, review, validate and migrate Reactive CSS 0.9.1 (state(), :on() event rules, mutations, --attr-*, content, focus: when(), drag, persist()). Use when a project loads Reactive CSS or @reactivecss/core, or when the user asks for interactive UI in plain CSS without JavaScript.
 ---
 
-# Reactive CSS 0.9.0
+# Reactive CSS 0.9.1
 
-Reactive CSS adds state, event rules and DOM bindings to plain CSS. One script runs it; there is no JavaScript to write. Status: experimental, published on npm (@reactivecss/core 0.9.0).
+Reactive CSS adds state, event rules and DOM bindings to plain CSS. One script runs it; there is no JavaScript to write. Status: experimental, published on npm (@reactivecss/core 0.9.1).
 
 ## Workflow
 
@@ -56,7 +56,7 @@ Reactive CSS adds state, event rules and DOM bindings to plain CSS. One script r
 - `:on(drag)` is pointer dragging of one element, not HTML drag and drop. Pair it with keyboard rules.
 - `content` becomes DOM text only on elements, when it reads state, without images or `attr()`. It never replaces child elements.
 - Modifier-only rules such as `form:on(submit, prevent()) {}` are empty rules: minify Reactive stylesheets for whitespace only.
-- Legacy 0.8 syntax (`on:`, `text:`, `attr:`) still runs in 0.9.0 but is not the default. Write `:on()`, `content` and `--attr-*`. `bind: --state` stays for controls that write an ancestor's state.
+- Legacy 0.8 syntax (`on:`, `text:`, `attr:`) still runs in 0.9.1 but is not the default. Write `:on()`, `content` and `--attr-*`. `bind: --state` stays for controls that write an ancestor's state.
 
 ## Mistakes to avoid
 

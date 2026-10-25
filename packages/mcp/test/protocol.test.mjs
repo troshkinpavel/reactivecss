@@ -30,7 +30,7 @@ test('stdio session: handshake, listings, calls, errors, clean stdout and shutdo
     const read = (await s.request('resources/read', { uri: r.uri })).result;
     const text = read.contents[0].text;
     assert.ok(text.length > 100, r.uri);
-    if (r.mimeType === 'application/json') assert.equal(JSON.parse(text).reactivecssVersion ?? JSON.parse(text).reactivecss.version, '0.9.0', r.uri);
+    if (r.mimeType === 'application/json') assert.equal(JSON.parse(text).reactivecssVersion ?? JSON.parse(text).reactivecss.version, '0.9.1', r.uri);
   }
   const missing = await s.request('resources/read', { uri: 'reactivecss://nope' });
   assert.ok(missing.error, 'unknown resource → JSON-RPC error');
@@ -89,7 +89,7 @@ test('the official MCP client works over stdio', async () => {
   const search = await client.callTool({ name: 'search_docs', arguments: { query: 'persist state across reloads', limit: 3 } });
   assert.equal(search.structuredContent.results.length, 3);
   const res = await client.readResource({ uri: 'reactivecss://version' });
-  assert.equal(JSON.parse(res.contents[0].text).reactivecss.version, '0.9.0');
+  assert.equal(JSON.parse(res.contents[0].text).reactivecss.version, '0.9.1');
   await client.close();
 });
 

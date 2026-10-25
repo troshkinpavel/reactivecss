@@ -2,10 +2,29 @@
 
 All notable changes. 0.9.0 is the first version published to npm, as `@reactivecss/core`; earlier versions were local builds.
 
-## Unreleased (planned for 0.9.1)
+## 0.9.1 — Fixes and faster start-up
+
+Bug fixes and one start-up improvement. No syntax or API change; DOM updates after an event stay synchronous.
 
 ### Fixed
 - **`element()` froze at the end of a long transition.** When a size change driven by something else (a transition) ended during the feedback guard's two-frame check, the guard took it for a loop: the value froze a few px short of the final size, with a wrong "feeds back into the element's own size" warning. It happened mostly on slow frames (WebKit under load). Before freezing, the guard now writes the current size once more: a real loop changes the size again and is frozen as before; a finished change does not, and updates resume.
+- **Event rules now match the selector at the moment of the event.** `:on()` and `on:` rules apply exactly when their selector matches as the event is dispatched, like the CSS cascade:
+  - attributes that Reactive CSS writes (`bind()`, `--attr-*`) count, so a rule such as `.w[data-open="true"] .x:on(click)` starts and stops applying with the bound attribute;
+  - DOM changes made earlier in the same task count (a class added, an element inserted or moved, then `click()`);
+  - the event's own changes count from the next event on.
+
+  Before, such a rule could keep running after its condition went away, or miss an element that had just started to match. 11 cases are covered by `tests/browser/event-rematch.spec.ts`.
+- **A `:when()` element moved to another owner reads the new owner.** It stayed bound to the old owner's state until that state was disposed, so it could follow the wrong owner. It now reads the nearest owner again as soon as it moves.
+
+### Performance
+- **Start-up on large pages: about 26% faster in Chromium** (10,000 components; WebKit and Firefox unchanged). Compiling a stylesheet re-inserted every rule, and Chromium then restyled everything the unchanged rules match. Only the rules that compilation changed are replaced now, when the page has at least as many elements as the sheet has rules.
+
+### Changed
+- **Unchanged stylesheet rules keep their `CSSRule` objects.** A script that holds a `CSSRule` across `start()` now keeps a live rule; before, it was detached.
+
+### Notes
+- **Tests:** 44 new browser tests. Chromium and WebKit: 944 passed, 6 skipped. Firefox (CI's Playwright image): 468 passed, 7 skipped.
+- **Sizes:** `reactive-css.min.js` 149,286 → 150,368 B (gzip 49,322 → 49,736 B).
 
 ## 0.9.0 — The 0.9 language
 

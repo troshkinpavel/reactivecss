@@ -18,6 +18,34 @@ metadata) lives in `config/*.json` and is validated at build time (`src/lib/conf
 The maintainers edit it with a local admin tool that is not part of the repository; editing the
 JSON by hand works the same.
 
+### Publication state
+
+`config/distribution.json` is the only record of what is on npm. A version counts as published
+only when it is in `core.npmVersions` (or `mcp.npmVersions`). The CHANGELOG, `package.json` and
+`config/releases.json` do not change this.
+
+- Unpublished current version: the docs show "Not on npm yet" and install from a local `npm pack`
+  (`<NpmState published={false}>`).
+- Published current version: the docs show npm install commands and CDN URLs
+  (`<NpmState published>`).
+
+The tests read `distribution.json` and check the state that it records, so CI passes before and
+after publication. To test the other state locally, add the version to `npmVersions`, run
+`npm run build` and the e2e tests, then revert the file.
+
+Release workflow: add the version to `npmVersions` only after npm shows it. An automated step
+must do these steps after `npm publish`:
+
+1. Poll `npm view @reactivecss/core@<version> version dist.shasum` until it returns the version.
+   Retry for a few minutes, because the registry can be slow.
+2. Compare `dist.shasum` with the shasum from `npm pack` for the published tarball. If they are
+   different, stop and do not change any file.
+3. Append `<version>` to `core.npmVersions`. Then open a pull request with only that change. The
+   site CI on that pull request is the check that the published state renders.
+
+Do not add a version before step 1 succeeds. A failed or partial publish must leave the site
+in the "Not on npm yet" state.
+
 The site reads the library's built bundle and `describe()` registry from `../dist`. Build the
 library first (`npm run build` in the repository root).
 

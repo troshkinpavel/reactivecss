@@ -15,9 +15,13 @@ test('docs shell: breadcrumb, header, release status and table of contents', asy
   await expect(page.getByRole('list', { name: 'About this feature' })).toContainText("Introduced in v0.8.0");
   const h2 = await page.locator('article h2').allTextContents();
   expect(h2.map((t) => t.trim())).toEqual(['How it works', 'Quick start', 'Features and dependencies', 'Analyzer', 'Bundle sizes', 'Advanced configuration', 'Hosting', 'FAQ']);
-  // Release status follows config/distribution.json: core 0.9.0 is on npm.
+  // Release status follows config/distribution.json: the current core version is either listed there or not yet.
+  const published = (JSON.parse(readFileSync(new URL('../../config/distribution.json', import.meta.url), 'utf8')).core.npmVersions as string[]).includes(data.package.version);
   await expect(page.locator('main')).toContainText('The full and compact bundles and the CLI, from the package.');
-  await expect(page.locator('main')).not.toContainText('Not on npm yet');
+  for (const text of ['Not on npm yet', 'These URLs work once the package is on npm.']) {
+    if (published) await expect(page.locator('main')).not.toContainText(text);
+    else await expect(page.locator('main')).toContainText(text);
+  }
   await expect(page.locator('article a[href*="cdn.jsdelivr"], article a[href*="unpkg.com"]')).toHaveCount(0);
 });
 

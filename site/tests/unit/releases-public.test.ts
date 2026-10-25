@@ -49,5 +49,7 @@ describe('config/distribution.json', () => {
   it('onNpm: only a listed version of that package counts', () => {
     const d = { ...DISTRIBUTION, core: { ...DISTRIBUTION.core, npmVersions: [pkg('../../../package.json').version] }, mcp: { ...DISTRIBUTION.mcp, npmVersions: ['0.0.1'] } };
     expect([onNpm('core', d), onNpm('mcp', d)]).toEqual([true, false]);
+    // An earlier release on npm does not make the current version published.
+    expect(onNpm('core', { ...d, core: { ...d.core, npmVersions: ['0.0.1'] } })).toBe(false);
   });
 });

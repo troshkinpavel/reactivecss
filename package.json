@@ -1,6 +1,6 @@
 {
   "name": "@reactivecss/core",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Reactive functions and stateful selectors for plain CSS. One script tag, no JavaScript required.",
   "keywords": [
     "css",
