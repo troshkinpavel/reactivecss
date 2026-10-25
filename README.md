@@ -47,8 +47,7 @@ One small runtime reads your stylesheets and wires them up.
 
 The button owns the state, each click increments it, and the span shows it as text. No application JavaScript is involved, but the Reactive CSS runtime has to be loaded.
 
-> [!NOTE]
-> **0.9.1 is experimental.** [`@reactivecss/core`](https://www.npmjs.com/package/@reactivecss/core) 0.9.1 and the MCP server [`@reactivecss/mcp`](https://www.npmjs.com/package/@reactivecss/mcp) 0.1.0 are on npm. The website is [reactivecss.com](https://reactivecss.com). See [Installation](#installation).
+> **Note: 0.9.1 is experimental.** [`@reactivecss/core`](https://www.npmjs.com/package/@reactivecss/core) 0.9.1 and the MCP server [`@reactivecss/mcp`](https://www.npmjs.com/package/@reactivecss/mcp) 0.1.0 are on npm. The website is [reactivecss.com](https://reactivecss.com). See [Installation](#installation).
 
 ## Why Reactive CSS?
 

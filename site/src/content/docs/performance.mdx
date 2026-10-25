@@ -9,7 +9,7 @@ These numbers come from the library's own release reports. The latest is the 0.9
 
 <Callout kind="caution" title="Read these numbers with">
 
-All measurements ran in headless Chromium 156 (and, for tests, WebKit 27.2) on one development machine. Playwright's Firefox does not start there, so Firefox is not covered by the automated tests; a manual pass of the examples in Chrome, Safari and Firefox was user-reported for 0.7.1, without logs or browser versions. Screen readers and real devices have not been verified for 0.9.0.
+All measurements ran in headless Chromium 156 (and, for tests, WebKit 27.2) on one development machine. Firefox is tested in CI since 0.9.0 (Linux, Playwright's Firefox build), but no timing in this page was measured in it; a manual pass of the examples in Chrome, Safari and Firefox was user-reported for 0.7.1, without logs or browser versions. Screen readers and real devices have not been verified for 0.9.x.
 
 </Callout>
 
@@ -36,7 +36,7 @@ New 0.9 workloads, with no 0.8.1 equivalent:
 
 The report found no confirmed regression above its thresholds: more than 10% in time, more than 15% in memory, or long tasks over 50 ms. The click difference, about 4 µs, is within run-to-run variance. With the CPU throttled 4×, event-to-DOM latency stayed at a p95 of 0.7–0.8 ms in every version.
 
-**Sizes** (same report, §J, after the final API cleanup): `reactive-css.min.js` is 149,039 B minified and 49,233 B gzip, against 117,830 B and 39,715 B for 0.8.1. The compact bundle is 42,488 B gzip. The cleanup itself changed no measured timing beyond run-to-run variation (§J). These are the report's figures; the sizes of the current 0.9.0 build, measured when the site is built, are on [Installation](/docs/installation/#choose-a-distribution), and custom bundles on [Custom bundles](/docs/custom-bundles/#bundle-sizes).
+**Sizes** (same report, §J, after the final API cleanup): `reactive-css.min.js` is 149,039 B minified and 49,233 B gzip, against 117,830 B and 39,715 B for 0.8.1. The compact bundle is 42,488 B gzip. The cleanup itself changed no measured timing beyond run-to-run variation (§J). These are the report's figures; the sizes of the current build, measured when the site is built, are on [Installation](/docs/installation/#choose-a-distribution), and custom bundles on [Custom bundles](/docs/custom-bundles/#bundle-sizes).
 
 **Tests** (same report, §J, final): 196 unit tests and 848 browser tests passed across Chromium and WebKit, with 6 skipped; 427 passed in Chromium with the CPU throttled 4×.
 

@@ -206,7 +206,7 @@ Everything else is plain CSS and is left alone: `.v::before { content: var(--n);
 
 Because the result is real DOM text, unlike generated content, it can be selected, copied, found with the browser's search and read by assistive technology. It is not announced automatically: add `aria-live` in the HTML where that is wanted, as the counter's `<output>` does.
 
-Reactive `content` is experimental. It is not a general replacement for `textContent`: it writes scalar values into leaf elements and nothing more. Its interaction with native `content` has been verified in Chromium and WebKit only; Firefox is unverified.
+Reactive `content` is experimental. It is not a general replacement for `textContent`: it writes scalar values into leaf elements and nothing more. Its interaction with native `content` has been verified in Chromium, WebKit and Firefox engine builds.
 
 ## State from an attribute: state(attr())
 `attr(name, fallback)` as the initial value reads an attribute of the owner once, when the state starts. After that the state and the attribute are independent.

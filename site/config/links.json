@@ -12,8 +12,8 @@
     { "id": "vision", "label": "Vision", "url": "/vision/", "category": "Documentation", "description": "Where the project is going.", "visible": true, "footer": "Project" },
     { "id": "performance", "label": "Performance", "url": "/docs/performance/", "category": "Documentation", "description": "How the library measures itself.", "visible": true, "footer": "Project" },
     { "id": "github", "label": "GitHub", "url": "https://github.com/troshkinpavel/reactivecss", "category": "Repository", "description": "Source code, issues and security reports.", "visible": true, "footer": "Project" },
-    { "id": "npm", "label": "npm package", "url": "https://www.npmjs.com/package/@reactivecss/core", "category": "Distribution", "description": "Package page. 0.9.0 verified on npm on 2026-10-23.", "visible": true, "footer": "Build" },
-    { "id": "jsdelivr", "label": "jsDelivr", "url": "https://cdn.jsdelivr.net/npm/@reactivecss/core@0.9.0/", "category": "Distribution", "description": "Version-pinned 0.9.0 files, verified on 2026-10-23. Not in the footer: Installation shows the pinned script tags.", "visible": true },
-    { "id": "unpkg", "label": "unpkg", "url": "https://unpkg.com/@reactivecss/core@0.9.0/", "category": "Distribution", "description": "Version-pinned 0.9.0 files, verified on 2026-10-23. Not in the footer: Installation shows the pinned script tags.", "visible": true }
+    { "id": "npm", "label": "npm package", "url": "https://www.npmjs.com/package/@reactivecss/core", "category": "Distribution", "description": "Package page. 0.9.1 verified on npm on 2026-10-25.", "visible": true, "footer": "Build" },
+    { "id": "jsdelivr", "label": "jsDelivr", "url": "https://cdn.jsdelivr.net/npm/@reactivecss/core@0.9.1/", "category": "Distribution", "description": "Version-pinned 0.9.1 files, verified on 2026-10-25. Not in the footer: Installation shows the pinned script tags.", "visible": true },
+    { "id": "unpkg", "label": "unpkg", "url": "https://unpkg.com/@reactivecss/core@0.9.1/", "category": "Distribution", "description": "Version-pinned 0.9.1 files, verified on 2026-10-25. Not in the footer: Installation shows the pinned script tags.", "visible": true }
   ]
 }
