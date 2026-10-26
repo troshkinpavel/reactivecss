@@ -3,11 +3,21 @@
 // sandboxed preview iframes can load it by URL. Rebuild the library (npm run build in ..)
 // to pick up changes.
 import { copyFile, mkdir, access } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 const src = new URL('../../dist/reactive-css.min.js', import.meta.url);
 const out = new URL('../public/runtime/', import.meta.url);
 try { await access(src); } catch {
-  console.error('Reactive CSS bundle not found at ../dist/reactive-css.min.js. Run `npm run build` in the library first.');
-  process.exit(1);
+  // A fresh checkout has no library build yet: run the library's own build once, so `npm run
+  // typecheck`, `test` and `dev` work right after `npm ci`. An existing but stale build still fails below.
+  const root = fileURLToPath(new URL('../..', import.meta.url));
+  if (!existsSync(new URL('../../node_modules/', import.meta.url))) {
+    console.error('Reactive CSS is not built and its dependencies are not installed. Run `npm ci` in the repository root first.');
+    process.exit(1);
+  }
+  console.log('../dist is missing: building the library (npm run build in the repository root)');
+  if (spawnSync('npm', ['run', 'build'], { cwd: root, stdio: 'inherit' }).status !== 0) process.exit(1);
 }
 await mkdir(out, { recursive: true });
 await copyFile(src, new URL('reactive-css.min.js', out));
