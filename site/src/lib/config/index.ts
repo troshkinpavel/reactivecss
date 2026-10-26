@@ -64,8 +64,8 @@ export function changelogVersions(md = changelogText): Set<string> {
 
 /**
  * Release records the public site may render, newest first. Policy:
- * - published = the version is listed in config/distribution.json `core.npmVersions` (set by hand
- *   after checking npm; the Control Center never sets it);
+ * - published = the version is listed in config/distribution.json `core.npmVersions` (added only
+ *   after npm confirms it, docs/releasing.md);
  * - a local preview build (`RCSS_PREVIEW_RELEASES=1`) also shows `prepared` records, marked as not
  *   published. `local` records and versions without a CHANGELOG section never appear.
  */
