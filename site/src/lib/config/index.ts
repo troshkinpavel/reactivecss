@@ -1,6 +1,6 @@
-// Read-only website configuration for the public build. The JSON in site/config/ is edited by the
-// local Control Center (admin/); here it is only validated and read. An invalid file fails the
-// build instead of shipping. Nothing in this module writes, and no page calls the admin server.
+// Read-only website configuration for the public build. The JSON in site/config/ is edited by hand
+// or with an external local tool; here it is only validated and read. An invalid file fails the
+// build instead of shipping. Nothing in this module writes.
 import type { FooterGroup } from '~/components/navigation/SiteFooter';
 import { LIBRARY_VERSION } from '~/lib/content/reference';
 import links from '../../../config/links.json';

@@ -1,7 +1,6 @@
-// Schemas for the website configuration in site/config/*.json. One module for both readers:
-// the public Astro build (src/lib/config/index.ts) and the local Control Center server
-// (admin/server.ts), which validates every payload with the same schema before writing.
-// Plain erasable TypeScript only: Node runs the admin server from this file directly.
+// Schemas for the website configuration in site/config/*.json, read by the public Astro build
+// (src/lib/config/index.ts). External editors of these files (by hand or with a local tool) should
+// validate with the same schemas. Plain erasable TypeScript only, so Node can import it directly.
 import { z } from 'astro/zod';
 
 /** A site path (`/docs/`) or an https URL. Everything else (javascript:, data:, http:, file:, //host, …) is rejected. */
@@ -85,7 +84,7 @@ export function activeAnnouncement(list: Announcement[], placement: Announcement
 }
 
 // ---------- feature visibility ----------
-/** The only website features the Control Center may hide. Website pages only, never runtime APIs. */
+/** The only website features that config may hide. Website pages only, never runtime APIs. */
 export const APPROVED_FEATURES = {
   bundleBuilder: { name: 'Custom Bundle Builder', description: 'The interactive bundle configurator. Hidden: the page redirects to the Custom Bundles guide and the footer link is removed.', routes: ['/bundle-builder/'], fallback: '/docs/custom-bundles/' },
   designSystem: { name: 'Design System page', description: 'The public colour, type and component reference. Hidden: the page redirects to the homepage and the footer link is removed.', routes: ['/design-system/'], fallback: '/' },
@@ -140,7 +139,7 @@ export const releasesSchema = z.strictObject({ releases: z.record(version, relea
 // ---------- distribution: what is live ----------
 /**
  * config/distribution.json, edited by hand after checking each fact (the registry page, the
- * repository settings, the production domain). Not a Control Center file: nothing infers it from
+ * repository settings, the production domain). Nothing infers it from
  * the CHANGELOG, the README or a URL. `npmVersions` lists the versions verified on npm.
  */
 const npmPackage = (name: string) => z.strictObject({ package: z.literal(name), npmVersions: z.array(version) });
@@ -151,23 +150,3 @@ export const distributionSchema = z.strictObject({
   mcp: npmPackage('@reactivecss/mcp'),
 });
 export type Distribution = z.infer<typeof distributionSchema>;
-
-// ---------- Control Center preferences ----------
-export const projectSchema = z.strictObject({
-  devUrl: z.string().regex(/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/?$/, 'Use a local address such as http://localhost:4321'),
-  dateFormat: z.enum(['iso', 'us', 'eu']),
-  density: z.enum(['compact', 'comfortable']),
-  confirmDiscard: z.boolean(),
-});
-
-/** Every file the Control Center may write: site/config/<name>.json. Nothing else is writable. */
-export const CONFIG_SCHEMAS = {
-  links: linksSchema,
-  announcements: announcementsSchema,
-  features: featuresSchema,
-  seo: seoSchema,
-  releases: releasesSchema,
-  project: projectSchema,
-} as const;
-export type ConfigName = keyof typeof CONFIG_SCHEMAS;
-export type ConfigData = { [K in ConfigName]: z.infer<(typeof CONFIG_SCHEMAS)[K]> };

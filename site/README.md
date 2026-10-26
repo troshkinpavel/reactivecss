@@ -15,8 +15,7 @@ npm run preview          # serve dist/
 
 Site configuration (footer links, announcements, feature visibility, SEO defaults, release
 metadata) lives in `config/*.json` and is validated at build time (`src/lib/config/schema.ts`).
-The maintainers edit it with a local admin tool that is not part of the repository; editing the
-JSON by hand works the same.
+Edit the JSON directly; an invalid file fails the build.
 
 ### Publication state
 
