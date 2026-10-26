@@ -15,8 +15,7 @@ npm run preview          # serve dist/
 
 Site configuration (footer links, announcements, feature visibility, SEO defaults, release
 metadata) lives in `config/*.json` and is validated at build time (`src/lib/config/schema.ts`).
-The maintainers edit it with a local admin tool that is not part of the repository; editing the
-JSON by hand works the same.
+Edit the JSON directly; an invalid file fails the build.
 
 ### Publication state
 
@@ -46,8 +45,10 @@ must do these steps after `npm publish`:
 Do not add a version before step 1 succeeds. A failed or partial publish must leave the site
 in the "Not on npm yet" state.
 
-The site reads the library's built bundle and `describe()` registry from `../dist`. Build the
-library first (`npm run build` in the repository root).
+The site reads the library's built bundle and `describe()` registry from `../dist`. `npm run
+sync-runtime` (run by `dev`, `build`, `typecheck` and `test`) builds the library when `../dist` is
+missing, so they work right after `npm ci` in both folders. After changing the library, rebuild it
+(`npm run build` in the repository root).
 
 | Command | Checks |
 |---|---|

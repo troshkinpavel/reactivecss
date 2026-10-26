@@ -1,7 +1,7 @@
 # Pre-launch audit: executive summary
 
 **Date:** 2026-10-20. **Subject:** the Reactive CSS website (`site/`), library 0.8.0 (local,
-unpublished), and the local admin app.
+unpublished), and local maintainer tooling (since moved out of the repository).
 
 **Documents:**
 - [prelaunch-audit.md](prelaunch-audit.md): findings, evidence, the route inventory and the
@@ -67,7 +67,6 @@ The blockers:
   - unit 311;
   - Storybook 99;
   - Playwright 347 passed and 0 failed (Chromium + WebKit);
-  - admin E2E 32 passed;
   - build 141 pages, 110 indexed.
 - **Every route:**
   - 141 routes return 200, with 0 console errors and 0 failed requests;
@@ -87,7 +86,7 @@ The blockers:
   are invented.
 - **Security:**
   - previews sandboxed, with strict CSP and validated messages;
-  - the admin is localhost-only, token- and origin-protected, and absent from the public build.
+  - local maintainer tooling is absent from the public build.
 - **Performance:**
   - no long tasks;
   - idle CPU ≤ 23 ms per 5 s;
@@ -98,7 +97,7 @@ The blockers:
 
 - **Assistive technology:** screen readers. Firefox; real Chrome and Safari; real devices.
 - **Not re-run here:** the library's own test suites. Visual parity of the Control Center, Design
-  system and reference pages, and of the admin screens (earlier reviews only).
+  system and reference pages, (earlier reviews only).
 - **Hosting:** headers, compression and redirects on the real host.
 
 ## Launch readiness
@@ -121,7 +120,6 @@ The blockers:
 | Accessibility | Needs work and verification | F-06; screen readers unverified |
 | Performance | Ready | — |
 | Security | Ready for a static site; headers advised | — |
-| Local admin | Ready (local tool; not deployed) | — |
 
 ## Recommended launch sequence
 

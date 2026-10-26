@@ -1,5 +1,5 @@
-// The production build has no Control Center: no route, no write endpoint, no token, no admin code.
-// It reads config/ only at build time, and works with the admin server stopped (it is never started here).
+// The production build is static: no server routes, and the config/ files are read at build time only
+// (their validation code never ships to visitors).
 import { expect, test } from '@playwright/test';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -7,15 +7,14 @@ import { join } from 'node:path';
 const DIST = new URL('../../dist/', import.meta.url).pathname;
 const files = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? files(join(d, e.name)) : [join(d, e.name)]));
 
-test('no admin route or API is served', async ({ request }) => {
-  for (const p of ['/admin/', '/admin/index.html', '/api/state', '/api/config/links', '/api/health', '/main.tsx']) {
-    expect((await request.get(p)).status(), p).toBe(404);
-  }
+test('no server routes: API paths and writes are not served', async ({ request }) => {
+  for (const p of ['/admin/', '/api/', '/api/config/links']) expect((await request.get(p)).status(), p).toBe(404);
   expect((await request.put('/api/config/links', { data: {} })).status()).not.toBe(200);
 });
 
-test('no admin token, endpoint, write code or config schema ships', () => {
-  const markers = ['admin-token', 'X-Admin-Token', '/api/config/', 'atomicWrite', 'startAdmin', 'writes only site/config', 'Use https and no trailing slash'];
+test('config schema code does not ship to the client', () => {
+  // A message that exists only in src/lib/config/schema.ts.
+  const markers = ['Use https and no trailing slash'];
   const text = files(DIST).filter((f) => /\.(html|js|mjs|css|json|xml|txt)$/.test(f));
   expect(text.length).toBeGreaterThan(50);
   for (const f of text) {

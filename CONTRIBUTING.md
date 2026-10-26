@@ -41,6 +41,10 @@ The website is a separate npm project in `site/`. See [site/README.md](site/READ
 - A new feature needs an entry in the feature registry (`src/core/features.ts`) with its status, and in the bundle catalog (`src/features/catalog.ts`).
 - Do not change benchmark thresholds to make a test pass. Explain a regression instead.
 
+## Releases
+
+Maintainers release Core, MCP and the website independently. See [docs/releasing.md](docs/releasing.md). If a pull request changes a version or a version reference, run `node scripts/release-check.mjs`. CI runs it too.
+
 ## License
 
 By contributing, you agree that your contributions are licensed under the [MIT License](LICENSE) of this project.

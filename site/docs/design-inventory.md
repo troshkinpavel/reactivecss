@@ -32,7 +32,7 @@ page at 1440 px and 390 px are in [`design-source/reference/`](../design-source/
 | `Vision v2.dc.html` | page | The current Vision page: the question, the evolution (calculate → relate → decide → react?), native first, the experiment, the direction. See `vision-v2-integration.md` |
 | `Custom Bundles.dc.html` | page | The Custom Bundles guide in the docs shell: overview, how it works, quick start, features and dependencies, missing feature, analyzer, sizes, advanced configuration, hosting, FAQ. Its «…» placeholders were filled from the 0.8.0 library. See `custom-bundles-design-integration.md` |
 | `Examples.dc.html` | page | Examples gallery and detail view: category tabs, live-preview cards, detail page with Reset / Inspect / Playground, implementation tabs, next and related. Imported for the Examples redesign; see `examples-design-integration.md` |
-| `Control Center Admin.dc.html` | app | Local administration tool (dashboard, releases, changelog, links, announcements, feature visibility, SEO, site health, settings, Prepare Release). Imported on 2026-10-20. Not a public route: implemented as the local server in `admin/`; see `admin-control-center.md` |
+| `Control Center Admin.dc.html` | app | Design of a local administration tool. Not implemented in this repository |
 | `Mobile Views.dc.html` | canvas | Four iframes of other pages at 390 × 844. Not a route; covered by responsive tests |
 | `support.js` | runtime | Claude Design runtime (React UMD + template engine). Not used by the site |
 | `uploads/*`, `screenshots/*` | assets | Library docs and audit screenshots from the design session. Not downloaded; not referenced by any page |
@@ -54,7 +54,7 @@ page at 1440 px and 390 px are in [`design-source/reference/`](../design-source/
 | `Vision.dc.html` (v1) | No longer a route. Its stages remain on `/` (`#direction`), its JavaScript comparison on `/examples/score-history/#vanilla`, its metrics on `/docs/performance/`, its bundle builder at `/bundle-builder/` |
 | `Vision v2.dc.html` | `/vision/` |
 | `Custom Bundles.dc.html` | `/docs/custom-bundles/` |
-| `Control Center Admin.dc.html` | none in the public build; `npm run admin` → `http://127.0.0.1:4323/#<screen>` |
+| `Control Center Admin.dc.html` | none (not part of this repository) |
 
 ## 3. Shared UI patterns
 

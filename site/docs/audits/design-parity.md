@@ -37,7 +37,7 @@ implementation, **R** visual regression, **O** outdated design, **U** unexplaine
 | Control Center, Deep Dive | `Control Center*.dc.html` | `/examples/control-center*/` | Implemented (earlier sessions) | not re-compared in this audit |
 | Design system | `Design System.dc.html` | `/design-system/` | Implemented (earlier sessions) | not re-compared in this audit |
 | Bundle Builder | Vision v1 § 08 concept (no dedicated design) | `/bundle-builder/` | Implemented | O: its only design is the superseded Vision v1 section |
-| Admin | `Control Center Admin.dc.html` | local only (`npm run admin`, 127.0.0.1) | Implemented (other session) | screens not compared here; see its own report |
+| Admin | `Control Center Admin.dc.html` | none (not part of this repository) | n/a | not compared |
 | Mobile Views | `Mobile Views.dc.html` | none (a canvas of other pages) | n/a | — |
 
 ## Homepage (`/`)

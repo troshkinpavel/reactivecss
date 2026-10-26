@@ -1,6 +1,6 @@
-// Read-only website configuration for the public build. The JSON in site/config/ is edited by the
-// local Control Center (admin/); here it is only validated and read. An invalid file fails the
-// build instead of shipping. Nothing in this module writes, and no page calls the admin server.
+// Read-only website configuration for the public build. The JSON in site/config/ is edited by hand
+// or with an external local tool; here it is only validated and read. An invalid file fails the
+// build instead of shipping. Nothing in this module writes.
 import type { FooterGroup } from '~/components/navigation/SiteFooter';
 import { LIBRARY_VERSION } from '~/lib/content/reference';
 import links from '../../../config/links.json';
@@ -64,8 +64,8 @@ export function changelogVersions(md = changelogText): Set<string> {
 
 /**
  * Release records the public site may render, newest first. Policy:
- * - published = the version is listed in config/distribution.json `core.npmVersions` (set by hand
- *   after checking npm; the Control Center never sets it);
+ * - published = the version is listed in config/distribution.json `core.npmVersions` (added only
+ *   after npm confirms it, docs/releasing.md);
  * - a local preview build (`RCSS_PREVIEW_RELEASES=1`) also shows `prepared` records, marked as not
  *   published. `local` records and versions without a CHANGELOG section never appear.
  */

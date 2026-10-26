@@ -35,6 +35,10 @@ jobs:
         run: npx vitest run --dir tests/dist && npx tsc -p tests/dist/tsconfig.json
       - name: Package contents
         run: npm pack --dry-run
+      # Version and publication facts stated in several files (docs/releasing.md). No network, so it
+      # passes before and after a publication.
+      - name: Release consistency
+        run: node --test scripts/release-check.test.mjs && node scripts/release-check.mjs
       - run: npx playwright test --project=chromium --project=webkit
       - uses: actions/upload-artifact@v4
         if: failure()

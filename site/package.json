@@ -6,7 +6,6 @@
   "scripts": {
     "sync-runtime": "node scripts/sync-runtime.mjs",
     "dev": "npm run sync-runtime && astro dev",
-    "admin": "node admin/server.ts",
     "build": "npm run sync-runtime && astro build && pagefind --site dist",
     "preview": "astro preview",
     "storybook": "storybook dev -p 6006",

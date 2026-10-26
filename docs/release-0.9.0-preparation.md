@@ -246,7 +246,7 @@ Other features are within about 1 KB of 0.8.1.
 
 ## 6. Release readiness
 
-- **Ready for a separate website and documentation migration?** Yes, for the language and runtime as specified. The website, Storybook, the Control Center and public examples were not touched. They still describe and bundle 0.8.1, and `site/` was not run against 0.9.0.
+- **Ready for a separate website and documentation migration?** Yes, for the language and runtime as specified. The website, Storybook, the local tooling and public examples were not touched. They still describe and bundle 0.8.1, and `site/` was not run against 0.9.0.
 - **To decide or fix first:**
   1. Accept the bundle size, or decide on production message codes.
   2. Decide whether the 0.9 features stay "experimental" for the first public release.

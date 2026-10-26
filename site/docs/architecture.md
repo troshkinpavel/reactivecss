@@ -80,7 +80,6 @@ site/
 ├── public/
 │   ├── preview/bridge.js  Observer that runs inside each preview (site code)
 │   └── runtime/           Synced library bundle (generated)
-├── admin/                Local Control Center server and UI (local only, not in the repository)
 ├── config/               Website configuration JSON, read at build time by src/lib/config/
 ├── scripts/              sync-runtime, design conversion, visual review, performance, dev helpers
 ├── src/

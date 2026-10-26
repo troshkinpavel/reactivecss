@@ -12,9 +12,7 @@ Internal report, 2026-10-23. Target: `https://github.com/troshkinpavel/reactivec
 | Secret scan | Clean, over the exact 1,248 files. No npm, GitHub, AWS, Slack, Stripe or Anthropic tokens, private keys, JWTs or credential literals, and no local paths (`/Users/`, `/private/tmp`, `file:///`). The only email address is the author's, in the `author` field of both `package.json` files (intended). Examples use `example.com`. |
 
 **Absent from the first commit** (each 0 files):
-- `site/design-source/` and `site/admin/`;
-- `site/tests/admin/`, `site/tests/unit/admin-*.test.ts` and `site/playwright.admin.config.ts`;
-- the admin docs `site/docs/admin-*.md`;
+- `site/design-source/` and the local maintainer tooling (since moved out of the repository);
 - root `experiments/`;
 - every `node_modules/` and `.env*`;
 - the build outputs `dist/`, `packages/mcp/dist/` and `site/dist/`;
@@ -53,7 +51,7 @@ The root files are all present: README, LICENSE, SECURITY, CONTRIBUTING and CHAN
 ### `.gitignore` changes in this pass
 - **`dist/` is anchored:** `/dist/` and `/packages/mcp/dist/`. The unanchored rule would also have ignored `tests/dist/`, the distribution tests' sources.
 - **`site/design-source/support.js` → `/site/design-source/`:** the whole Claude Design export stays local. Nothing in the build reads it: the only references are comments and dev-only scripts (`visual-review`, `capture-design`, `convert-*`).
-- **The Control Center rules are anchored,** and admin unit tests are matched as `admin-*.test.ts`. The two admin-only docs (`site/docs/admin-control-center.md`, `admin-release-workflow-validation.md`) are excluded too. `site/config/*.json` stays tracked: the public build reads it.
+- **Local maintainer tooling rules** kept it out of the commit (it has since moved out of the repository). `site/config/*.json` stays tracked: the public build reads it.
 - **`/experiments/`** keeps its leading slash, so `site/experiments/` and `site/src/**/experiments/` are tracked.
 
 ## Packages
@@ -78,13 +76,13 @@ The root files are all present: README, LICENSE, SECURITY, CONTRIBUTING and CHAN
 ## Website
 
 - **Clean checkout:**
-  - `npm ci`, typecheck (0 errors) and 369 unit tests pass (the 50 Control Center tests are excluded with the admin);
+  - `npm ci`, typecheck (0 errors) and 369 unit tests pass (tests of the local maintainer tooling are excluded with it);
   - the production build passes (113 pages);
-  - targeted e2e passes: experiments, admin exclusion, homepage and bundle CLI, 46 tests in Chromium.
+  - targeted e2e passes: experiments, static build, homepage and bundle CLI, 46 tests in Chromium.
 - **Fixed:** `npm run typecheck` and `npm test` now run `sync-runtime` first, as `dev` and `build` already did. In a fresh checkout, `src/generated/` does not exist until the sync runs.
 - **Caveat:** Vitest 5 keeps a module cache in `node_modules/.vitest-cache`. A run made before the sync cached an empty `import.meta.glob`. Delete that folder if a glob target is ever missing in a run and added later. A fresh checkout and CI are not affected.
 - **Public experiments are included:** `site/experiments/perihelion/` (`index.html`, `style.css`, README: source, not generated output), `site/src/pages/experiments/`, `site/src/components/experiments/` and `site/src/lib/content/experiments.ts`.
-- **Control Center and design sources are excluded.** `site/tests/e2e/admin-exclusion.spec.ts` (public) checks that the build serves no admin route or code. The site README no longer links the admin docs or the design folder.
+- **Local tooling and design sources are excluded.** `site/tests/e2e/static-build.spec.ts` (then `admin-exclusion.spec.ts`) checks that the build serves no server routes. The site README no longer links the design folder.
 
 ## CI (`.github/workflows/test.yml`)
 
@@ -119,7 +117,7 @@ On the first push to `main` and on every pull request, with `contents: read`, no
 ## First-push commands (not run)
 
 ```bash
-cd /Users/pt/Desktop/Projects/CLAUDE/css-functions
+cd path/to/reactivecss
 ```
 
 ```bash
@@ -135,7 +133,7 @@ git ls-files | wc -l
 ```
 
 ```bash
-git ls-files | grep -E '^(site/design-source|site/admin|site/tests/admin|experiments|dist|packages/mcp/dist|site/dist)/|node_modules/|\.env'
+git ls-files | grep -E '^(site/design-source|experiments|dist|packages/mcp/dist|site/dist)/|node_modules/|\.env'
 ```
 
 Expect about 1,254 files (more if files were added since), and no output from the second check. Then:

@@ -2,12 +2,12 @@
 
 **Date:** 2026-10-21.
 
-**Status:** **Prepared locally. Not published.** The Control Center's Prepare Release saved `prepared` with 0 blockers and 2 warnings, and the CHANGELOG heading still says "(local, unpublished)".
+**Status:** **Prepared locally. Not published.** The local release tool's preparation saved `prepared` with 0 blockers and 2 warnings, and the CHANGELOG heading still says "(local, unpublished)".
 
 - **Not done:** Git commit, tag or push; GitHub release; `npm publish`; CDN upload; website deployment; DNS change.
-- **What "prepared" means:** the local requirements of the Control Center's workflow pass. It is not publication evidence.
+- **What "prepared" means:** the local requirements of that workflow pass. It is not publication evidence.
 
-The fixes: [prebeta-runtime-stabilization.md](prebeta-runtime-stabilization.md). The Control Center run: [site/docs/admin-release-workflow-validation.md](../site/docs/admin-release-workflow-validation.md).
+The fixes: [prebeta-runtime-stabilization.md](prebeta-runtime-stabilization.md).
 
 ## 1. Scope
 
@@ -40,7 +40,7 @@ A patch release: the pre-beta stabilization fixes, and no new public API. The an
 | `src/api.ts`, `src/core/registry.ts` | Use `VERSION` (were two separate `'0.8.0'` literals) |
 | `tests/unit/v05.test.ts`, `tests/dist/esm.test.ts`, `tests/browser/dist.spec.ts` | Compare with `package.json` instead of a literal |
 | `examples/lab/index.html`, `examples/lab/checklist.{html,js}`, `examples/api/index.html` | Current-version labels |
-| Site | Synced from the library (`runtime.json`, `registry.json`, `bundles.json`). The banner, footer and Control Center read it; `src/lib/content/engineering.ts` (`LATEST`) updated by hand, as the site's version test requires |
+| Site | Synced from the library (`runtime.json`, `registry.json`, `bundles.json`). The banner and footer read it; `src/lib/content/engineering.ts` (`LATEST`) updated by hand, as the site's version test requires |
 
 These all report 0.8.1:
 - the bundles, which contain `"0.8.1"`;
@@ -62,7 +62,7 @@ The CLI has no `--version` flag, and none was added. Historical references to 0.
 - `index.js` (ESM) with `.d.ts`;
 - `features.json` and `catalog.json`.
 
-Custom bundles come from `tools/bundle.mjs` and the `reactive-css` CLI. Every `package.json` entry point exists (Control Center check, 6/6).
+Custom bundles come from `tools/bundle.mjs` and the `reactive-css` CLI. Every `package.json` entry point exists (6/6).
 
 `node benchmarks/bundle-sizes.mjs --runs=7` now writes one folder per version: `benchmarks/audit/results/v081/`. Gzip is level 9 and brotli quality 11.
 
@@ -138,7 +138,7 @@ All of these ran today, on the 0.8.1 build.
 | Experiments + visual lab, full and custom runtime, Chromium + WebKit | Functional run: 480 passed, 8 skipped. `@perf` run (serial): 39 passed, 35 skipped. Total 519 passed, 43 skipped, 0 failed: the same tests as the combined run (§7) |
 | Site typecheck · unit · Storybook | 0 errors · 322 passed · 99 passed |
 | Site Playwright, Chromium + WebKit, production build | 375 passed, 41 skipped (existing browser-specific skips), 0 failed |
-| Control Center E2E (temporary config copy) | 32 passed |
+| Local release tool E2E (temporary config copy) | 32 passed |
 | Site production build + Pagefind | Passes; 110 pages indexed; canonical `https://reactivecss.com`; no localhost in the sitemap |
 
 **Fixed during preparation (test defects, not runtime defects):**
@@ -168,10 +168,10 @@ In that run, living typography also reached a frame-gap p95 of 33.3 ms (two fram
 
 **Change.** The 12 timing tests are tagged `@perf` in their titles. The default experiment run excludes them, and `LAB_PERF=1` runs only them, on one worker (`experiments/playwright.config.ts`; README and AUTHORING updated). **No threshold was changed.**
 
-## 8. Control Center and public site
+## 8. Local release tool and public site
 
-The full run is in [admin-release-workflow-validation.md](../site/docs/admin-release-workflow-validation.md):
-- **Detection:** the Control Center detected 0.8.1 from `package.json` and the CHANGELOG.
+The local run:
+- **Detection:** the tool detected 0.8.1 from `package.json` and the CHANGELOG.
 - **Editing:** the metadata was edited through the UI and persisted across a reload. Cancel and discard, validation, a conflict refusal and the API security checks were exercised.
 - **Prepare Release:** all four steps ran (11/11 validation checks), and 0.8.1 was saved as `prepared`.
 
@@ -208,7 +208,7 @@ As you decided:
 |---|---|
 | Library 0.8.1 built, tested, measured, documented | **Completed** |
 | Local package archive and isolated install | **Completed** |
-| Control Center status | **Prepared** (0 blockers, 2 warnings: no GitHub release URL, no CDN URLs in the metadata) |
+| Local release status | **Prepared** (0 blockers, 2 warnings: no GitHub release URL, no CDN URLs in the metadata) |
 | npm, GitHub release, CDN | **Not published, not verified** |
 
 **Before publishing (prerequisites):**
@@ -217,11 +217,11 @@ As you decided:
 3. **TypeScript `node16`/`nodenext` consumers.** The `.d.ts` files use extensionless relative imports (as in every version so far), which these modes reject. The types work with `moduleResolution: bundler`, which the dist test uses. The fix is `.js` extensions on the relative imports in `src/`, or bundled declarations. It was not made here, because it is a refactor outside a patch release. Decide before publishing.
 4. Firefox and screen-reader checks, if they are release criteria.
 
-**Manual publication steps, in order** (from the Control Center checklist):
+**Manual publication steps, in order** (from the local release checklist):
 1. `npm run verify` in the library and in `site/`.
 2. Change the CHANGELOG heading note from "local, unpublished".
 3. `git tag v0.8.1` and push the tag.
-4. Create the GitHub release `v0.8.1` with the CHANGELOG section, and put its URL in the Control Center.
+4. Create the GitHub release `v0.8.1` with the CHANGELOG section, and put its URL in `site/config/releases.json`.
 5. `npm publish`.
-6. Verify the jsDelivr and unpkg URLs, and add them in the Control Center.
+6. Verify the jsDelivr and unpkg URLs, and add them to `site/config/releases.json`.
 7. Build and deploy the website. The changelog card then appears because the heading is no longer "unpublished".

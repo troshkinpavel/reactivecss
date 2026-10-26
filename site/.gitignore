@@ -9,8 +9,3 @@ test-results
 playwright-report
 src/generated
 public/embed
-/admin/
-/tests/admin/
-/tests/unit/admin-server.test.ts
-/tests/unit/admin-config.test.ts
-/playwright.admin.config.ts
