@@ -151,7 +151,7 @@ No regression remains against the last recorded run. `docs/performance-results.j
 ## G. Release readiness
 
 **Blockers for a public launch**
-1. The package is not published, and its npm name and repository are still open (Control Center notes: "reactive-css" is taken on npm). Installation documents `npm pack` and shows illustrative CDN URLs. The site can only launch as a preview until a real install path exists.
+1. The package is not published, and its npm name and repository are still open ("reactive-css" is taken on npm). Installation documents `npm pack` and shows illustrative CDN URLs. The site can only launch as a preview until a real install path exists.
 
 **Important, nonblocking**
 1. Run the Firefox and real-device pass (Safari macOS/iOS, Android Chrome, touch drag).

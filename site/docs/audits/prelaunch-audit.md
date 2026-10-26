@@ -1,7 +1,7 @@
 # Pre-launch audit: detailed findings
 
 **Date:** 2026-10-20. **Scope:** the public website (`site/`), the library it documents (0.8.0,
-local), and the local admin app.
+local), and local maintainer tooling (since moved out of the repository).
 
 **Method:**
 - An independent re-check of the current repository and of a fresh build. Earlier reports were
@@ -14,7 +14,7 @@ local), and the local admin app.
 
 | Finding | Status | Change |
 |---|---|---|
-| F-03 canonical = localhost | Fixed | `config/seo.json` `canonical` is `https://reactivecss.com`. The build warns if it is ever localhost again. Built output: no `localhost` anywhere in `dist/`; canonicals, `og:url`, `og:image`, `robots.txt` and all 112 sitemap URLs use the domain. The admin E2E test that hard-coded the old value now checks that an invalid value leaves the saved one unchanged |
+| F-03 canonical = localhost | Fixed | `config/seo.json` `canonical` is `https://reactivecss.com`. The build warns if it is ever localhost again. Built output: no `localhost` anywhere in `dist/`; canonicals, `og:url`, `og:image`, `robots.txt` and all 112 sitemap URLs use the domain. |
 | F-04 `when()` reference | Fixed | `if-true` is optional; the page documents `when(condition)` → `true`/`false` and an empty value when `if-false` is missing (matches `src/state/conditions.ts`) |
 | F-05 Getting Started accessibility tip | Fixed | The tip shows the full rule with `attr: aria-pressed when(--liked);` (experimental, 0.5.3). The Deep Dive's identical claim was corrected too |
 | F-07 legacy example pages | Fixed | `noindex, follow`, and left out of the sitemap (`astro.config.mjs`); 112 sitemap URLs instead of 141 |
@@ -53,8 +53,7 @@ local), and the local admin app.
   - `npm run typecheck`;
   - `npm test`;
   - `npm run build` (the sync, Astro and Pagefind);
-  - the full Playwright suite;
-  - the admin E2E suite (`-c playwright.admin.config.ts`).
+  - the full Playwright suite.
 - **Storybook** could not run in the copy: Vite refuses test files reached through a symlinked
   `node_modules` (`Failed to fetch dynamically imported module … setup-file.js`). It was run in the
   real repository instead. It writes only Vite's cache in `node_modules/.cache`.
@@ -69,7 +68,7 @@ local), and the local admin app.
   - `adopt.mjs`: the adoption test;
   - `shots.mjs`: screenshots, saved in [`screens/`](screens/).
 - **Three read-only sub-audits** were delegated and their claims spot-checked:
-  - admin security;
+  - local tooling security;
   - documentation against the real API;
   - the history of earlier reports.
 - **Browsers.** Automated runs used Playwright's **Chromium and WebKit** builds. **Firefox was not
@@ -84,8 +83,8 @@ local), and the local admin app.
 | Build | copy | 141 pages; Pagefind indexed 110 pages, 4,232 words; synced 19 library demos and 16 API examples |
 | Storybook | real repo | 99 passed, 14 files |
 | Playwright, site | copy | **347 passed, 41 skipped, 0 failed, 0 flaky** (Chromium + WebKit). The skips are the WebKit visual baselines and a few Chromium-only checks (clipboard, keyboard Tab) |
-| Playwright, admin | copy | **32 passed** (Chromium + WebKit, fixture config in a temp dir) |
-| Admin unit | sub-audit | 50 passed (included in the 311) |
+| Playwright, local tooling | copy | **32 passed** (Chromium + WebKit, fixture config in a temp dir) |
+| Local tooling unit | sub-audit | 50 passed (included in the 311) |
 | Library tests | not run | Out of scope; the reports say 102 unit and 521 browser results. **Unverified here** |
 | Firefox (automated) | — | **Not run.** Unavailable on this machine |
 | Screen readers | — | **Not performed** |
@@ -162,8 +161,8 @@ Severity: **P0** launch blocker, **P1** fix before public beta, **P2** soon afte
   - `og:url` is localhost on 140 pages;
   - `dist/sitemap-0.xml` lists 141 `http://localhost:4321/…` URLs.
 - **Reproduce:** `grep -o 'rel="canonical" href="[^"]*"' dist/index.html`.
-- **Fix:** set the production `https://` origin in `config/seo.json` (the admin's SEO screen or the
-  file), then rebuild.
+- **Fix:** set the production `https://` origin in `config/seo.json` (edit the file), then
+  rebuild.
 - **Effort:** S. **Launch:** blocks deployment (search engines would index localhost).
 
 ### P1 — fix before public beta
@@ -310,12 +309,8 @@ Severity: **P0** launch blocker, **P1** fix before public beta, **P2** soon afte
 - **Fix later:** load the runtime once per frame from `/runtime/` (same-origin cache) instead of
   inlining it. This needs CSP and sandbox design work. **Effort:** L.
 
-**F-19 · Admin app: undeclared dependencies.**
-- **Category:** admin (local only).
-- **Evidence.** `vite` and `@vitejs/plugin-react` are used by `admin/server.ts` but are not in
-  `site/package.json`; they come from Astro's dependency tree (sub-audit, and
-  `admin-control-center.md` § 18).
-- **Effort:** S.
+**F-19 · Local tooling: undeclared dependencies.** No longer applies: the tool has moved out of
+this repository.
 
 ### P3 — backlog
 
@@ -356,12 +351,8 @@ Severity: **P0** launch blocker, **P1** fix before public beta, **P2** soon afte
 - **F-30 · Gaps in visual baselines.** There are none for `/examples/`, `/bundle-builder/`,
   `/docs/custom-bundles/` or `/docs/installation/`. The live values make some of these unstable.
 - **F-32 · Homepage count.** The homepage link reads "16 API examples and 18 complete interfaces" (`src/pages/index.astro`, `DEMOS.length`). The gallery shows 12 Interfaces plus 6 Test lab demos.
-- **F-31 · Admin minor items** (sub-audit):
-  - Vite UI files are served without the token: localhost only, nothing secret;
-  - there is a race window between the version check and the rename;
-  - every health call loads a fresh copy of the library module (a slow memory growth);
-  - a missing config file turns `/api/state` into a 500;
-  - the admin's `<title>` equals the public demo's ("Control Center").
+- **F-31 · Local tooling minor items** (sub-audit): no longer apply to this repository (the tool
+  has moved out).
 
 ## 3. Area findings and verified behaviour
 
@@ -611,15 +602,8 @@ compression on a real host will differ.
   - third-party requests: Google Fonts only (F-14);
   - no source maps in `dist/`, no secrets, no `target="_blank"` without `rel`.
 - **No CSP on the site's own pages** (F-15).
-- **Admin** (sub-audit, code read with `path:line` evidence, plus its tests):
-  - binds `127.0.0.1` only, with Host checks against DNS rebinding;
-  - a per-process 32-byte token with `timingSafeEqual`;
-  - `Sec-Fetch-Site` and `Origin` checks, and JSON-only writes capped at 1 MB;
-  - writes only six named config files, through an allowlist, a resolve-and-prefix check, and
-    atomic temp + fsync + rename;
-  - strict zod schemas;
-  - no admin code, route, token or endpoint in `dist/` (`admin-exclusion.spec.ts` passes; grep
-    confirmed).
+- **Local maintainer tooling** (sub-audit, with its tests): localhost-only, and absent from `dist/`
+  (verified then; the tool has since moved out of this repository).
   - The public website exposes no write capability.
 
 ## 4. Changes since earlier reports
@@ -633,7 +617,7 @@ dates and file timestamps.
 | Examples | `/docs/examples/` list and per-example pages | `/examples/` gallery: 16 API examples, 12 interfaces, 2 advanced, 6 lab; detail pages redesigned twice on 2026-10-20 |
 | Custom Bundles | a dense MDX page (0.8.0 pass) | the design layout; CLI outputs tested from the MDX |
 | Breadcrumbs | "Docs / Examples / Examples" | fixed; ancestors only |
-| Admin | absent | local app with config files; the site reads `config/*.json` at build |
+| Local tooling | absent | a local tool edits `config/*.json` (since moved out); the site reads them at build |
 | Tests | Playwright 139 → 168 → 215 → 230 → 341 | 347 passed, 0 failed, in this audit |
 
 **Re-checked claims from earlier reports:**
@@ -642,7 +626,7 @@ dates and file timestamps.
   - "every snippet compiles";
   - "version agreement";
   - "the Bundle Builder never links CDN URLs";
-  - "admin not in the public build".
+  - "local tooling not in the public build".
 - **Contradicted:**
   - `performance.md` "CLS under 0.01 on every page" (F-17);
   - `vision-integration.md`'s file paths (F-24).
@@ -658,8 +642,8 @@ dates and file timestamps.
 - **Firefox**, real Chrome and Safari, and real devices.
 - **Screen readers.**
 - **The library's own suites** (102 unit, 521 browser results).
-- **Visual parity** of the Control Center, Deep Dive, Design system, reference pages and the
-  admin's screens (relied on earlier reviews).
+- **Visual parity** of the Control Center, Deep Dive, Design system and reference pages (relied on
+  earlier reviews).
 - **Behaviour on the real host:** headers, compression, redirects.
 
 ## 6. Appendix: route inventory (141 routes)

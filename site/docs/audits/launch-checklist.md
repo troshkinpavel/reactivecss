@@ -69,7 +69,7 @@ These were not verified, or only partly verified.
 - [ ] F-16 Dimmed `when()` branches fail contrast (by design, excluded from the site's scan).
 - [ ] F-17 Layout shift: Custom Bundles 0.079 (font swap), Control Center 0.029.
 - [ ] F-18 Each preview inlines the 116 KB runtime; the full gallery loads about 2 MB of preview documents.
-- [ ] F-19 Admin app's undeclared `vite` and `@vitejs/plugin-react` dependencies.
+- [x] F-19 Local tooling dependencies: no longer applies (the tool is not in this repository).
 - [ ] F-20 to F-32: P3 backlog (see `prelaunch-backlog.md`). Fixed on 2026-10-21: F-21, F-22, F-23, F-32; F-20 was a false positive.
 - [ ] F-33 Visual baselines can drift under the 1% tolerance: review and refresh them.
 
@@ -96,8 +96,7 @@ Run these in order on the day.
 5. [ ] Update the homepage notice (`config/announcements.json`). It currently says "not published
        yet".
 6. [ ] Enable the GitHub link on Vision once the repository is public.
-7. [ ] Run `npm run verify` and the admin E2E (`npx playwright test -c playwright.admin.config.ts`)
-       on the final build.
+7. [ ] Run `npm run verify` on the final build.
 8. [ ] Smoke test the deployed site: home, `/docs/getting-started/`, one example, search, the
        Bundle Builder copy buttons, and `/playground/`.
-9. [ ] Confirm the deployment does not include `site/admin/`, and that `/api/*` returns 404 there.
+9. [ ] Confirm that `/api/*` returns 404 on the deployment.

@@ -154,6 +154,5 @@ the launch.
   - Refresh `docs/visual-review` with a Vision v2 comparison.
   - Add visual baselines where the pages are stable.
   - Declare `vite` and `@vitejs/plugin-react` in `site/package.json`.
-  - Fix the admin's minor items.
   - Confirm the package contents are intended.
 - **Effort:** M.
