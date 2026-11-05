@@ -10,6 +10,7 @@
 
 import { warn } from '../core/log';
 import { fmt } from '../core/format';
+import { EXCLUDED, missing } from '../core/parser';
 import { sensitive } from './expr';
 import { resolveCell, type Cell } from './state';
 import { parseTyped, convert, serialize, numericString, type Typed } from './values';
@@ -294,6 +295,7 @@ export function parseAction(text: string, category: Category, trigger: string): 
       fn.check?.(a);
       return { k: 'fn', name: t.v, args: a };
     }
+    if (EXCLUDED['fn:' + t.v]) return fail(missing(`${t.v}()`, EXCLUDED['fn:' + t.v])); // 0.10: a value function left out of this bundle
     const all = [...ACTION_FUNCTIONS, ...actionFns.keys()].map((f) => f + '()');
     return fail(`${t.v}() is not available in actions; use ${all.slice(0, -1).join(', ')} or ${all[all.length - 1]}`);
   }
@@ -332,6 +334,7 @@ function numeric(t: Typed): Typed {
   // 0.10: a string that is exactly a decimal number ("09") calculates as that number.
   const n = numericString(t);
   if (n) return n;
+  if (t.type === 'datetime') throw new EvalError(`${serialize(t)} is a date and time; add or subtract a duration (time() + 30s), or subtract two datetimes`);
   throw new EvalError(`${serialize(t)} is not a number`);
 }
 const round6 = (v: number) => Math.round(v * 1e6) / 1e6;
@@ -356,6 +359,7 @@ function common(list: Typed[]): [Typed, number[]] {
 }
 
 function arith(op: string, x: Typed, y: Typed): Typed {
+  if (x.type === 'datetime' || y.type === 'datetime') return dateArith(op, x, y);
   const a = numeric(x), b = numeric(y);
   if (op === '+' || op === '-') {
     const [u, [av, bv]] = common([a, b]);
@@ -370,6 +374,22 @@ function arith(op: string, x: Typed, y: Typed): Typed {
   if (a.type === 'number') throw new EvalError(`cannot divide ${serialize(a)} by ${serialize(b)}`);
   const [, [av, bv]] = common([a, b]);
   return num(round6(av / bv));
+}
+
+/**
+ * 0.10: datetime ± duration = datetime (same zone); datetime - datetime = duration in ms.
+ * A plain number is never taken as a time.
+ */
+function dateArith(op: string, x: Typed, y: Typed): Typed {
+  if (x.type === 'datetime' && y.type === 'datetime') {
+    if (op !== '-') throw new EvalError(`only subtraction works on two datetimes (it gives the duration between them), not ${op}`);
+    return { type: 'dimension', v: (x.v as number) - (y.v as number), unit: 'ms' };
+  }
+  const [d, other] = x.type === 'datetime' ? [x, y] : [y, x];
+  const delta = other.type === 'dimension' ? convert({ type: 'dimension', v: 0, unit: 'ms' }, other) : undefined;
+  if ((op !== '+' && op !== '-') || delta === undefined || (op === '-' && d === y))
+    throw new EvalError(`${serialize(x)} ${op} ${serialize(y)}: a datetime takes + or - with a time like 30s or 500ms`);
+  return { ...d, v: (d.v as number) + (op === '+' ? delta : -delta) };
 }
 
 function rect(ctx: EvalCtx): DOMRect {

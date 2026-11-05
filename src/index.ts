@@ -18,5 +18,6 @@ import './features/persist';
 import './features/blur';
 import './features/strings';
 import './features/format';
+import './features/datetime';
 
 export * from './api';

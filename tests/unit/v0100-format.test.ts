@@ -67,8 +67,8 @@ describe('format() in the expression language', () => {
   it('style and currency are checked when the sheet is compiled', () => {
     const parse = (t: string) => err(() => parseAction(t, 'other', ':on(click)'));
     expect(parse('format(1)')).toBe('format() takes 2 to 3 arguments, got 1');
-    expect(parse('format(1, var(--s))')).toBe('the second argument of format() is a style: "decimal", "integer", "percent" or "currency"');
-    expect(parse('format(1, "HH:mm")')).toBe('"HH:mm" is not a format() style; use "decimal", "integer", "percent" or "currency"');
+    expect(parse('format(1, var(--s))')).toBe('the second argument of format() is a style ("decimal", "integer", "percent", "currency") or a date pattern such as "HH:mm"');
+    expect(parse('format(1, "%")')).toBe('"%" is neither a format() style ("decimal", "integer", "percent", "currency") nor a date pattern such as "HH:mm"'); // step 6: date patterns
     expect(parse('format(1, "currency")')).toBe('"currency" needs a three-letter ISO 4217 code, e.g. format(9.5, "currency", "EUR")');
     expect(parse('format(1, "currency", "EURO")')).toBe('"currency" needs a three-letter ISO 4217 code, e.g. format(9.5, "currency", "EUR")');
     expect(parse('format(1, "decimal", "EUR")')).toBe('"decimal" takes no third argument');

@@ -51,7 +51,7 @@ function check(cond: Condition, refs: StateRef[], el: Element): boolean | undefi
     const lookup: Lookup = (name) => refs[cond.names.indexOf(name)].state();
     if (cond.calls) { // 0.10: calls read their states themselves; subscribe first
       for (const n of cond.calls) refs[cond.names.indexOf(n)].state();
-      lookup.call = (node: unknown) => conditionCalls.evaluate!(node, el);
+      lookup.fn = (node: unknown) => conditionCalls.evaluate!(node, el);
     }
     return evaluate(cond.ast, lookup);
   } catch (e) {

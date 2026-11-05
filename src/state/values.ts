@@ -4,7 +4,9 @@
 
 import { fmt } from '../core/format';
 
-export type StateType = 'boolean' | 'number' | 'dimension' | 'value' | 'string';
+export type StateType = 'boolean' | 'number' | 'dimension' | 'value' | 'string'
+  // 0.10: an instant from time() (epoch ms), never parsed from text.
+  | 'datetime';
 
 /**
  * A logical value: booleans, unitless numbers, dimensions (number + unit), quoted strings
@@ -15,6 +17,8 @@ export interface Typed {
   v: boolean | number | string;
   /** Lower-case unit for dimensions ('px', '%', 'deg'...), '' for numbers. */
   unit?: string;
+  /** datetime only: the IANA time zone format() shows it in (timezone()); the browser's when absent. */
+  zone?: string;
 }
 
 const NUMBER = /^([+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?)([a-z%]*)$/i;
@@ -36,6 +40,7 @@ export function parseTyped(text: string): Typed {
 export function serialize(t: Typed): string {
   if (t.type === 'boolean') return t.v ? '1' : '0';
   if (t.type === 'value') return t.v as string;
+  if (t.type === 'datetime') return fmt(t.v as number); // epoch ms: usable in calc() and counters
   // One CSS string token whatever the text (attribute values are untrusted): quotes and
   // backslashes escaped, every control character as a hex escape (a raw newline ends a string).
   if (t.type === 'string') return '"' + (t.v as string).replace(/[\\"]/g, '\\$&').replace(/[\0-\x1f\x7f]/g, (c) => '\\' + c.charCodeAt(0).toString(16) + ' ') + '"';
@@ -70,7 +75,7 @@ export function coerce(to: Typed, from: Typed): Typed {
 }
 
 export function equal(a: Typed, b: Typed): boolean {
-  return a.type === b.type && a.v === b.v && a.unit === b.unit;
+  return a.type === b.type && a.v === b.v && a.unit === b.unit && a.zone === b.zone;
 }
 
 // ---- conditions -------------------------------------------------------------------
@@ -150,7 +155,8 @@ export function parseCondition(text: string): Condition {
       const call = calls[+t.slice(1)];
       let parsed;
       try { parsed = conditionCalls.parse!(call); } catch (e) { return fail(`${call}: ${(e as Error).message}`); }
-      for (const n of parsed.names) { names.add(n); (callNames ??= new Set()).add(n); }
+      callNames ??= new Set(); // also for a call that reads no state: time(), length("ab")
+      for (const n of parsed.names) { names.add(n); callNames.add(n); }
       return { k: 'call', node: parsed.node, text: call };
     }
     if (t.startsWith('--')) { names.add(t); return { k: 'ref', name: t }; }
@@ -229,7 +235,7 @@ export class ConditionError extends Error {}
 export interface StateValues { value: Typed; previous: Typed }
 export type Lookup = ((name: string) => StateValues | undefined) & {
   /** 0.10: evaluates a call operand for the element (conditions.ts). */
-  call?(node: unknown): Typed | undefined;
+  fn?(node: unknown): Typed | undefined; // not "call": Function.prototype.call would answer when it is unset
 };
 
 /** direction(): 1, 0 or -1 for number and dimension states; a ConditionError otherwise. */
@@ -279,7 +285,7 @@ function value(c: Cond, lookup: Lookup): Typed | undefined {
   if (c.k === 'prev') return lookup(c.name)?.previous;
   if (c.k === 'dir') { const s = lookup(c.name); return s && direction(s, c.name); }
   if (c.k === 'lit') return c.t;
-  if (c.k === 'call') return lookup.call?.(c.node);
+  if (c.k === 'call') return lookup.fn?.(c.node);
   const r = evaluate(c, lookup);
   return r === undefined ? undefined : { type: 'boolean', v: r };
 }
@@ -291,6 +297,13 @@ function compare(op: string, a: Typed, b: Typed): boolean {
   const ordered = op !== '==' && op !== '!=';
   // 0.10: a numeric string compares with a number ("09" >= 9); two strings still compare as text.
   if ((a.type === 'string') !== (b.type === 'string')) { a = numericString(a) ?? a; b = numericString(b) ?? b; }
+  // 0.10: a datetime compares with a datetime or with a number of epoch milliseconds, by instant.
+  if (a.type === 'datetime' || b.type === 'datetime') {
+    const ms = (t: Typed) => (t.type === 'datetime' || t.type === 'number' ? (t.v as number) : undefined);
+    const x = ms(a), y = ms(b);
+    if (x === undefined || y === undefined) throw new ConditionError(`cannot compare ${serialize(a)} (${a.type}) with ${serialize(b)} (${b.type})`);
+    a = { type: 'number', v: x, unit: '' }; b = { type: 'number', v: y, unit: '' };
+  }
   if (a.type === 'boolean' || b.type === 'boolean' || a.type === 'value' || b.type === 'value' || a.type === 'string' || b.type === 'string') {
     if (a.type !== b.type) throw new ConditionError(`cannot compare ${serialize(a)} (${a.type}) with ${serialize(b)} (${b.type})`);
     if (ordered) throw new ConditionError(`${op} needs numbers, got ${a.type} values`);

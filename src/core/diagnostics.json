@@ -482,6 +482,18 @@
    "template": "{0}() is not available in actions; use {1} or {2}",
    "module": "state/actexpr.ts"
   },
+  "RCSS-E090": {
+   "template": "{0} is a date and time; add or subtract a duration (time() + 30s), or subtract two datetimes",
+   "module": "state/actexpr.ts"
+  },
+  "RCSS-E091": {
+   "template": "only subtraction works on two datetimes (it gives the duration between them), not {0}",
+   "module": "state/actexpr.ts"
+  },
+  "RCSS-E092": {
+   "template": "{0} {1} {2}: a datetime takes + or - with a time like 30s or 500ms",
+   "module": "state/actexpr.ts"
+  },
   "RCSS-F001": {
    "template": "bind: {0} on {1}: a {2} control cannot hold a {3} state (use {4}). Not bound.",
    "module": "state/bind.ts"
@@ -998,6 +1010,10 @@
    "template": "condition \"{0}\": missing \")\"",
    "module": "state/values.ts"
   },
+  "RCSS-S030": {
+   "template": "{0}() takes no arguments here",
+   "module": "state/expr.ts"
+  },
   "RCSS-T001": {
    "template": "text: on {0} is ignored: the element has other content (child elements or several nodes). Put the text in its own element, e.g. <span class=\"label\"></span>, and target that.",
    "module": "state/text.ts"
@@ -1128,6 +1144,42 @@
   },
   "RCSS-V029": {
    "template": "\"{0}\" takes no third argument",
+   "module": "functions/format.ts"
+  },
+  "RCSS-V030": {
+   "template": "the second argument of format() is a style (\"decimal\", \"integer\", \"percent\", \"currency\") or a date pattern such as \"HH:mm\"",
+   "module": "functions/format.ts"
+  },
+  "RCSS-V031": {
+   "template": "\"{0}\" is neither a format() style (\"decimal\", \"integer\", \"percent\", \"currency\") nor a date pattern such as \"HH:mm\"",
+   "module": "functions/format.ts"
+  },
+  "RCSS-V032": {
+   "template": "a date pattern takes no third argument",
+   "module": "functions/format.ts"
+  },
+  "RCSS-V033": {
+   "template": "the zone of timezone() is a quoted IANA name, e.g. \"Europe/London\"",
+   "module": "functions/datetime.ts"
+  },
+  "RCSS-V034": {
+   "template": "timezone(): unknown time zone \"{0}\"",
+   "module": "functions/datetime.ts"
+  },
+  "RCSS-V035": {
+   "template": "timezone() needs a date and time from time(); {0} is a {1}",
+   "module": "functions/datetime.ts"
+  },
+  "RCSS-V036": {
+   "template": "the zone of timezone() is a quoted IANA name",
+   "module": "functions/datetime.ts"
+  },
+  "RCSS-V037": {
+   "template": "format(): a date pattern needs a date and time from time() or timezone(); {0} is a {1}",
+   "module": "functions/format.ts"
+  },
+  "RCSS-V038": {
+   "template": "format(): \"{0}\" formats numbers; {1} is a date and time, format it with a pattern such as \"HH:mm\"",
    "module": "functions/format.ts"
   },
   "RCSS-W001": {

@@ -81,10 +81,19 @@ export const EXCLUDED: Record<string, string> = typeof __RCSS_EXCLUDED__ !== 'un
 /** Declarations the parser recognizes and the feature that provides their runtime. */
 const DECLARATION_FEATURE = { on: 'events', bind: 'forms', text: 'text', attr: 'attributes', focus: 'focus', typed: 'values', 'state-bind': 'attributes',
   'on-rule': 'events', drag: 'gestures', persist: 'persist', 'state-form': 'forms', 'attr-ns': 'attributes', content: 'text' } as const;
-const missing = (what: string, feature: string) =>
+export const missing = (what: string, feature: string) =>
   msg(`${what} is not included in this bundle (feature "${feature}"); build a bundle with it (reactive-css build --features ${feature}) or use the full bundle`);
 /** Names that may be the native CSS function of the same name: reported as a note, not a warning. */
 const NATIVE_TOO = new Set(['random', 'element']);
+/** 0.10: calls of the registered value functions (rebuilt when a feature registers more functions). */
+let valueCalls: [number, RegExp | false] = [-1, false];
+function valueCallRe() {
+  if (valueCalls[0] !== functions.size) {
+    const names = [...functions.values()].filter((d) => d.value).map((d) => d.name);
+    valueCalls = [functions.size, names.length > 0 && new RegExp(`(?<![\\w-])(${names.join('|')})\\(`, 'g')];
+  }
+  return valueCalls[1];
+}
 /** True when `s` has a comma outside parentheses. */
 const topComma = (s: string) => { let d = 0; for (const c of s) { if (c === '(') d++; else if (c === ')') d--; else if (c === ',' && !d) return true; } return false; };
 /**
@@ -166,6 +175,8 @@ export function compile(source: string, options: CompileOptions | string = {}): 
   const runtime: SheetRuntime = { setup: [] };
   const uses = new Set<string>();
   const use = (k: string) => { uses.add(k); };
+  /** 0.10: value functions in text the expression language parses (actions, conditions, state(), their arguments). */
+  const valueUses = (s: string) => { const re = s.includes('(') && valueCallRe(); if (re) for (const [, n] of s.matchAll(re)) use('fn:' + n); };
 
   const raw = (i: number) => repl[i] ?? source.slice(tokens[i].start, tokens[i].end);
   /** Text of tokens [a, b) with comments dropped, as used for selectors and arguments. */
@@ -217,6 +228,7 @@ export function compile(source: string, options: CompileOptions | string = {}): 
     const name = tokens[open].value;
     const def = functions.get(name)!;
     use('fn:' + name);
+    valueUses(text(open + 1, close));
     const args: Arg[] = [];
     let start = open + 1;
     const flush = (end: number) => {
@@ -292,6 +304,7 @@ export function compile(source: string, options: CompileOptions | string = {}): 
     const first = text(...args[0]);
     if (/^(bind|persist)\(/i.test(first)) throw new Error(`state() needs an initial value first, e.g. state(false, ${first})`);
     const init = parseExpr(first);
+    valueUses(first);
     const initType = init.k === 'lit' ? init.t.type : init.k === 'attr' ? init.fallback.type : init.k === 'split' ? 'string' : undefined;
     let bind: AttrBind | undefined;
     let persist: PersistSpec | undefined;
@@ -474,7 +487,12 @@ export function compile(source: string, options: CompileOptions | string = {}): 
       }
       if (attr && !tokens.slice(value, to).some((t) => t.type !== 'ws' && t.type !== 'comment'))
         throw new Error(ns ? `${name} needs a value, e.g. ${name}: var(--state)` : `attr: ${attr} needs a value, e.g. attr: ${attr} var(--state)`);
-      const bad = tokens.slice(value, to).find((t) => (ns && t.type === 'url') || (t.type === 'function' && !TEXT_FUNCTIONS.has(t.value) && !functions.get(t.value)?.value));
+      let bad: Token | undefined;
+      for (let i = value; i < to && !bad; i++) {
+        const t = tokens[i];
+        if (t.type === 'function' && functions.get(t.value)?.value) i = matching(tokens, i); // 0.10: the expression language checks its arguments
+        else if ((ns && t.type === 'url') || (t.type === 'function' && !TEXT_FUNCTIONS.has(t.value))) bad = t;
+      }
       if (bad?.type === 'function' && EXCLUDED['fn:' + bad.value]) throw new Error(missing(`${bad.value}()`, EXCLUDED['fn:' + bad.value])); // 0.10: a value function left out of this bundle
       if (bad) throw new Error(`${subject} takes ${TAKES[ns ? 'attr' : kind]}; ${bad.type === 'url' ? 'url' : bad.value}() is not supported`);
       if (kind === 'focus') { edits.push({ from, to: colon, text: '--rcss-focus' }); rule.focus = true; }
@@ -624,10 +642,12 @@ export function compile(source: string, options: CompileOptions | string = {}): 
     if (!name.startsWith('--') || name.startsWith('--attr-') || name.startsWith('--rcss-'))
       return dropDeclaration(from, to, `an :on() rule contains only state changes like --open: toggle(); "${name}" is not one (a rule describes either an event or a style)`);
     let m;
-    try { m = runtimes.onRules!.mutation(name, text(colon + 1, end), spec.trigger); } catch (e) { return dropDeclaration(from, to, (e as Error).message); }
+    const value = text(colon + 1, end);
+    try { m = runtimes.onRules!.mutation(name, value, spec.trigger); } catch (e) { return dropDeclaration(from, to, (e as Error).message); }
     const mut = { ...m, id: ++handlerCounter, rule: spec };
     use('mut:' + mut.op);
-    if (/\bevent\(/i.test(text(colon + 1, end))) use('expr:event');
+    if (/\bevent\(/i.test(value)) use('expr:event');
+    valueUses(value);
     // One slot per event the rule answers (0.10: each member of `a | b`), so the cascade picks a
     // winner per event exactly as for single-event rules.
     const out: string[] = [];
@@ -695,6 +715,7 @@ export function compile(source: string, options: CompileOptions | string = {}): 
         if (def.functional !== (t.type === 'function')) throw new Error(`:${def.name} ${def.functional ? 'needs' : 'takes no'} arguments`);
         const end = def.functional ? matching(tokens, i + 1) + 1 : i + 2;
         const arg = def.functional ? text(i + 2, end - 1) : '';
+        valueUses(arg);
         const [cFrom, cTo] = compound(from, to, i);
         const candidate = resolveNesting(parent, strip(cFrom, i) + strip(end, cTo));
         local.push({ from: i, to: end, text: def.compile(arg, candidate, runtime) });

@@ -148,7 +148,7 @@ test.describe('profiles run real interfaces', () => {
     await frames(page);
     expect(await page.textContent('.a .t')).toBe('1');
     const info = await page.evaluate(() => (window as any).ReactiveCSS.describe());
-    expect(info.bundle).toHaveLength(17); // 0.9.0 adds gestures, persist, blur; 0.10 adds strings, format
+    expect(info.bundle).toHaveLength(18); // 0.9.0 adds gestures, persist, blur; 0.10 adds strings, format, datetime
     expect(await diagnostics(page)).toEqual([]);
     await unmount(page);
   });

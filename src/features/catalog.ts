@@ -4,7 +4,7 @@
 // in tests/unit/catalog.test.ts; dependencies are verified by building each entry alone
 // (tests/unit/catalog.test.ts). Semantics: docs/rfc-modular-runtime-0.8.md.
 
-export type FeatureId = 'core' | 'events' | 'gestures' | 'persist' | 'conditions' | 'nth-var' | 'history' | 'forms' | 'text' | 'attributes' | 'focus' | 'blur' | 'values' | 'dynamic' | 'geometry' | 'strings' | 'format';
+export type FeatureId = 'core' | 'events' | 'gestures' | 'persist' | 'conditions' | 'nth-var' | 'history' | 'forms' | 'text' | 'attributes' | 'focus' | 'blur' | 'values' | 'dynamic' | 'geometry' | 'strings' | 'format' | 'datetime';
 export type Category = 'Core & State' | 'Events & Actions' | 'Conditions & Selectors' | 'Forms & DOM Bindings' | 'History' | 'Values & Strings' | 'Geometry & Observers' | 'Focus & Accessibility';
 
 export interface CatalogFeature {
@@ -99,11 +99,16 @@ export const CATALOG: CatalogFeature[] = [
     modules: ['functions/calls.ts', 'functions/strings.ts'], requires: ['core', 'events'], optional: ['conditions'], status: 'experimental',
     provides: ['fn:length', 'fn:includes', 'fn:lower', 'fn:trim'],
     syntax: ['length(text)', 'includes(text, part)', 'lower(text)', 'trim(text)', 'in :on() actions, :when() / when() conditions and declarations; --name reads a state'] },
-  { id: 'format', title: 'Number formatting', category: 'Values & Strings', entry: 'src/features/format.ts',
+  { id: 'format', title: 'Number and date formatting', category: 'Values & Strings', entry: 'src/features/format.ts',
     // strings: the value-function plumbing (functions/calls.ts) is part of it.
     modules: ['functions/format.ts', 'functions/intl.ts'], requires: ['core', 'events', 'strings'], optional: ['conditions'], status: 'experimental',
     provides: ['fn:format'],
-    syntax: ['format(number, "decimal" | "integer" | "percent" | "currency" [, "EUR"]), in the nearest lang', 'a string that is exactly a decimal number ("09") compares and calculates as a number'] },
+    syntax: ['format(number, "decimal" | "integer" | "percent" | "currency" [, "EUR"]), in the nearest lang', 'format(datetime, "yyyy-MM-dd HH:mm"): a date pattern', 'a string that is exactly a decimal number ("09") compares and calculates as a number'] },
+  { id: 'datetime', title: 'Date and time', category: 'Values & Strings', entry: 'src/features/datetime.ts',
+    // format: the Intl helpers (functions/intl.ts) and the date patterns that show a datetime.
+    modules: ['functions/datetime.ts'], requires: ['core', 'events', 'strings', 'format'], optional: ['conditions'], status: 'experimental',
+    provides: ['fn:time', 'fn:timezone'],
+    syntax: ['time(): the current instant, a datetime; state(time())', 'timezone(datetime, "Area/City")', 'datetime ± 30s; datetime - datetime = a duration in ms'] },
 ];
 
 /** Example configurations (docs/bundle-builder-0.8.md). */

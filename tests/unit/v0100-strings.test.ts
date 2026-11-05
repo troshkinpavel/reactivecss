@@ -13,7 +13,7 @@ const out = (expr: string) => serialize(run(expr)!);
 const cond = (text: string) => {
   const c = parseCondition(text);
   const lookup: Lookup = () => undefined;
-  lookup.call = (node) => conditionCalls.evaluate!(node, {} as Element);
+  lookup.fn = (node) => conditionCalls.evaluate!(node, {} as Element);
   return evaluate(c.ast, lookup);
 };
 
