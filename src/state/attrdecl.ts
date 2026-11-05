@@ -244,6 +244,7 @@ export function attrWatcher(match: string, names: string[]): Watcher {
       for (const n of names) b.add(n);
       late(b);
     },
+    move(el) { const b = sets.get(el); if (b) late(b); }, // 0.10: it may read another owner now
     remove(el) {
       const b = sets.get(el);
       if (!b) return;

@@ -510,6 +510,14 @@
    "template": "every({0}) is below the {1}ms minimum; using {2}ms.",
    "module": "state/on.ts"
   },
+  "RCSS-E097": {
+   "template": "{0}: {1} is computed by its declaration (read-only); nothing is changed.",
+   "module": "state/on.ts"
+  },
+  "RCSS-E098": {
+   "template": "{0}() on {1}: {2} is computed by its declaration (read-only); nothing is changed.",
+   "module": "state/actions.ts"
+  },
   "RCSS-F001": {
    "template": "bind: {0} on {1}: a {2} control cannot hold a {3} state (use {4}). Not bound.",
    "module": "state/bind.ts"
@@ -528,6 +536,10 @@
   },
   "RCSS-F005": {
    "template": "bind: {0} matches more than one bind: rule; the first one is used.",
+   "module": "state/bind.ts"
+  },
+  "RCSS-F006": {
+   "template": "bind: on {0}: {1} is computed by its declaration (read-only); nothing is changed.",
    "module": "state/bind.ts"
   },
   "RCSS-G001": {
@@ -882,6 +894,22 @@
    "template": "{0} in \"{1}\". Rule dropped.",
    "module": "core/parser.ts"
   },
+  "RCSS-P085": {
+   "template": "{0} is not a computed state: !important is not supported on it. It stays a CSS-only value that :when(), text: and actions cannot read, in \"{1}\".",
+   "module": "core/parser.ts"
+  },
+  "RCSS-P086": {
+   "template": "{0} is not a computed state: it is in a conditional rule (:when(), :hover and other state pseudo-classes, a pseudo-element, @media, @supports or @container), and computed custom properties need an unconditional rule. It stays a CSS-only value that :when(), text: and actions cannot read, in \"{1}\".",
+   "module": "core/parser.ts"
+  },
+  "RCSS-P087": {
+   "template": "{0} is not a computed state: it reads time() outside live(), which gives one instant; write live(time(), 1s) for a clock. It stays a CSS-only value that :when(), text: and actions cannot read, in \"{1}\".",
+   "module": "core/parser.ts"
+  },
+  "RCSS-P088": {
+   "template": "{0} is not a computed state: it reads {1}, which can change without a state change. It stays a CSS-only value that :when(), text: and actions cannot read, in \"{2}\".",
+   "module": "core/parser.ts"
+  },
   "RCSS-R001": {
    "template": "Invalid function name \"{0}\"",
    "module": "core/registry.ts"
@@ -1209,6 +1237,46 @@
   "RCSS-V038": {
    "template": "format(): \"{0}\" formats numbers; {1} is a date and time, format it with a pattern such as \"HH:mm\"",
    "module": "functions/format.ts"
+  },
+  "RCSS-V039": {
+   "template": "{0} on {1}: CSS shows {2}, its computed state is {3}. A declaration Reactive CSS does not process overrides it (!important, @property, or a stylesheet without reactive syntax); remove it or rename the property.",
+   "module": "functions/derived.ts"
+  },
+  "RCSS-V040": {
+   "template": "{0} on {1} reads {2}, but no element declares {3} as a state on it or its ancestors; {4} has no value.",
+   "module": "functions/derived.ts"
+  },
+  "RCSS-V041": {
+   "template": "{0} on {1} has an inline style value; it is not computed on that element.",
+   "module": "functions/derived.ts"
+  },
+  "RCSS-V042": {
+   "template": "{0} is declared {1} times in the processed stylesheets (state(), plain values, @property and other computed declarations count). A computed custom property must be the only declaration of its name, so {2} is not computed until the others are removed or renamed.",
+   "module": "functions/derived.ts"
+  },
+  "RCSS-V043": {
+   "template": "{0} reads itself through {1}; computed custom properties cannot form a cycle, so {2} is not computed.",
+   "module": "functions/derived.ts"
+  },
+  "RCSS-V044": {
+   "template": "{0} cannot be read (cross-origin without CORS), so Reactive CSS cannot check whether it declares {1}. Where such a declaration applies inside an owner, CSS shows its value instead of the computed state.",
+   "module": "functions/derived.ts"
+  },
+  "RCSS-V045": {
+   "template": "{0} is computed, and {1} also declares it ({2}). Reactive CSS does not process that stylesheet: where it applies inside an owner (or with !important on one), CSS shows its value, not the computed state. Remove it or rename the property.",
+   "module": "functions/derived.ts"
+  },
+  "RCSS-V046": {
+   "template": "{0} on {1} has an inline style value inside a computed owner ({2}): CSS there shows the inline value, not the computed state. Remove it or rename the property.",
+   "module": "functions/derived.ts"
+  },
+  "RCSS-V047": {
+   "template": "{0} on {1} reads {2}, which is no longer a state there; it keeps its last value.",
+   "module": "functions/derived.ts"
+  },
+  "RCSS-V048": {
+   "template": "{0} on {1}: {2}; it keeps its last value.",
+   "module": "functions/derived.ts"
   },
   "RCSS-W001": {
    "template": ":changed() expects a state name like --count, got \"{0}\"",

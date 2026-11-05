@@ -4,7 +4,7 @@
 // in tests/unit/catalog.test.ts; dependencies are verified by building each entry alone
 // (tests/unit/catalog.test.ts). Semantics: docs/rfc-modular-runtime-0.8.md.
 
-export type FeatureId = 'core' | 'events' | 'gestures' | 'persist' | 'conditions' | 'nth-var' | 'history' | 'forms' | 'text' | 'attributes' | 'focus' | 'blur' | 'values' | 'dynamic' | 'geometry' | 'strings' | 'format' | 'datetime' | 'timers';
+export type FeatureId = 'core' | 'events' | 'gestures' | 'persist' | 'conditions' | 'nth-var' | 'history' | 'forms' | 'text' | 'attributes' | 'focus' | 'blur' | 'values' | 'dynamic' | 'geometry' | 'strings' | 'format' | 'datetime' | 'timers' | 'derived';
 export type Category = 'Core & State' | 'Events & Actions' | 'Conditions & Selectors' | 'Forms & DOM Bindings' | 'History' | 'Values & Strings' | 'Geometry & Observers' | 'Focus & Accessibility';
 
 export interface CatalogFeature {
@@ -113,6 +113,11 @@ export const CATALOG: CatalogFeature[] = [
     modules: ['functions/timers.ts'], requires: ['core', 'events'], optional: ['conditions'], status: 'experimental',
     provides: ['trigger:after', 'trigger:every'],
     syntax: [':on(after(3s)): once, 3s after the rule becomes active', ':on(every(1s)) / :on(every(80ms, 400ms)): while the rule is active (interval, first delay)', 'active = the element matches the full selector, :when() included'] },
+  { id: 'derived', title: 'Computed custom properties', category: 'Values & Strings', entry: 'src/features/derived.ts',
+    // strings: the value functions and their plumbing (functions/calls.ts).
+    modules: ['functions/derived.ts'], requires: ['core', 'strings'], optional: ['format', 'datetime', 'dynamic', 'conditions'], status: 'experimental',
+    provides: ['decl:derived'],
+    syntax: ['--clean: trim(--value); --chars: length(--clean): read-only states of the matched elements', '--now: live(time(), 1s)', 'unconditional rules only; the only declaration of its name', 'written inline on the owner: not a general CSS cascade'] },
 ];
 
 /** Example configurations (docs/bundle-builder-0.8.md). */

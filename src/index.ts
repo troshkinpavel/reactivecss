@@ -20,5 +20,6 @@ import './features/strings';
 import './features/format';
 import './features/datetime';
 import './features/timers';
+import './features/derived';
 
 export * from './api';

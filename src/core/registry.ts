@@ -8,6 +8,7 @@ import type { AttrBind, BoundAttribute } from '../state/bindattr';
 import type { Trigger, Modifiers, Mutation, OnRuleSpec } from '../state/on';
 import type { PersistSpec, PersistLink, Cell } from '../state/state';
 import type { Typed } from '../state/values';
+import type { DerivedDecl } from './parser';
 // Registries for reactive functions and custom selectors. The parser, scheduler and
 // element manager only talk to these interfaces, so adding a function means adding
 // one definition object, nothing else.
@@ -199,6 +200,11 @@ export interface DeclarationRuntimes {
   gestures?: { register(prevent: boolean): () => void };
   /** persist() (persist feature): initial value from storage, then a link that writes changes. */
   persist?: { initial(spec: PersistSpec, owner: Element, fallback: Typed): Typed | undefined; link(spec: PersistSpec, cell: Cell): PersistLink };
+  /**
+   * 0.10 (functions/derived.ts): computed custom properties. `check` names what a call reads besides states (attr(…), time()…);
+   * `sheet` registers a stylesheet's declared names and computed declarations (returns its cleanup).
+   */
+  derived?: { check(call: CallNode): string | undefined; sheet(declared: Map<string, number>, decls: DerivedDecl[]): () => void; watchers(list: [match: string, d: DerivedDecl][]): Watcher[] };
   /** 0.10 (functions/timers.ts): one timer per (element, trigger key) while an after() / every() rule is active. */
   timers?: { start(el: Element, t: Trigger): void; stop(el: Element, t: Trigger): void };
 }

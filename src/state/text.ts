@@ -127,6 +127,7 @@ export function textWatcher(match: string): Watcher {
       b.rules++;
       late(b);
     },
+    move(el) { const b = bindings.get(el); if (b) late(b); }, // 0.10: it may read another owner now
     remove(el) {
       const b = bindings.get(el);
       if (!b || --b.rules) { if (b) late(b); return; }

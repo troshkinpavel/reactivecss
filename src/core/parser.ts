@@ -19,6 +19,12 @@ export interface ReactiveDecl {
   call: CallNode;
 }
 
+/** 0.10: `--name: f(…)` or `--name: live(f(…), interval)` (f a value function) in an unconditional rule. */
+export interface DerivedDecl {
+  name: string;
+  call: CallNode;
+}
+
 export interface ReactiveRule {
   /** Selector used to find elements that may need the bindings (state pseudo-classes removed). */
   match: string;
@@ -44,6 +50,8 @@ export interface ReactiveRule {
   onSpec?: OnRuleSpec;
   /** 0.9.0 state(…, bind(value | checked)): states bound to the matched control itself. */
   forms?: string[];
+  /** 0.10: computed custom properties, read-only states of the matched elements. */
+  derived?: DerivedDecl[];
   /** Token range of the rule's own selector, and the enclosing rule (nesting): read by content:. */
   prelude?: [number, number];
   parent?: ReactiveRule;
@@ -69,6 +77,8 @@ export interface CompiledSheet {
    * `act:set`, `fn:live`, `sel:when`… (the analyzer maps them to bundle features).
    */
   uses: Set<string>;
+  /** 0.10: how many times the sheet declares each custom property (any rule, state(), @property). */
+  declared: Map<string, number>;
 }
 
 declare const __RCSS_EXCLUDED__: Record<string, string> | undefined;
@@ -94,6 +104,12 @@ function valueCallRe() {
   }
   return valueCalls[1];
 }
+/** 0.10: a value function, or live() around exactly one (computed custom properties). */
+const derivable = (c: CallNode) => !!c.def.value || (c.def.name === 'live' && liveInner(c) !== undefined);
+export const liveInner = (c: CallNode) => {
+  const p = c.args[0]?.parts.filter((x) => typeof x !== 'string' || x.trim());
+  return p?.length === 1 && typeof p[0] !== 'string' && p[0].def.value ? p[0] : undefined;
+};
 /** True when `s` has a comma outside parentheses. */
 const topComma = (s: string) => { let d = 0; for (const c of s) { if (c === '(') d++; else if (c === ')') d--; else if (c === ',' && !d) return true; } return false; };
 /**
@@ -175,6 +191,8 @@ export function compile(source: string, options: CompileOptions | string = {}): 
   const runtime: SheetRuntime = { setup: [] };
   const uses = new Set<string>();
   const use = (k: string) => { uses.add(k); };
+  const declared = new Map<string, number>();
+  const declare = (name: string) => declared.set(name, (declared.get(name) ?? 0) + 1);
   /** 0.10: value functions in text the expression language parses (actions, conditions, state(), their arguments). */
   const valueUses = (s: string) => { const re = s.includes('(') && valueCallRe(); if (re) for (const [, n] of s.matchAll(re)) use('fn:' + n); };
 
@@ -515,6 +533,7 @@ export function compile(source: string, options: CompileOptions | string = {}): 
     while (colon < to && tokens[colon].type !== ':') colon++;
     const name = text(from, colon);
     if (rule?.onSpec) { mutation(from, colon, to, rule.onSpec); return; }
+    if (name.startsWith('--')) declare(name.trim());
     if (tokens.slice(colon + 1, to).some((t) => t.type === 'function' && t.value === 'typed')) {
       try { typedDeclaration(name, colon, to); } catch (e) {
         warn(`${(e as Error).message} in "${snippet(from, to)}". Declaration left unchanged.`);
@@ -561,6 +580,25 @@ export function compile(source: string, options: CompileOptions | string = {}): 
     } catch (e) {
       warn(`${(e as Error).message} in "${snippet(from, to)}". Declaration left unchanged.`);
       return;
+    }
+    // 0.10: a value function (or live() around one) as the whole value of a custom property.
+    if (runtimes.derived && decls.length === 1 && local.length === 1 && name.startsWith('--') && derivable(decls[0].call)) {
+      const [end, imp] = important(colon + 1, to);
+      if (text(colon + 1, end).trim() === text(local[0].from, local[0].to).trim()) {
+        const reads = imp || rule!.certain !== true ? undefined : runtimes.derived.check(decls[0].call);
+        if (!imp && rule!.certain === true && !reads) {
+          use('decl:derived');
+          edits.push({ from, to: trimEnd(from, to), text: '' }); // the runtime writes it on each owner
+          if (!rules.includes(rule!)) rules.push(rule!);
+          (rule!.derived ??= []).push({ name: name.trim(), call: decls[0].call });
+          return;
+        }
+        const n = name.trim(), at = snippet(from, to);
+        if (imp) warn(`${n} is not a computed state: !important is not supported on it. It stays a CSS-only value that :when(), text: and actions cannot read, in "${at}".`);
+        else if (!reads) warn(`${n} is not a computed state: it is in a conditional rule (:when(), :hover and other state pseudo-classes, a pseudo-element, @media, @supports or @container), and computed custom properties need an unconditional rule. It stays a CSS-only value that :when(), text: and actions cannot read, in "${at}".`);
+        else if (reads === 'time()') warn(`${n} is not a computed state: it reads time() outside live(), which gives one instant; write live(time(), 1s) for a clock. It stays a CSS-only value that :when(), text: and actions cannot read, in "${at}".`);
+        else warn(`${n} is not a computed state: it reads ${reads}, which can change without a state change. It stays a CSS-only value that :when(), text: and actions cannot read, in "${at}".`);
+      }
     }
     edits.push(...local);
     if (decls.length) {
@@ -833,6 +871,7 @@ export function compile(source: string, options: CompileOptions | string = {}): 
         if (rule?.onSpec) { const end = b >= to || tokens[b].type === ';' ? b + 1 : matching(tokens, b) + 1; dropNested(i, end, rule); i = end; continue; }
         if (b >= to || tokens[b].type === ';') { i = b + 1; continue; }
         const close = matching(tokens, b);
+        if (name === 'property') { const n = tokens.slice(i + 2, b).find((x) => x.type === 'ident'); if (n?.value.startsWith('--')) declare(n.value); }
         // @layer only orders the cascade; the other grouping rules make matching conditional.
         if (GROUPING.has(name)) block(b + 1, close, rule, conditional || name !== 'layer');
         else if (hasReactiveSyntax(source.slice(t.start, tokens[close]?.end ?? source.length)))
@@ -898,7 +937,7 @@ export function compile(source: string, options: CompileOptions | string = {}): 
     if (edits[e]?.from === i) { css += edits[e].text; i = edits[e++].to; }
     else css += raw(i++);
   }
-  return { css, rules, runtime, handlers, uses, changed: edits.length > 0 || runtime.setup.length > 0 };
+  return { css, rules, runtime, handlers, uses, declared, changed: edits.length > 0 || runtime.setup.length > 0 };
 }
 
 /** Joins a nested selector with its parent the way CSS Nesting does (`&` = :is(parent)). */

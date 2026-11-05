@@ -116,6 +116,8 @@ function observe() {
 let batchEnd: (() => void) | undefined;
 /** Called after each batch of mutations has been applied to all watchers. */
 export function afterMutations(fn: () => void): void { batchEnd = fn; }
+/** 0.10: called for each subtree moved inside the document, with its old parent, once its matches are up to date. */
+export const moveHooks: ((root: Element, from: Element) => void)[] = [];
 
 function handle(records: MutationRecord[], endOfBatch = true) {
   const added = new Set<Element>();
@@ -124,6 +126,7 @@ function handle(records: MutationRecord[], endOfBatch = true) {
   const changed = new Map<Element, Set<string>>(); // element -> changed attribute names
   const ownedChanged = new Map<Element, Set<string>>(); // the same, for attributes Reactive CSS writes
   const parents = new Set<Element>();
+  const from: [Element, Element][] = [];
   for (const r of records) {
     if (r.type === 'attributes') {
       const el = r.target as Element;
@@ -137,7 +140,7 @@ function handle(records: MutationRecord[], endOfBatch = true) {
     for (const n of r.removedNodes) {
       if (!(n instanceof Element)) continue;
       const stays = n.isConnected;
-      if (stays) moved.add(n);
+      if (stays) { moved.add(n); if (r.target instanceof Element) from.push([n, r.target]); }
       for (const el of subtree(n)) {
         for (const e of [...(memberOf.get(el) ?? [])]) {
           if (!stays) leave(e, el);
@@ -160,6 +163,7 @@ function handle(records: MutationRecord[], endOfBatch = true) {
     }
     if (e.sibling) for (const p of parents) if (p.isConnected) reconcile(e, p, true);
   }
+  for (const [n, old] of from) if (n.isConnected) for (const fn of moveHooks) fn(n, old);
   // Only a real observer callback ends a batch; records flushed while a watcher is being
   // added belong to the caller's batch, which settles itself.
   if (endOfBatch) batchEnd?.();

@@ -45,7 +45,7 @@ const LEGACY = {
 };
 
 /** API registry entries whose usage key is not `<kind>:<name>` (0.9.0 rule-level syntax). */
-const ENTRY_KEYS = { 'rule:on': 'sel:on', 'rule:drag': 'gesture:drag', 'rule:after': 'trigger:after', 'rule:every': 'trigger:every', 'declaration:--attr-*': 'decl:attr-ns', 'declaration:persist': 'decl:state-persist', 'declaration:bind()': 'decl:state-form' };
+const ENTRY_KEYS = { 'rule:on': 'sel:on', 'rule:drag': 'gesture:drag', 'rule:after': 'trigger:after', 'rule:every': 'trigger:every', 'declaration:computed': 'decl:derived', 'declaration:--attr-*': 'decl:attr-ns', 'declaration:persist': 'decl:state-persist', 'declaration:bind()': 'decl:state-form' };
 
 /** The usage key of an API registry entry (core/features.ts). */
 export function keyOfApiEntry(e) {

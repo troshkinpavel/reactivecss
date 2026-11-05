@@ -15,7 +15,7 @@ import { runtimeStats, runtimes, onEventNames } from '../core/registry';
 import { warn } from '../core/log';
 import type { Watcher } from '../core/elements';
 import { parseKey, keyMatches, type KeySpec } from './keys';
-import { resolveCell, warnMissing, describeElement, type Cell } from './state';
+import { resolveCell, warnMissing, describeElement, readOnly, type Cell } from './state';
 import { parseTyped, assignable, coerce, serialize, equal, type Typed } from './values';
 import { parseAction, evaluateAction, type Category, type Node, type DragInfo, type EvalCtx } from './actexpr';
 import { listen, cancel, preventEvent, editable, extensions } from './actions';
@@ -499,6 +499,7 @@ function commit(tx: Tx) {
   const list = w0.length < 2 ? w0 : w0.filter((w, i) => !w0.some((x, j) => j > i && x.cell === w.cell));
   for (const w of list) {
     if (w.cell.dead) continue;
+    if (readOnly.has(w.cell)) { warn(`${w.where()}: ${w.cell.name} is computed by its declaration (read-only); nothing is changed.`); continue; }
     const v = fit(w.cell.value, w.v);
     if (!v) { warn(`${w.where()}: ${serialize(w.v)} cannot be stored in ${w.cell.name}, which holds ${serialize(w.cell.value)}.`); continue; }
     w.cell.set(v);
