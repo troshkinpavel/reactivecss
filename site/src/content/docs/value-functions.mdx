@@ -1,0 +1,74 @@
+---
+title: "Strings, Numbers and Dates"
+description: "Value functions compute text, numbers and dates from states: length(), includes(), lower(), trim(), format(), time() and timezone(). They work in :on() actions, conditions and declarations."
+group: Concepts
+type: Concept
+order: 17
+---
+Value functions take typed values and return one. One definition works in three places, and `--name` in their arguments reads a state:
+
+```css everywhere.css
+.form { --value: state(""); }
+.form textarea:on(input) { --value: set(trim(event(value))); }  /* an action */
+.form:when(length(--value) > 140) .count { color: red; }        /* a condition */
+.form .count { text: length(--value); }                         /* a declaration */
+```
+
+They are experimental. In a custom bundle they come from the features `strings`, `format` and `datetime`, and none of these needs `events`.
+
+## Text
+| Function | Returns | Notes |
+| --- | --- | --- |
+| `length(text)` | A number | Counts what a person sees: grapheme clusters. It differs from HTML `maxlength`, which counts UTF-16 code units. |
+| `includes(text, part)` | A boolean | Case-sensitive, compared in NFC form, no accent folding. An empty part is found. |
+| `lower(text)` | A string | The Unicode default rules: no locale rules, the same for every user. |
+| `trim(text)` | A string | Removes Unicode white space at both ends. |
+
+The input is a string or a keyword. A number, boolean or datetime is an error with one diagnostic, never converted silently.
+
+```css search.css
+.list { --q: state(""); }
+.list input:on(input) { --q: set(lower(trim(event(value)))); }
+.card { --name: state(attr(data-name)); }
+.card:when(not includes(lower(--name), --q)) { display: none; }
+```
+
+## Numbers
+`format()` shows a number in the language of the nearest `lang` attribute: on the element or any ancestor, else the browser's.
+
+```css invoice.css
+.invoice { --qty: state(1); }
+.invoice .total { text: format(--qty * 19.9, "currency", "EUR"); }
+.invoice .rate { text: format(0.19, "percent"); }
+.invoice .count { text: format(1234.5, "integer"); }
+```
+
+- `"decimal"`: grouping, at most 3 decimals.
+- `"integer"`: rounds half away from zero; never shows `-0`.
+- `"percent"`: 0.42 is 42%.
+- `"currency"`: needs a three-letter ISO 4217 code as the third argument.
+
+The result is a string. Each element's language is read once. `format` is also a CSS name: `@font-face` `format("woff2")` stays CSS, because only calls with two or more arguments and an unquoted first one are claimed.
+
+### Numeric strings
+A string that is exactly a decimal number (`"09"`, `"-1.5"`, `".5"`) compares with a number and calculates as that number. Two strings still compare as text: `"09" == "9"` is false. Leading or trailing spaces, an exponent and a decimal comma are not numbers.
+
+## Dates and time
+`time()` is the current instant, a datetime value. Every `time()` in one task gives the same instant. `timezone()` keeps the instant and sets the IANA zone that `format()` uses.
+
+```css clock.css
+.clock { --now: state(time()); }
+.clock:on(every(1s)) { --now: set(time()); }
+.clock .local { text: format(--now, "HH:mm:ss"); }
+.clock .tokyo { text: format(timezone(--now, "Asia/Tokyo"), "EEE d MMM, HH:mm"); }
+```
+
+- **Patterns.** `yyyy yy M MM MMM MMMM d dd E EEE EEEE H HH h hh m mm s ss SSS a`. `'quoted'` text is literal and `''` is one quote. Numeric fields use the Gregorian calendar and Latin digits in every locale; names are localized.
+- **Arithmetic.** A datetime ± a duration (`30s`, `500ms`) is a datetime. A datetime − a datetime is a duration in `ms`. Anything else is an error: a plain number is never a time.
+- **Comparisons.** With a datetime or a number of epoch milliseconds, by instant.
+- **In CSS,** a datetime is its epoch milliseconds.
+
+`time()` is a value, not a timer. A declaration or condition that uses it is evaluated when its states change, not as time passes. To follow the clock, use [`every()`](/docs/events/#timers) or `live()`.
+
+## Related
+<Related ids={["computed","events","reference/format","reference/time","reference/length"]} />

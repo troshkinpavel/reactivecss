@@ -9,9 +9,9 @@ status: new
 ---
 import { SelectionResolver } from '~/components/docs/CustomBundles';
 
-{/* Design: design-source/Custom Bundles.dc.html. Every command and output below was run with the 0.9.1 CLI; tests/e2e/bundle-cli.spec.ts runs them again (see docs/custom-bundles-design-integration.md). */}
+{/* Design: design-source/Custom Bundles.dc.html. Every command and output below was run with the 0.10.0 CLI; tests/e2e/bundle-cli.spec.ts runs them again (see docs/custom-bundles-design-integration.md). */}
 
-Since 0.8.0 the runtime is modular; 0.9.0 has 15 features. Reactive CSS can analyze your stylesheets, determine which capabilities they need, and build a production bundle with those features and everything they depend on.
+Since 0.8.0 the runtime is modular; 0.10.0 has 21 features. Reactive CSS can analyze your stylesheets, determine which capabilities they need, and build a production bundle with those features and everything they depend on.
 
 <BundleIntro />
 
@@ -86,8 +86,8 @@ npx -p @reactivecss/core -p esbuild reactive-css build --features events,conditi
 Built public/reactive-css.min.js
 Features: core, events, conditions, focus
 Optional, not included: forms (useful for focus)
-Excluded: gestures, persist, nth-var, history, forms, text, attributes, blur, values, dynamic, geometry
-Size: 86618 B minified (84.6 KB), 29708 B gzip, 26674 B brotli
+Excluded: gestures, persist, nth-var, history, forms, text, attributes, blur, values, dynamic, geometry, strings, format, datetime, event-timing, timers, derived
+Size: 93803 B minified (91.6 KB), 32878 B gzip, 29161 B brotli
 Manifest: public/reactive-css.min.manifest.json
 ```
 </QuickStep>
@@ -117,6 +117,7 @@ Each other feature is a real module with the requirements below. Selecting a fea
 - **Gestures require events.** Drag rules reuse the event dispatcher and the event-time evaluator. `gestures` is the only feature with pointer-gesture code, so form and event bundles never carry drag.
 - **Persistence stands alone.** `persist` needs neither `forms` nor `events`: a persisted state works in a core-only page.
 - **Forms do not need drag or focus**, and `blur` needs only the core.
+- **Value functions do not need events.** `strings`, `format`, `datetime` and `derived` carry the expression language, not the event runtime. `:on()` needs `events`; `debounce()` and `throttle()` need `event-timing`; `after()` and `every()` need `timers`. `format` alone has no date patterns: those come with `datetime`.
 - **History as values vs operands.** `previous(--x)` and `direction(--x)` as operands of a condition, such as `:when(direction(--n) > 0)`, are part of the core. The `history` feature adds them as values, as in `content: previous(--n)`, and adds `:changed()`.
 - **Profiles** are named selections, not separate builds: `basic`, `forms`, `stateful-ui`, `interactive`, `dynamic` and `full`. `interactive` is new in 0.9.0: events, gestures, persistence, conditions, attributes and text.
 
@@ -232,7 +233,7 @@ What each feature added when it was built alone over its requirements:
 Errors name a code and suggest a fix:
 
 ```txt npx -p @reactivecss/core -p esbuild reactive-css build --features evnts
-error [unknown-feature]: Unknown feature "evnts". Did you mean "events"? Features: core, events, gestures, persist, conditions, nth-var, history, forms, text, attributes, focus, blur, values, dynamic, geometry.
+error [unknown-feature]: Unknown feature "evnts". Did you mean "events"? Features: core, events, gestures, persist, conditions, nth-var, history, forms, text, attributes, focus, blur, values, dynamic, geometry, strings, format, datetime, event-timing, timers, derived.
 ```
 
 </Disclosure>
@@ -270,15 +271,15 @@ A build writes a manifest next to the bundle, for example `public/reactive-css.m
 ```json reactive-css.min.manifest.json
 {
   "name": "reactive-css",
-  "version": "0.9.1",
+  "version": "0.10.0",
   "format": "iife",
   "minify": true,
   "features": ["core", "events", "conditions", "focus"],
   "requested": ["events", "conditions", "focus"],
   "added": [],
-  "excluded": ["gestures", "persist", "nth-var", "history", "forms", "text", "attributes", "blur", "values", "dynamic", "geometry"],
+  "excluded": ["gestures", "persist", "nth-var", "history", "forms", "text", "attributes", "blur", "values", "dynamic", "geometry", "strings", "format", "datetime", "event-timing", "timers", "derived"],
   "optionalMissing": [{ "id": "forms", "usefulFor": "focus" }],
-  "sizes": { "minified": 86618, "gzip": 29708, "brotli": 26674 }
+  "sizes": { "minified": 93803, "gzip": 32878, "brotli": 29161 }
 }
 ```
 

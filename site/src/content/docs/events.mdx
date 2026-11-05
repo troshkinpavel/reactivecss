@@ -203,6 +203,9 @@ Ends the event at the element:
 
 `stop()` has no meaning for `outside()` and drag triggers, where it is a compile error.
 
+### debounce() and throttle()
+`:on(input, debounce(300ms))` runs once the events stop for that time, with the last event's values, and only if the rule still applies then. `:on(pointermove, throttle(16ms))` runs the first event and drops the next ones within the time. Use one, not both. They have no meaning for `outside()` and drag, where they are compile errors. In a custom bundle they come from the feature `event-timing`.
+
 ### Changing state only once
 There is no `once` modifier; `:on(click, once)` is a compile error. For a change that should happen a single time, guard the rule with a state:
 
@@ -217,6 +220,34 @@ There is no `once` modifier; `:on(click, once)` is a compile error. For a change
 ```
 
 After the first click `--seen` is true, the rule no longer applies, and later clicks do nothing. Add `persist()` to the state to keep it across reloads: see [Persistence](/docs/persistence/).
+
+## Several events in one rule
+`.x:on(click | keydown(Enter)) { … }` is one rule for several events. Each event has its own cascade winner, as with separate rules, and `event(type)` says which one fired. `prevent()` needs every event to be cancelable. `outside()`, drag and timers cannot be combined: write one rule for each.
+
+## Timers
+`after()` and `every()` run a rule by time. They need no event.
+
+```css toast.css
+.app { --visible: state(false); }
+.app .show:on(click) { --visible: set(true); }
+.toast:when(--visible):on(after(3s)) { --visible: set(false); }
+```
+
+```css hold.css
+.counter { --held: state(false); --count: state(0); }
+.counter button:on(pointerdown) { --held: set(true); }
+.counter button:on(pointerup | pointerleave | pointercancel) { --held: set(false); }
+.counter:when(--held):on(every(80ms, 400ms)) { --count: increment(1); }
+```
+
+- **Active** means the element matches the rule's full selector, `:when()` included. Leaving cancels the timer. Matching again starts a new one. An unrelated state change, or a move inside the document, does not restart it.
+- **`after(delay)`** runs once. The deadline is wall-clock: in a hidden tab the browser may run it late, and it then runs once.
+- **`every(interval [, first delay])`** has no drift, and skips missed runs instead of replaying them. It pauses while the page is hidden. Minimum 20 ms.
+- A timer starts one frame after the state change that activates it.
+- There are no modifiers, and `event()` is not available.
+- Rules cannot depend on `:hover`, `:focus`, `:checked` and other states the runtime cannot follow, and cannot be nested in a rule with a state condition. Use a state.
+
+Ticks are not a clock: for elapsed time, use [`time()`](/docs/value-functions/#dates-and-time).
 
 ## Keyboard
 `keydown(Key)` and `keyup(Key)` run when the key matches. Without a key, `keydown` runs for every key.

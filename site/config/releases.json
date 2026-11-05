@@ -104,6 +104,33 @@
         "blockers": 0,
         "warnings": 0
       }
+    },
+    "0.10.0": {
+      "title": "Value functions, timers and computed values",
+      "summary": "Value functions for text, numbers and dates, timers, :on(a | b), debounce(), throttle() and computed custom properties. A consumer moved into another owner reads that owner at once.",
+      "date": "",
+      "highlights": [
+        "length(), includes(), lower(), trim(), format(), time() and timezone() in actions, conditions and declarations",
+        ":on(after()) and :on(every()) timers, and :on(a | b), debounce() and throttle()",
+        "Computed custom properties: --clean: trim(--value) is also a read-only state",
+        "Custom bundles of value functions no longer carry the event runtime"
+      ],
+      "breaking": "",
+      "limitations": "Computed values are written inline on their owners: not a general CSS cascade. Declarations of the name in stylesheets without reactive syntax are reported only by development builds; cross-origin stylesheets cannot be checked. A declaration or condition with time() is evaluated when its states change, not as time passes. Real devices and screen readers were not tested for this version.",
+      "urls": {
+        "github": "",
+        "npm": "https://www.npmjs.com/package/@reactivecss/core/v/0.10.0",
+        "cdn": [
+          "https://cdn.jsdelivr.net/npm/@reactivecss/core@0.10.0/dist/reactive-css.min.js",
+          "https://unpkg.com/@reactivecss/core@0.10.0/dist/reactive-css.min.js"
+        ]
+      },
+      "notes": "Sources: CHANGELOG.md (0.10.0), docs/release-0.10.0-preparation.md. Not published: add 0.10.0 to config/distribution.json core.npmVersions only after npm publishes it.",
+      "workflow": {
+        "status": "prepared",
+        "blockers": 0,
+        "warnings": 0
+      }
     }
   }
 }

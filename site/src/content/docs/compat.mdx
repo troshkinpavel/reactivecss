@@ -1,27 +1,27 @@
 ---
 title: "Browser Compatibility"
-description: "What has been verified for 0.9.1 and how: automated engine tests in Chromium, WebKit and Firefox, an iOS Simulator smoke check, what is still manual, native-first behavior, build-tool requirements and compatibility with the 0.8 syntax."
+description: "What has been verified for 0.10.0 and how: automated engine tests in Chromium, WebKit and Firefox, an iOS Simulator smoke check, what is still manual, native-first behavior, build-tool requirements and compatibility with the 0.8 syntax."
 group: Project
 type: Project
-order: 40
+order: 42
 ---
 ## Verification status
-| Target | Version tested | How | Status for 0.9.1 |
+| Target | Version tested | How | Status for 0.10.0 |
 | --- | --- | --- | --- |
 | Chromium | 156.0.8078.4, Playwright | CI (Linux) and locally (macOS) | All browser suites pass |
 | WebKit | 27.2, Playwright build | CI (Linux) and locally (macOS) | All browser suites pass |
 | Firefox | 157.0, Playwright build | CI (Linux) and Docker with CI's image | All browser suites pass (7 tests skipped, see [Verifying Firefox](#verifying-firefox)) |
-| iOS Simulator | Mobile Safari 26.4, iPhone 17 simulator | One smoke page, by hand | **Smoke check only.** The three 0.9.1 runtime changes pass; the full suite does not run there |
+| iOS Simulator | Mobile Safari 26.4, iPhone 17 Pro simulator | One smoke page, by hand | **Passed for 0.10.0.** Touch input, event modifiers, timers, computed values and cleanup; the full suite does not run there |
 | Real Safari (macOS) | — | — | **Manual, pending** |
 | Physical phones and tablets (iOS, Android) | — | — | **Not tested** |
 | Touch and pen hardware | — | — | **Not tested.** Drag is tested with synthesized pointer events only |
 | Screen readers | — | — | **Manual, pending** |
 | CodePen | — | — | **Manual, pending.** A local CodePen-like harness passes; codepen.io itself was not used |
 
-0.9.1 results, from the library's CHANGELOG:
-- **CI and Docker.** Every pull request and push to `main` runs the library suite in GitHub Actions, in the `mcr.microsoft.com/playwright:v1.64.1-noble` image (Playwright 1.64.1, Linux). Chromium and WebKit: 944 browser tests passed, 6 skipped (they need the Chromium DevTools protocol). Firefox: 468 passed, 7 skipped. 196 unit tests passed. The same commands were also run locally in that image with Docker.
-- **Local engines.** Chromium and WebKit, the same 944 tests, on one Apple M4 Max with macOS 27.0.1.
-- **iOS Simulator.** A smoke page that checks the 0.9.1 changes (unchanged `CSSRule` objects kept, event rules re-matched in the same task and through `bind()`, a moved `:when()` element reading its new owner) passed in Mobile Safari 26.4 on an iPhone 17 simulator. A simulator runs on the Mac's CPU; it is not a physical device.
+0.10.0 results, from the library's CHANGELOG:
+- **CI and Docker.** Every pull request and push to `main` runs the library suite in GitHub Actions, in the `mcr.microsoft.com/playwright:v1.64.1-noble` image (Playwright 1.64.1, Linux). Chromium and WebKit: 1106 browser tests passed, 6 skipped (they need the Chromium DevTools protocol). Firefox: 549 passed, 7 skipped. 196 unit tests passed. The same commands were also run locally in that image with Docker.
+- **Local engines.** Chromium and WebKit, the same 1106 tests, on one Apple M4 Max with macOS 27.0.1.
+- **iOS Simulator.** A smoke page passed in Mobile Safari 26.4 for 0.10.0, with simulated touch input. It does not cover physical touch hardware, multi-touch gestures, Low Power Mode or VoiceOver. While Safari is in the background, `every()` does not tick and does not catch up.
 
 For 0.9.0, 427 tests also passed with the CPU throttled 4× in Chromium. That run was not repeated for 0.9.1. The manual checks are listed in the library's `docs/manual-validation-0.9.md`.
 
@@ -89,6 +89,7 @@ The build targets Chrome and Edge 111+, Firefox 128+ and Safari 16.4+. Event rul
 - 0.8.0: custom bundles (a bundle without features reports each missing one; the five profiles run real interfaces under a strict CSP and clean up), every example on the bundle the analyzer picks for it, and a `<link>` `href` swap race.
 - 0.8.1: the pre-beta regressions: Enter and typed keys that move focus no longer activate the new target, `:changed()` ignores unrelated animations, fast choices on bound radios and checkboxes (in one task, by arrow keys, cancelled clicks), and the `bind:` listener released by `stop()` and by removing the last bound control.
 - 0.9.0: event rules (cascade, modifiers, transactions, keyboard), event-time expressions, drag with synthesized mouse, touch and pen events, persistence including storage failures, `bind()` in `state()`, `--attr-*`, reactive `content`, focus requests and `:blur`; the native `random()` matrix; conditional at-rules, nesting and linked sheets; the CodePen-like harness; and each custom bundle under a strict CSP.
+- 0.10.0: several events in one rule, `debounce()` and `throttle()`, timers with a fake clock (background tab, dynamic selectors, ownership), value functions across locales, zones, daylight saving and leap years, computed values (chains, settling order, cycles, conflicts, cleanup, moves, shadowing, the limits of CSS and state agreement), consumers moved between owners, and custom bundles without the event runtime.
 - 0.9.1: unchanged stylesheet rules keep their `CSSRule` objects, event rules re-match their selector at dispatch (DOM changes in the same task, `bind()` and `--attr-*` attributes), a moved `:when()` element reads its new owner, and the `element()` feedback guard at the end of a long transition.
 - Five Content-Security-Policies with real headers, security regressions, and the minified bundle alone on a plain page.
 
