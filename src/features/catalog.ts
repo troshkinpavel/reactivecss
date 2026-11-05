@@ -96,17 +96,17 @@ export const CATALOG: CatalogFeature[] = [
     provides: ['fn:element'],
     syntax: ['element(width)', 'element(height)'] },
   { id: 'strings', title: 'Strings', category: 'Values & Strings', entry: 'src/features/strings.ts',
-    modules: ['functions/calls.ts', 'functions/strings.ts'], requires: ['core', 'events'], optional: ['conditions'], status: 'experimental',
+    // state/actexpr.ts: the expression language, shared with events; no event runtime is needed.
+    modules: ['functions/calls.ts', 'functions/strings.ts', 'state/actexpr.ts'], requires: ['core'], optional: ['events', 'conditions'], status: 'experimental',
     provides: ['fn:length', 'fn:includes', 'fn:lower', 'fn:trim'],
     syntax: ['length(text)', 'includes(text, part)', 'lower(text)', 'trim(text)', 'in :on() actions, :when() / when() conditions and declarations; --name reads a state'] },
   { id: 'format', title: 'Number and date formatting', category: 'Values & Strings', entry: 'src/features/format.ts',
-    // strings: the value-function plumbing (functions/calls.ts) is part of it.
-    modules: ['functions/format.ts', 'functions/intl.ts'], requires: ['core', 'events', 'strings'], optional: ['conditions'], status: 'experimental',
+    modules: ['functions/format.ts', 'functions/intl.ts', 'functions/calls.ts', 'state/actexpr.ts'], requires: ['core'], optional: ['events', 'conditions'], status: 'experimental',
     provides: ['fn:format'],
     syntax: ['format(number, "decimal" | "integer" | "percent" | "currency" [, "EUR"]), in the nearest lang', 'format(datetime, "yyyy-MM-dd HH:mm"): a date pattern', 'a string that is exactly a decimal number ("09") compares and calculates as a number'] },
   { id: 'datetime', title: 'Date and time', category: 'Values & Strings', entry: 'src/features/datetime.ts',
     // format: the Intl helpers (functions/intl.ts) and the date patterns that show a datetime.
-    modules: ['functions/datetime.ts'], requires: ['core', 'events', 'strings', 'format'], optional: ['conditions'], status: 'experimental',
+    modules: ['functions/datetime.ts'], requires: ['core', 'format'], optional: ['events', 'conditions', 'dynamic'], status: 'experimental',
     provides: ['fn:time', 'fn:timezone'],
     syntax: ['time(): the current instant, a datetime; state(time())', 'timezone(datetime, "Area/City")', 'datetime ± 30s; datetime - datetime = a duration in ms'] },
   { id: 'timers', title: 'Timers', category: 'Events & Actions', entry: 'src/features/timers.ts',
@@ -115,7 +115,7 @@ export const CATALOG: CatalogFeature[] = [
     syntax: [':on(after(3s)): once, 3s after the rule becomes active', ':on(every(1s)) / :on(every(80ms, 400ms)): while the rule is active (interval, first delay)', 'active = the element matches the full selector, :when() included'] },
   { id: 'derived', title: 'Computed custom properties', category: 'Values & Strings', entry: 'src/features/derived.ts',
     // strings: the value functions and their plumbing (functions/calls.ts).
-    modules: ['functions/derived.ts'], requires: ['core', 'strings'], optional: ['format', 'datetime', 'dynamic', 'conditions'], status: 'experimental',
+    modules: ['functions/derived.ts'], requires: ['core', 'strings'], optional: ['events', 'format', 'datetime', 'dynamic', 'conditions'], status: 'experimental',
     provides: ['decl:derived'],
     syntax: ['--clean: trim(--value); --chars: length(--clean): read-only states of the matched elements', '--now: live(time(), 1s)', 'unconditional rules only; the only declaration of its name', 'written inline on the owner: not a general CSS cascade'] },
 ];

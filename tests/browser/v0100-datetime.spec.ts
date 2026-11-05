@@ -95,7 +95,7 @@ test('a custom bundle with datetime brings format; one without it reports time()
   const css = `.r { --until: state(time()) } .r button:on(click) { --until: set(time() + 90s) }
     .r .at { text: format(timezone(--until, "UTC"), "HH:mm") }`;
   const body = '<div class="r"><button>x</button><b class="at"></b></div>';
-  const withIt = await build({ features: ['datetime', 'text'] });
+  const withIt = await build({ features: ['events', 'datetime', 'text'] });
   expect(withIt.ok).toBe(true);
   await page.route('**/dist/reactive-css.js', (x) => x.fulfill({ contentType: 'text/javascript', body: withIt.code }));
   await start(page, '2026-10-28T10:00:00Z', css, body);
@@ -104,7 +104,7 @@ test('a custom bundle with datetime brings format; one without it reports time()
   expect(await text(page, '.at')).toBe('10:01');
   expect(await diagnostics(page)).toEqual([]);
 
-  const without = await build({ features: ['format', 'text'] });
+  const without = await build({ features: ['events', 'format', 'text'] });
   await page.unroute('**/dist/reactive-css.js');
   await page.route('**/dist/reactive-css.js', (x) => x.fulfill({ contentType: 'text/javascript', body: without.code }));
   await open(page, { head: `<style>${css}</style>`, body });
