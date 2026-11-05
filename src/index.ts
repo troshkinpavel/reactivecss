@@ -3,6 +3,7 @@
 // and only the selected src/features/* (tools/bundle.mjs).
 
 import './features/events';
+import './features/event-timing';
 import './features/conditions';
 import './features/nth-var';
 import './features/history';

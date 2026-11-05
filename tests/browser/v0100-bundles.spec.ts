@@ -46,3 +46,19 @@ test('a clock with no events: datetime, dynamic, derived and text', async ({ pag
   expect(await text(page, '.t')).toBe('19:00:59');
   expect(await diagnostics(page)).toEqual([]);
 });
+
+test('events without event-timing reports debounce(); with it, it runs', async ({ page }) => {
+  const css = '.s { --q: state("") } .s input:on(input, debounce(100ms)) { --q: set(event(value)) } .s .t { text: var(--q) }';
+  const body = '<div class="s"><input><span class="t"></span></div>';
+  await bundle(page, ['events', 'text']);
+  await open(page, { head: `<style>${css}</style>`, body });
+  await frames(page);
+  expect((await diagnostics(page)).join('\n')).toMatch(/debounce\(\) and throttle\(\) is not included in this bundle \(feature "event-timing"\)/);
+  await page.unroute('**/dist/reactive-css.js');
+  await bundle(page, ['event-timing', 'text']);
+  await open(page, { head: `<style>${css}</style>`, body });
+  await page.fill('input', 'hi');
+  await page.waitForTimeout(250);
+  expect(await text(page, '.t')).toBe('hi');
+  expect(await diagnostics(page)).toEqual([]);
+});

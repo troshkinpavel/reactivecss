@@ -27,7 +27,7 @@ describe('catalog consistency', () => {
   });
 
   it('every declaration runtime is registered by the full build', () => {
-    expect(Object.keys(runtimes).sort()).toEqual(['attrBinding', 'attrs', 'bind', 'derived', 'focus', 'gestures', 'on', 'onRules', 'persist', 'text', 'timers', 'typed', 'valueCalls']);
+    expect(Object.keys(runtimes).sort()).toEqual(['attrBinding', 'attrs', 'bind', 'derived', 'eventTiming', 'focus', 'gestures', 'on', 'onRules', 'persist', 'text', 'timers', 'typed', 'valueCalls']);
   });
 
   it('requirements exist, are acyclic, and every feature but core requires core', () => {

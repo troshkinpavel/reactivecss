@@ -5,7 +5,7 @@ import type { Watcher } from './elements';
 import type { HandlerSet } from '../state/actions';
 import type { BindSpec } from '../state/bind';
 import type { AttrBind, BoundAttribute } from '../state/bindattr';
-import type { Trigger, Modifiers, Mutation, OnRuleSpec } from '../state/on';
+import type { Trigger, Modifiers, Mutation, OnRuleSpec, Tx } from '../state/on';
 import type { PersistSpec, PersistLink, Cell } from '../state/state';
 import type { Typed } from '../state/values';
 import type { DerivedDecl, ReactiveRule } from './parser';
@@ -200,6 +200,8 @@ export interface DeclarationRuntimes {
   gestures?: { register(prevent: boolean): () => void };
   /** persist() (persist feature): initial value from storage, then a link that writes changes. */
   persist?: { initial(spec: PersistSpec, owner: Element, fallback: Typed): Typed | undefined; link(spec: PersistSpec, cell: Cell): PersistLink };
+  /** 0.10 (state/on-timing.ts): debounce() and throttle() in :on(). */
+  eventTiming?: { parse(p: string, mods: Modifiers): void; check(mods: Modifiers, trigger: Trigger): void; gate(spec: OnRuleSpec, el: Element, tx: Tx, key: string): boolean; drop(spec: OnRuleSpec, el?: Element): void };
   /** 0.10 (functions/calls.ts): the value functions called in a text. */
   valueCalls?(s: string): string[];
   /**

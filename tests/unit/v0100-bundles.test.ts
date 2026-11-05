@@ -2,7 +2,7 @@
 // expression language, not the event runtime; format() does not bring the string functions.
 import { describe, it, expect } from 'vitest';
 // @ts-expect-error: plain ESM tooling
-import { build, resolve } from '../../tools/bundle.mjs';
+import { build, resolve, analyze } from '../../tools/bundle.mjs';
 
 const modules = async (features: string[]) => (await build({ features, minify: false, format: 'esm' })).manifest.modules as string[];
 const EVENT_RUNTIME = ['src/state/on.ts', 'src/state/actions.ts'];
@@ -25,9 +25,22 @@ describe('dependency boundaries', () => {
     expect(m).not.toContain('src/functions/strings.ts');
     expect(m).not.toContain('src/functions/dates.ts');
   }, 30000);
+  it('events carries no debounce / throttle, timers or value functions', async () => {
+    const m = await modules(['events']);
+    for (const x of ['src/state/on-timing.ts', 'src/functions/timers.ts', 'src/functions/calls.ts']) expect(m).not.toContain(x);
+    expect(resolve({ features: ['event-timing'] }).features).toEqual(['core', 'events', 'event-timing']);
+  }, 30000);
+  it('the analyzer recommends exactly what a stylesheet uses', async () => {
+    const used = async (text: string) => (await analyze([{ path: 'a.css', text }], { assumeComplete: true })).used.sort();
+    expect(await used('.a { --q: state("") } .a input:on(input, debounce(300ms)) { --q: set(event(value)) }')).toEqual(['event-timing', 'events']);
+    expect(await used('.a { --n: state(0) } .a:on(every(1s)) { --n: increment(1) }')).toEqual(['events', 'timers']);
+    expect(await used('.a { --v: state(""); --c: trim(--v) }')).toEqual(['derived', 'strings']);
+    expect(await used('.a { --n: state(1) } .a b { text: format(--n, "integer") }')).toEqual(['format', 'text']);
+    expect(await used('.a { --t: state(time()) } .a b { text: format(--t, "HH:mm") }')).toEqual(['datetime', 'format', 'text']);
+  }, 30000);
   it('core carries none of the 0.10 modules', async () => {
     const m = await modules([]);
-    for (const x of ['calls', 'strings', 'format', 'intl', 'datetime', 'timers', 'derived']) expect(m).not.toContain(`src/functions/${x}.ts`);
+    for (const x of ['calls', 'strings', 'format', 'intl', 'dates', 'datetime', 'timers', 'derived']) expect(m).not.toContain(`src/functions/${x}.ts`);
     expect(m).not.toContain('src/state/actexpr.ts');
   }, 30000);
 });
