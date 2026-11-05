@@ -19,7 +19,8 @@ import { resolveCell, warnMissing, describeElement, type Cell } from './state';
 import { parseTyped, assignable, coerce, serialize, equal, type Typed } from './values';
 import { parseAction, evaluateAction, type Category, type Node, type DragInfo, type EvalCtx } from './actexpr';
 import { listen, cancel, preventEvent, editable, extensions } from './actions';
-import { activation } from '../core/scheduler';
+import { activation, sync, urgently } from '../core/scheduler';
+import { flushMutations } from '../core/elements';
 
 /** DOM events :on() accepts: [bubbles, cancelable, category]. Adding an event is one row. */
 export const EVENT_INFO: Record<string, [boolean, boolean, Category]> = {
@@ -37,6 +38,13 @@ export const EVENT_INFO: Record<string, [boolean, boolean, Category]> = {
   scroll: [false, false, 'scroll'], scrollend: [false, false, 'scroll'], toggle: [false, false, 'other'],
 };
 const OUTSIDE = new Set(['click', 'pointerdown', 'focusin']);
+const TIME = /^(\d*\.?\d+)(ms|s)$/i;
+/** Milliseconds of a CSS time literal; `what` names the place for the message. */
+function ms(text: string, what: string): number {
+  const m = TIME.exec(text);
+  if (!m) throw new Error(`${what} takes a time like 300ms or 2s, got "${text}"`);
+  return +m[1] * (m[2].toLowerCase() === 's' ? 1000 : 1);
+}
 const PHASES = new Set(['start', 'move', 'end', 'cancel']);
 
 export interface Trigger {
@@ -53,8 +61,8 @@ export interface Trigger {
   /** 0.10: `a | b | c`, one rule for several DOM events (each has its own slots). */
   members?: Trigger[];
 }
-/** Functional modifiers of :on(): prevent() and stop(). */
-export interface Modifiers { prevent: boolean; stop: boolean }
+/** Functional modifiers of :on(): prevent() and stop(); 0.10: debounce(t), throttle(t) in ms. */
+export interface Modifiers { prevent: boolean; stop: boolean; debounce?: number; throttle?: number }
 export type Op = 'set' | 'toggle' | 'increment' | 'decrement' | 'cycle';
 export interface Mutation { id: number; name: string; op: Op; expr?: Node; values?: Typed[]; rule?: OnRuleSpec }
 export interface OnRuleSpec {
@@ -94,14 +102,24 @@ export function compileTrigger(text: string): { trigger: Trigger; mods: Modifier
   } else trigger = single(parts[0]);
   const mods: Modifiers = { prevent: false, stop: false };
   for (const p of parts.slice(1)) {
+    const timed = /^(debounce|throttle)\(\s*(.*?)\s*\)$/is.exec(p);
+    if (timed) {
+      const k = timed[1].toLowerCase() as 'debounce' | 'throttle';
+      if (mods[k] !== undefined) throw new Error(`${k}() is given twice`);
+      const t = ms(timed[2], `${k}()`);
+      if (!(t > 0)) throw new Error(`${k}() needs a time above 0`);
+      mods[k] = t;
+      continue;
+    }
     const fn = /^(prevent|stop)\(\s*\)$/i.exec(p);
     if (!fn) {
       const bare = p.toLowerCase();
       throw new Error(bare === 'prevent' || bare === 'stop' ? `write the modifier as a function: ${bare}()`
         : /^once(\(\s*\))?$/.test(bare) ? 'once is not supported in :on(); for a one-time change, guard the rule with :when(), e.g. .b:when(not --done):on(click) { --done: set(true) }'
+        : bare === 'debounce' || bare === 'throttle' ? `${bare} needs a time: ${bare}(300ms)`
         : `unknown modifier "${p}"; use prevent() or stop()`);
     }
-    const k = fn[1].toLowerCase() as keyof Modifiers;
+    const k = fn[1].toLowerCase() as 'prevent' | 'stop';
     if (mods[k]) throw new Error(`${k}() is given twice`);
     mods[k] = true;
   }
@@ -109,6 +127,9 @@ export function compileTrigger(text: string): { trigger: Trigger; mods: Modifier
     throw new Error(trigger.outside ? 'prevent() is not allowed with outside(): it would cancel events on unrelated elements anywhere on the page'
       : `prevent() needs a cancelable event (click, dblclick, contextmenu, mousedown, pointerdown, keydown, keyup, submit, drag); ${(trigger.members?.find((t) => !t.cancelable) ?? trigger).key} is not`);
   if (mods.stop && (trigger.outside || trigger.phase)) throw new Error(`stop() has no meaning for ${trigger.outside ? 'outside()' : 'drag'}`);
+  if (mods.debounce !== undefined && mods.throttle !== undefined) throw new Error('use debounce() or throttle(), not both');
+  if ((mods.debounce !== undefined || mods.throttle !== undefined) && (trigger.outside || trigger.phase))
+    throw new Error(`${mods.debounce !== undefined ? 'debounce' : 'throttle'}() is for DOM events, not ${trigger.outside ? 'outside()' : 'drag'}`);
   return { trigger, mods };
 }
 
@@ -204,6 +225,7 @@ export function registerRule(spec: OnRuleSpec): () => void {
   if (!gesture) for (const d of doms) { listen(d, 1); if (spec.mods.prevent) cancel(d, 1); }
   return () => {
     for (const s of spec.slots) mutations.delete(s.m.id);
+    cancelDebounced(spec);
     if (release) release();
     else for (const d of doms) { if (spec.mods.prevent) cancel(d, -1); listen(d, -1); }
   };
@@ -228,6 +250,8 @@ export function ruleWatcher(match: string, spec: OnRuleSpec, sheet?: CSSStyleShe
       list!.splice(i, 1);
       if (!list!.length) candidates.delete(el);
       if (spec.trigger.outside) { const n = (outsiders.get(el) ?? 1) - 1; if (n) outsiders.set(el, n); else outsiders.delete(el); }
+      cancelDebounced(spec, el);
+      throttled.get(el)?.delete(spec);
       runtimeStats.bindings--;
     },
   };
@@ -253,7 +277,61 @@ export const dragTarget = Object.assign(
 );
 
 interface Write { cell: Cell; v: Typed; where: () => string }
-interface Tx { e: Event; writes: Write[]; drag?: DragInfo; rects?: Map<Element, DOMRect> }
+interface Tx {
+  e: Event; writes: Write[]; drag?: DragInfo; rects?: Map<Element, DOMRect>;
+  /** 0.10: a debounced run of this rule only (its delay ended). */
+  only?: OnRuleSpec;
+}
+
+// ---- 0.10: debounce() and throttle() -------------------------------------------------------
+// State per (rule, element), shared by every event of an `a | b` rule.
+
+interface Pending { timer: ReturnType<typeof setTimeout>; e: Event; key: string }
+const debounced = new Map<OnRuleSpec, Map<Element, Pending>>();
+const throttled = new WeakMap<Element, Map<OnRuleSpec, number>>();
+
+/** Cancels pending debounced runs of `spec` (on `el`, or on every element). */
+function cancelDebounced(spec: OnRuleSpec, el?: Element) {
+  const m = debounced.get(spec);
+  if (!m) return;
+  for (const [k, p] of m) if (!el || k === el) { clearTimeout(p.timer); m.delete(k); }
+  if (!m.size) debounced.delete(spec);
+}
+
+/** Whether `spec`'s mutations on `el` run now for this event: throttle drops, debounce defers. */
+function gate(spec: OnRuleSpec, el: Element, tx: Tx, key: string): boolean {
+  const { debounce, throttle } = spec.mods;
+  if (tx.only === spec) return true;
+  if (debounce !== undefined) {
+    // Trailing edge: each event restarts the delay; the last event's values are used.
+    let m = debounced.get(spec);
+    if (!m) debounced.set(spec, (m = new Map()));
+    clearTimeout(m.get(el)?.timer);
+    const e = tx.e;
+    m.set(el, { e, key, timer: setTimeout(() => { m!.delete(el); if (!m!.size) debounced.delete(spec); runLater(el, spec, e, key); }, debounce) });
+    return false;
+  }
+  // Leading edge: the first event runs, the next ones within the interval are dropped.
+  let m = throttled.get(el);
+  if (!m) throttled.set(el, (m = new Map()));
+  const now = performance.now(), last = m.get(spec);
+  if (last !== undefined && now - last < throttle!) return false;
+  m.set(spec, now);
+  return true;
+}
+
+/** A debounced rule's delayed run: the rule must still apply then (the cascade is read again). */
+function runLater(el: Element, spec: OnRuleSpec, e: Event, key: string) {
+  if (!el.isConnected) return;
+  flushMutations(); // DOM changes made earlier in this task count
+  sync();
+  activation.event = null; // not a user activation any more: never arms focus requests
+  urgently(() => {
+    const tx: Tx = { e, writes: [], only: spec };
+    runElement(el, tx, (t) => (t === spec.trigger ? key : undefined));
+    commit(tx);
+  });
+}
 
 
 /** A value `v` stored in a cell holding `cur` (0.9 adds a unitless 0 for dimensions, 0 / 1 for booleans). */
@@ -309,8 +387,16 @@ function runElement(el: Element, tx: Tx, match: (t: Trigger) => string | undefin
   if (!cands.length) return false;
   /** The candidate's slots for this event: all of them, except in an `a | b` rule (the matched member's). */
   const slots = (c: Candidate) => (c.spec.trigger.members ? c.spec.slots.filter((s) => s.key === keys!.get(c.spec)) : c.spec.slots);
+  let gates: Map<OnRuleSpec, boolean> | undefined; // debounce / throttle: decided once per rule, element and event
   const run = (m: Mutation | undefined) => {
     if (!m || !m.rule) return;
+    if (tx.only && m.rule !== tx.only) return; // a debounced run executes only its own rule
+    const r = m.rule;
+    if (r.mods.debounce !== undefined || r.mods.throttle !== undefined) {
+      let g = gates?.get(r);
+      if (g === undefined) (gates ??= new Map()).set(r, (g = gate(r, el, tx, keys?.get(r) ?? r.trigger.key)));
+      if (!g) return;
+    }
     const cell = resolveCell(el, m.name);
     // Built only for a diagnostic: describing the element on every event cost more than the mutation.
     const where = () => `${m.name}: ${m.op}() on ${describeElement(el)} for :on(${m.rule!.trigger.key})`;
@@ -345,6 +431,7 @@ function runElement(el: Element, tx: Tx, match: (t: Trigger) => string | undefin
     const prop = c.spec.modSlots[k];
     return !!prop && (applies(c) || style().getPropertyValue(prop).trim() !== '');
   });
+  if (tx.only) return false; // a debounced run: the event is over
   if (modifier('prevent') && tx.drag === undefined) preventEvent(el, tx.e);
   const stop = modifier('stop');
   if (stop) {

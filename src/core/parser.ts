@@ -662,7 +662,8 @@ export function compile(source: string, options: CompileOptions | string = {}): 
           }
           for (const t of c.trigger.members ?? [c.trigger]) use(t.phase !== undefined ? 'gesture:drag' : 'trigger:' + (t.outside ? 'outside' : t.dom));
           for (const [k, v] of Object.entries(c.mods)) if (v) use('mod:' + k);
-          if (pre.on && (pre.on.trigger.key !== c.trigger.key || pre.on.mods.prevent !== c.mods.prevent || pre.on.mods.stop !== c.mods.stop))
+          if (pre.on && (pre.on.trigger.key !== c.trigger.key || pre.on.mods.prevent !== c.mods.prevent || pre.on.mods.stop !== c.mods.stop
+            || pre.on.mods.debounce !== c.mods.debounce || pre.on.mods.throttle !== c.mods.throttle))
             throw new Error('every selector of an :on() rule must use the same trigger and modifiers; write one rule per trigger');
           pre.on = c;
           pre.special.push([i, end]);

@@ -450,6 +450,26 @@
    "template": "{0} is listed twice in :on({1})",
    "module": "state/on.ts"
   },
+  "RCSS-E082": {
+   "template": "{0} takes a time like 300ms or 2s, got \"{1}\"",
+   "module": "state/on.ts"
+  },
+  "RCSS-E083": {
+   "template": "{0}() needs a time above 0",
+   "module": "state/on.ts"
+  },
+  "RCSS-E084": {
+   "template": "{0} needs a time: {1}(300ms)",
+   "module": "state/on.ts"
+  },
+  "RCSS-E085": {
+   "template": "use debounce() or throttle(), not both",
+   "module": "state/on.ts"
+  },
+  "RCSS-E086": {
+   "template": "{0}() is for DOM events, not {1}",
+   "module": "state/on.ts"
+  },
   "RCSS-F001": {
    "template": "bind: {0} on {1}: a {2} control cannot hold a {3} state (use {4}). Not bound.",
    "module": "state/bind.ts"
