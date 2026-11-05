@@ -22,11 +22,12 @@ const codes = (r) => r.diagnostics.map((d) => d.code);
 test('knowledge describes the library version it was built from', () => {
   const lib = JSON.parse(readFileSync(join(LIB, 'package.json'), 'utf8'));
   assert.equal(k.reactivecss.version, lib.version);
-  assert.equal(k.reactivecss.version, '0.9.1');
+  assert.equal(k.reactivecss.version, '0.10.0');
   assert.equal(k.reactivecss.package, '@reactivecss/core');
-  assert.equal(k.reactivecss.published, true);
+  const npm = JSON.parse(readFileSync(join(LIB, 'site/config/distribution.json'), 'utf8')).core.npmVersions;
+  assert.equal(k.reactivecss.published, npm.includes(lib.version)); // says "published" only when the record does
   assert.ok(k.registry.features.length > 60);
-  assert.equal(k.catalog.features.length, 15);
+  assert.equal(k.catalog.features.length, 21);
 });
 
 // ---- get_api_reference -----------------------------------------------------------------------
@@ -195,7 +196,7 @@ input:blur { outline: 2px solid; }
   assert.deepEqual(errs(await S.validate(sheet)), []);
   for (const f of ['AGENTS.md', 'skills/reactive-css/SKILL.md']) {
     const md = readFileSync(join(PKG, f), 'utf8');
-    assert.match(md, /Reactive CSS 0\.9\.1/, f);
+    assert.match(md, /Reactive CSS 0\.10\.0/, f);
     assert.match(md, /focus: when\(/, f);
     assert.doesNotMatch(md, /`on: click/, f); // legacy appears only in the mistakes table as "wrong"
   }
