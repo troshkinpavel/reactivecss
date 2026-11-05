@@ -201,10 +201,10 @@ export interface DeclarationRuntimes {
   /** persist() (persist feature): initial value from storage, then a link that writes changes. */
   persist?: { initial(spec: PersistSpec, owner: Element, fallback: Typed): Typed | undefined; link(spec: PersistSpec, cell: Cell): PersistLink };
   /**
-   * 0.10 (functions/derived.ts): computed custom properties. `check` names what a call reads besides states (attr(…), time()…);
+   * 0.10 (functions/derived.ts): computed custom properties. `accept` decides, and reports, whether a declaration is one;
    * `sheet` registers a stylesheet's declared names and computed declarations (returns its cleanup).
    */
-  derived?: { check(call: CallNode): string | undefined; sheet(declared: Map<string, number>, decls: DerivedDecl[]): () => void; watchers(list: [match: string, d: DerivedDecl][]): Watcher[] };
+  derived?: { accept(name: string, call: CallNode, important: boolean, unconditional: boolean, at: string): boolean; sheet(declared: Map<string, number>, decls: DerivedDecl[]): () => void; watchers(list: [match: string, d: DerivedDecl][]): Watcher[] };
   /** 0.10 (functions/timers.ts): one timer per (element, trigger key) while an after() / every() rule is active. */
   timers?: { start(el: Element, t: Trigger): void; stop(el: Element, t: Trigger): void };
 }

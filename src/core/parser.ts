@@ -104,12 +104,6 @@ function valueCallRe() {
   }
   return valueCalls[1];
 }
-/** 0.10: a value function, or live() around exactly one (computed custom properties). */
-const derivable = (c: CallNode) => !!c.def.value || (c.def.name === 'live' && liveInner(c) !== undefined);
-export const liveInner = (c: CallNode) => {
-  const p = c.args[0]?.parts.filter((x) => typeof x !== 'string' || x.trim());
-  return p?.length === 1 && typeof p[0] !== 'string' && p[0].def.value ? p[0] : undefined;
-};
 /** True when `s` has a comma outside parentheses. */
 const topComma = (s: string) => { let d = 0; for (const c of s) { if (c === '(') d++; else if (c === ')') d--; else if (c === ',' && !d) return true; } return false; };
 /**
@@ -582,22 +576,14 @@ export function compile(source: string, options: CompileOptions | string = {}): 
       return;
     }
     // 0.10: a value function (or live() around one) as the whole value of a custom property.
-    if (runtimes.derived && decls.length === 1 && local.length === 1 && name.startsWith('--') && derivable(decls[0].call)) {
+    if (runtimes.derived && decls.length === 1 && local.length === 1 && name.startsWith('--')) {
       const [end, imp] = important(colon + 1, to);
-      if (text(colon + 1, end).trim() === text(local[0].from, local[0].to).trim()) {
-        const reads = imp || rule!.certain !== true ? undefined : runtimes.derived.check(decls[0].call);
-        if (!imp && rule!.certain === true && !reads) {
-          use('decl:derived');
-          edits.push({ from, to: trimEnd(from, to), text: '' }); // the runtime writes it on each owner
-          if (!rules.includes(rule!)) rules.push(rule!);
-          (rule!.derived ??= []).push({ name: name.trim(), call: decls[0].call });
-          return;
-        }
-        const n = name.trim(), at = snippet(from, to);
-        if (imp) warn(`${n} is not a computed state: !important is not supported on it. It stays a CSS-only value that :when(), text: and actions cannot read, in "${at}".`);
-        else if (!reads) warn(`${n} is not a computed state: it is in a conditional rule (:when(), :hover and other state pseudo-classes, a pseudo-element, @media, @supports or @container), and computed custom properties need an unconditional rule. It stays a CSS-only value that :when(), text: and actions cannot read, in "${at}".`);
-        else if (reads === 'time()') warn(`${n} is not a computed state: it reads time() outside live(), which gives one instant; write live(time(), 1s) for a clock. It stays a CSS-only value that :when(), text: and actions cannot read, in "${at}".`);
-        else warn(`${n} is not a computed state: it reads ${reads}, which can change without a state change. It stays a CSS-only value that :when(), text: and actions cannot read, in "${at}".`);
+      if (text(colon + 1, end).trim() === text(local[0].from, local[0].to).trim() && runtimes.derived.accept(name.trim(), decls[0].call, imp, rule!.certain === true, snippet(from, to))) {
+        use('decl:derived');
+        edits.push({ from, to: trimEnd(from, to), text: '' }); // the runtime writes it on each owner
+        if (!rules.includes(rule!)) rules.push(rule!);
+        (rule!.derived ??= []).push({ name: name.trim(), call: decls[0].call });
+        return;
       }
     }
     edits.push(...local);

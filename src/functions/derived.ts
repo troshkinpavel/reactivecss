@@ -28,7 +28,7 @@
 import { runtimes, type CallNode } from '../core/registry';
 import { warn, note, msg, dev } from '../core/log';
 import { every, unevery } from '../core/scheduler';
-import { liveInner, type DerivedDecl } from '../core/parser';
+import type { DerivedDecl } from '../core/parser';
 import type { Watcher } from '../core/elements';
 import { Cell, StateRef, adoptCell, disposeCell, readOnly, changeHooks, isChanging, stateChangeHooks, describeElement, findCell, type Subscriber } from '../state/state';
 import { value, EvalError, type Node } from '../state/actexpr';
@@ -49,6 +49,14 @@ interface Info {
   w?: Group;
 }
 
+/** A value function, or live() around exactly one. */
+function inner(c: CallNode): CallNode | undefined {
+  if (c.def.value) return c;
+  if (c.def.name !== 'live') return undefined;
+  const p = c.args[0]?.parts.filter((x) => typeof x !== 'string' || x.trim());
+  return p?.length === 1 && typeof p[0] !== 'string' && p[0].def.value ? p[0] : undefined;
+}
+
 const infos = new WeakMap<DerivedDecl, Info>();
 /** Declarations of each custom property name in the processed stylesheets. */
 const declared = new Map<string, number>();
@@ -58,9 +66,8 @@ const status = new Map<string, string>();
 function info(d: DerivedDecl): Info {
   let i = infos.get(d);
   if (!i) {
-    const inner = d.call.def.value ? d.call : liveInner(d.call)!;
-    const c = inner.data as Compiled;
-    i = { name: d.name, node: c.node, reads: c.names, text: `${d.name}: ${c.text}`, ms: inner === d.call ? undefined : (d.call.data as number), depth: 0, on: false };
+    const f = inner(d.call)!, c = f.data as Compiled;
+    i = { name: d.name, node: c.node, reads: c.names, text: `${d.name}: ${c.text}`, ms: f === d.call ? undefined : (d.call.data as number), depth: 0, on: false };
     infos.set(d, i);
   }
   return i;
@@ -276,9 +283,16 @@ class Group implements Watcher {
 }
 
 runtimes.derived = {
-  check(call: CallNode) {
-    const inner = call.def.value ? call : liveInner(call)!;
-    return impure((inner.data as Compiled).node, inner !== call);
+  accept(n, call, imp, unconditional, at) {
+    const f = inner(call);
+    if (!f) return false;
+    const reads = imp || !unconditional ? undefined : impure((f.data as Compiled).node, f !== call);
+    if (!imp && unconditional && !reads) return true;
+    if (imp) warn(`${n} is not a computed state: !important is not supported on it. It stays a CSS-only value that :when(), text: and actions cannot read, in "${at}".`);
+    else if (!reads) warn(`${n} is not a computed state: it is in a conditional rule (:when(), :hover and other state pseudo-classes, a pseudo-element, @media, @supports or @container), and computed custom properties need an unconditional rule. It stays a CSS-only value that :when(), text: and actions cannot read, in "${at}".`);
+    else if (reads === 'time()') warn(`${n} is not a computed state: it reads time() outside live(), which gives one instant; write live(time(), 1s) for a clock. It stays a CSS-only value that :when(), text: and actions cannot read, in "${at}".`);
+    else warn(`${n} is not a computed state: it reads ${reads}, which can change without a state change. It stays a CSS-only value that :when(), text: and actions cannot read, in "${at}".`);
+    return false;
   },
   sheet(names, decls) {
     for (const [n, k] of names) declared.set(n, (declared.get(n) ?? 0) + k);
