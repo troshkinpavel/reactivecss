@@ -26,13 +26,14 @@
 // - No cycles: names that read each other are rejected when the stylesheet is applied.
 
 import { runtimes, type CallNode } from '../core/registry';
-import { warn, note, msg, dev } from '../core/log';
+import { warn, note, msg } from '../core/log';
 import { every, unevery } from '../core/scheduler';
 import type { DerivedDecl } from '../core/parser';
 import type { Watcher } from '../core/elements';
 import { Cell, StateRef, adoptCell, disposeCell, readOnly, changeHooks, isChanging, stateChangeHooks, describeElement, findCell, type Subscriber } from '../state/state';
 import { value, EvalError, type Node } from '../state/actexpr';
 
+declare const __DEV__: boolean | undefined;
 type Styled = Element & ElementCSSInlineStyle;
 interface Compiled { node: Node; names: string[]; text: string }
 
@@ -242,7 +243,8 @@ class Derived implements Subscriber {
     adoptCell(c);
     c.writeAll();
     for (const fn of stateChangeHooks) fn(c); // text:, attr: and focus: inside the owner read it now
-    if (dev) { toVerify.add(this); verifyTimer ??= setTimeout(verify, 100); }
+    // A compile-time test, not log.ts `dev`: production builds then drop verify() and what only it uses.
+    if (typeof __DEV__ === 'undefined' || __DEV__) { toVerify.add(this); verifyTimer ??= setTimeout(verify, 100); }
   }
   private report(m: string) {
     if (this.reported !== m) warn(m);
