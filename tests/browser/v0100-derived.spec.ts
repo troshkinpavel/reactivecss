@@ -257,3 +257,57 @@ test('custom bundles: without the feature the declaration stays CSS-only (step 7
   expect([await text(page, '.t'), await inline(page, '.f', '--c')]).toEqual(['Hi', '"Hi"']);
   expect(await diagnostics(page)).toEqual([]);
 });
+
+// Found by the iOS smoke test: a state and the computed value that reads it leave together, and the
+// state goes first. Only an input that is gone while its reader stays is worth a diagnostic.
+const PAIR = '.p { --s: state("X"); --low: lower(--s); --n: length(--low) }';
+const settled = async (page: Page) => { await frames(page); await page.waitForTimeout(100); };
+
+test('an owner removed from the page: no diagnostic, nothing left', async ({ page }) => {
+  await open(page, { head: `<style>${PAIR}</style>`, body: '<div id="host"><div class="p"></div><div class="p"></div><section><div class="p"></div></section></div>' });
+  await frames(page);
+  await page.evaluate(() => document.getElementById('host')!.replaceChildren());
+  await settled(page);
+  expect(await diagnostics(page)).toEqual([]);
+  expect((await stats(page)).states).toBe(0);
+});
+
+test('an owner that stops matching: no diagnostic, inline values gone', async ({ page }) => {
+  await open(page, { head: `<style>${PAIR}</style>`, body: '<div class="p" id="a"></div>' });
+  await frames(page);
+  expect(await inline(page, '#a', '--low')).toBe('"x"');
+  await page.$eval('#a', (e) => e.classList.remove('p'));
+  await settled(page);
+  expect(await diagnostics(page)).toEqual([]);
+  expect(await inline(page, '#a', '--low')).toBe('');
+  expect((await stats(page)).states).toBe(0);
+});
+
+test('the stylesheet removed while the owner stays: no diagnostic', async ({ page }) => {
+  await open(page, { head: `<style id="s">${PAIR}</style>`, body: '<div class="p" id="a"></div>' });
+  await frames(page);
+  await page.$eval('#s', (e) => e.remove());
+  await settled(page);
+  expect(await diagnostics(page)).toEqual([]);
+  expect(await inline(page, '#a', '--low')).toBe('');
+});
+
+test('the input goes while the reader stays: reported once, the last value stays', async ({ page }) => {
+  await open(page, { head: '<style>.s { --s: state("X") } .p { --low: lower(--s) }</style>', body: '<div class="s" id="o"><div class="p" id="a"></div><div class="p" id="b"></div></div>' });
+  await frames(page);
+  await page.$eval('#o', (e) => e.classList.remove('s'));
+  await settled(page);
+  const d = await diagnostics(page);
+  expect(d).toHaveLength(2); // one per reader
+  expect(d[0]).toMatch(/--low: lower\(--s\) on div#a\.p reads --s, which is no longer a state there; it keeps its last value/);
+  expect(await inline(page, '#a', '--low')).toBe('"x"');
+});
+
+test('the input goes and comes back in the same task: no diagnostic, the value follows', async ({ page }) => {
+  await open(page, { head: '<style>.s { --s: state("X") } .t { --s: state("Y") } .p { --low: lower(--s) }</style>', body: '<div class="s" id="o"><div class="p" id="a"></div></div>' });
+  await frames(page);
+  await page.$eval('#o', (e) => { e.classList.remove('s'); e.classList.add('t'); });
+  await settled(page);
+  expect(await diagnostics(page)).toEqual([]);
+  expect(await inline(page, '#a', '--low')).toBe('"y"');
+});

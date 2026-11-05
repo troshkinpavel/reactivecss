@@ -218,14 +218,16 @@ class Derived implements Subscriber {
   update() {
     if (this.dead) return;
     const { el, i } = this;
-    const gone = this.refs.find((r) => !r.state());
-    if (gone) {
-      if (this.cell) this.report(msg(`${i.text} on ${describeElement(el)} reads ${gone.name}, which is no longer a state there; it keeps its last value.`));
-      else this.missing ??= setTimeout(() => {
+    const missing = () => this.refs.find((r) => !r.state());
+    if (missing()) {
+      // A state and what reads it usually leave together, state first: report only what outlasts the batch.
+      this.missing ??= setTimeout(() => {
         this.missing = undefined;
-        if (!this.dead && !this.cell && el.isConnected)
-          warn(`${i.text} on ${describeElement(el)} reads ${gone.name}, but no element declares ${gone.name} as a state on it or its ancestors; ${i.name} has no value.`);
-      }, 1000);
+        const gone = missing();
+        if (this.dead || !gone || !el.isConnected) return;
+        if (this.cell) this.report(msg(`${i.text} on ${describeElement(el)} reads ${gone.name}, which is no longer a state there; it keeps its last value.`));
+        else warn(`${i.text} on ${describeElement(el)} reads ${gone.name}, but no element declares ${gone.name} as a state on it or its ancestors; ${i.name} has no value.`);
+      }, this.cell ? 0 : 1000);
       return;
     }
     let v;
