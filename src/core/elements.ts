@@ -116,8 +116,8 @@ function observe() {
 let batchEnd: (() => void) | undefined;
 /** Called after each batch of mutations has been applied to all watchers. */
 export function afterMutations(fn: () => void): void { batchEnd = fn; }
-/** 0.10: called for each subtree moved inside the document, with its old parent, once its matches are up to date. */
-export const moveHooks: ((root: Element, from: Element) => void)[] = [];
+/** 0.10: called with the subtrees moved inside the document in a batch ([root, old parent]), once matches are up to date. */
+export const moveHooks: ((moves: [Element, Element][]) => void)[] = [];
 
 function handle(records: MutationRecord[], endOfBatch = true) {
   const added = new Set<Element>();
@@ -163,7 +163,7 @@ function handle(records: MutationRecord[], endOfBatch = true) {
     }
     if (e.sibling) for (const p of parents) if (p.isConnected) reconcile(e, p, true);
   }
-  for (const [n, old] of from) if (n.isConnected) for (const fn of moveHooks) fn(n, old);
+  if (from.length) for (const fn of moveHooks) fn(from);
   // Only a real observer callback ends a batch; records flushed while a watcher is being
   // added belong to the caller's batch, which settles itself.
   if (endOfBatch) batchEnd?.();

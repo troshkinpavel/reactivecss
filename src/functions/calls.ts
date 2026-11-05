@@ -78,10 +78,10 @@ conditionCalls.evaluate = (node, el) => {
 
 /** Value functions called in text the expression language parses (compile().uses). */
 let usesRe: { size: number; re: RegExp } | undefined;
-runtimes.valueCalls = (s) => {
-  if (!s.includes('(')) return [];
+runtimes.valueCalls = (s, use) => {
+  if (!s.includes('(')) return;
   if (usesRe?.size !== names.size) usesRe = { size: names.size, re: new RegExp(`(?<![\\w-])(${[...names].join('|')})\\(`, 'g') };
-  return [...s.matchAll(usesRe.re)].map((m) => m[1]);
+  for (const m of s.matchAll(usesRe.re)) use('fn:' + m[1]);
 };
 
 interface Compiled { node: Node; names: string[]; text: string }

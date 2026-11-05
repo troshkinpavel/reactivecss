@@ -179,7 +179,7 @@ export function compile(source: string, options: CompileOptions | string = {}): 
   const declared = new Map<string, number>();
   const declare = (name: string) => declared.set(name, (declared.get(name) ?? 0) + 1);
   /** 0.10: value functions in text the expression language parses (actions, conditions, state(), their arguments). */
-  const valueUses = (s: string) => { for (const n of runtimes.valueCalls?.(s) ?? []) use('fn:' + n); };
+  const valueUses = (s: string) => runtimes.valueCalls?.(s, use);
 
   const raw = (i: number) => repl[i] ?? source.slice(tokens[i].start, tokens[i].end);
   /** Text of tokens [a, b) with comments dropped, as used for selectors and arguments. */

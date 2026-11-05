@@ -285,18 +285,25 @@ export function adoptCell(c: Cell) {
   if (outer) for (const r of [...outer.subs]) if (owner.contains(r.el)) r.invalidate();
 }
 
-/**
- * 0.10: a subtree moved inside the document. References inside it that used an owner on its old
- * ancestor chain, or waited for one, resolve again (the nearest-owner rule, also after a move).
- * A move under the same parent changes no owner and costs nothing.
- */
 /** 0.10: references re-resolved because their element moved (bind: then shows the new owner's value). */
 export const movedRefs = new WeakSet<StateRef>();
-moveHooks.push((root, from) => {
-  if (root.parentElement === from) return;
+/**
+ * 0.10: subtrees moved inside the document. References inside them that used an owner on an old
+ * ancestor chain, or waited for one, resolve again (the nearest-owner rule, also after a move).
+ * A move under the same parent changes no owner. One scan per batch, however many subtrees moved.
+ */
+moveHooks.push((moves) => {
+  const roots = new Set<Element>(), cells = new Set<Cell>();
+  for (const [root, from] of moves) {
+    if (!root.isConnected || root.parentElement === from) continue;
+    roots.add(root);
+    for (let a: Element | null = from; a; a = a.parentElement) for (const c of cellsOf.get(a) ?? []) cells.add(c);
+  }
+  if (!roots.size) return;
+  const inside = (el: Element) => { for (let a: Element | null = el; a; a = a.parentElement) if (roots.has(a)) return true; return false; };
   const stale: StateRef[] = [];
-  for (let a: Element | null = from; a; a = a.parentElement) for (const c of cellsOf.get(a) ?? []) for (const r of c.subs) if (root.contains(r.el)) stale.push(r);
-  for (const set of waiting.values()) for (const r of set) if (root.contains(r.el)) stale.push(r);
+  for (const c of cells) for (const r of c.subs) if (inside(r.el)) stale.push(r);
+  for (const set of waiting.values()) for (const r of set) if (inside(r.el)) stale.push(r);
   for (const r of stale) { movedRefs.add(r); r.invalidate(); }
 });
 

@@ -63,3 +63,15 @@ test('a move inside one owner, and a move with no owner change, keep their refer
   expect(await read(page)).toEqual(A);
   expect(await diagnostics(page)).toEqual([]);
 });
+
+test('many subtrees moved in one task: each reads its new owner; subtrees nested in a moved one too', async ({ page }) => {
+  await open(page, { head: `<style>#a { --v: state("a") } #b { --v: state("bb") } .i:when(--v == "bb") { color: rgb(255, 0, 0) } .i { width: when(--v == "bb", 20px, 10px); display: block }</style>`,
+    body: `<div id="a">${'<p class="i"></p>'.repeat(5)}<div id="n"><p class="i" id="deep"></p></div></div><div id="b"></div>` });
+  await frames(page);
+  await page.evaluate(() => { const a = document.getElementById('a')!, b = document.getElementById('b')!; b.append(document.getElementById('n')!); for (const p of [...a.querySelectorAll('.i')].slice(0, 3)) b.append(p); });
+  await frames(page);
+  const widths = () => page.$$eval('.i', (l) => l.map((e) => e.closest('#a, #b')!.id + ':' + getComputedStyle(e).width));
+  expect((await widths()).sort()).toEqual(['a:10px', 'a:10px', 'b:20px', 'b:20px', 'b:20px', 'b:20px']);
+  expect(await v(page, '#deep', 'color')).toBe('rgb(255, 0, 0)');
+  expect(await diagnostics(page)).toEqual([]);
+});

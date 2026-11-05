@@ -202,8 +202,8 @@ export interface DeclarationRuntimes {
   persist?: { initial(spec: PersistSpec, owner: Element, fallback: Typed): Typed | undefined; link(spec: PersistSpec, cell: Cell): PersistLink };
   /** 0.10 (state/on-timing.ts): debounce() and throttle() in :on(). */
   eventTiming?: { parse(p: string, mods: Modifiers): void; check(mods: Modifiers, trigger: Trigger): void; gate(spec: OnRuleSpec, el: Element, tx: Tx, key: string): boolean; drop(spec: OnRuleSpec, el?: Element): void };
-  /** 0.10 (functions/calls.ts): the value functions called in a text. */
-  valueCalls?(s: string): string[];
+  /** 0.10 (functions/calls.ts): records the value functions called in a text (compile().uses). */
+  valueCalls?(s: string, use: (key: string) => void): void;
   /**
    * 0.10 (functions/derived.ts): computed custom properties. `accept` decides, and reports, whether a declaration is one;
    * `sheet` registers a stylesheet's declared names and computed declarations (returns its cleanup).
