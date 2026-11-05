@@ -710,7 +710,7 @@
     ],
     "readiness": "stable",
     "summary": "An event rule: when the event happens on the matched element (or inside it, for bubbling events), the rule’s state mutations run. The cascade picks one winning mutation per state, per trigger and per element.",
-    "signature": "<selector>:on(<trigger> [, prevent()] [, stop()]) {\n  --<state>: set(<expr>) | toggle() | increment(<step>?) | decrement(<step>?) | cycle(<value>#);\n}",
+    "signature": "<selector>:on(<trigger> [| <trigger>…] [, prevent()] [, stop()] [, debounce(<time>) | throttle(<time>)]) {\n  --<state>: set(<expr>) | toggle() | increment(<step>?) | decrement(<step>?) | cycle(<value>#);\n}",
     "params": [
       {
         "name": "trigger",
@@ -735,6 +735,18 @@
         "type": "`--<state>: <action>`",
         "required": "zero or more",
         "description": "The custom property on the left names the state; the action is [`set()`](/docs/reference/set/), [`toggle()`](/docs/reference/toggle/), [`increment()`](/docs/reference/increment/), [`decrement()`](/docs/reference/decrement/) or [`cycle()`](/docs/reference/cycle/), optionally with `!important`. A rule with modifiers and no declarations is valid."
+      },
+      {
+        "name": "a | b",
+        "type": "several events",
+        "required": "optional",
+        "description": "`:on(click | keydown(Enter))`: one rule for several events. Each event has its own cascade winner. `outside()`, `drag` and timers cannot be combined."
+      },
+      {
+        "name": "debounce(time), throttle(time)",
+        "type": "modifier",
+        "required": "optional",
+        "description": "Debounce runs after the events stop, with the last event's values, if the rule still applies. Throttle runs the first event and drops the next ones within the time. Use one, not both; not for `outside()` or drag."
       }
     ],
     "returns": "No value. On each event, the winning mutations of every element on the event path change the nearest owner of each named state.",
@@ -2456,6 +2468,433 @@
     "related": [
       "reference/pick-expression",
       "reference/attr"
+    ]
+  },
+  {
+    "id": "length",
+    "name": "length()",
+    "category": "Values",
+    "features": [
+      "function:length"
+    ],
+    "summary": "The number of characters a person sees: grapheme clusters, so an emoji with a skin tone is 1.",
+    "signature": "length(<text>)",
+    "params": [
+      {
+        "name": "text",
+        "type": "string or keyword",
+        "required": "required",
+        "description": "Numbers, booleans and datetimes are an error, never converted."
+      }
+    ],
+    "returns": "A number.",
+    "example": {
+      "label": "counter.css",
+      "code": ".form { --value: state(\"\"); }\n.form textarea:on(input) { --value: set(event(value)); }\n.form .count { text: length(trim(--value)); }"
+    },
+    "behavior": [
+      "Uses `Intl.Segmenter`. It differs from the HTML `maxlength` attribute, which counts UTF-16 code units.",
+      "In the arguments, `--name` reads a state; `var(--name)` works too."
+    ],
+    "contexts": [
+      "`:on()` actions: `set(lower(event(value)))`.",
+      "`:when()` and `when()` conditions: `:when(includes(--a, --b))`.",
+      "Declarations, including `text:`: `text: length(trim(--value))`."
+    ],
+    "limits": [],
+    "related": [
+      "reference/trim",
+      "reference/includes",
+      "reference/lower",
+      "reference/format"
+    ]
+  },
+  {
+    "id": "includes",
+    "name": "includes()",
+    "category": "Values",
+    "features": [
+      "function:includes"
+    ],
+    "summary": "Whether a text contains another. Case-sensitive, compared in NFC form, without accent folding.",
+    "signature": "includes(<text>, <part>)",
+    "params": [
+      {
+        "name": "text",
+        "type": "string or keyword",
+        "required": "required",
+        "description": "The text to search."
+      },
+      {
+        "name": "part",
+        "type": "string or keyword",
+        "required": "required",
+        "description": "What to find. An empty part is found."
+      }
+    ],
+    "returns": "A boolean.",
+    "example": {
+      "label": "search.css",
+      "code": ".list { --q: state(\"\"); }\n.list input:on(input) { --q: set(lower(trim(event(value)))); }\n.card { --name: state(attr(data-name)); }\n.card:when(not includes(lower(--name), --q)) { display: none; }"
+    },
+    "behavior": [
+      "Combine with `lower()` for a case-insensitive search.",
+      "In the arguments, `--name` reads a state; `var(--name)` works too."
+    ],
+    "contexts": [
+      "`:on()` actions: `set(lower(event(value)))`.",
+      "`:when()` and `when()` conditions: `:when(includes(--a, --b))`.",
+      "Declarations, including `text:`: `text: length(trim(--value))`."
+    ],
+    "limits": [
+      "`attr()` in a condition is read when the condition's states change, not when only the attribute changes."
+    ],
+    "related": [
+      "reference/lower",
+      "reference/trim",
+      "reference/length",
+      "reference/when-selector"
+    ]
+  },
+  {
+    "id": "lower",
+    "name": "lower()",
+    "category": "Values",
+    "features": [
+      "function:lower"
+    ],
+    "summary": "The text in lower case, with the Unicode default rules: the same result for every user, no locale rules.",
+    "signature": "lower(<text>)",
+    "params": [
+      {
+        "name": "text",
+        "type": "string or keyword",
+        "required": "required",
+        "description": "Numbers, booleans and datetimes are an error."
+      }
+    ],
+    "returns": "A string.",
+    "example": {
+      "label": "lower.css",
+      "code": ".s { --q: state(\"\"); }\n.s input:on(input) { --q: set(lower(event(value))); }"
+    },
+    "behavior": [
+      "In the arguments, `--name` reads a state; `var(--name)` works too."
+    ],
+    "contexts": [
+      "`:on()` actions: `set(lower(event(value)))`.",
+      "`:when()` and `when()` conditions: `:when(includes(--a, --b))`.",
+      "Declarations, including `text:`: `text: length(trim(--value))`."
+    ],
+    "limits": [],
+    "related": [
+      "reference/includes",
+      "reference/trim"
+    ]
+  },
+  {
+    "id": "trim",
+    "name": "trim()",
+    "category": "Values",
+    "features": [
+      "function:trim"
+    ],
+    "summary": "The text without Unicode white space at both ends.",
+    "signature": "trim(<text>)",
+    "params": [
+      {
+        "name": "text",
+        "type": "string or keyword",
+        "required": "required",
+        "description": "Numbers, booleans and datetimes are an error."
+      }
+    ],
+    "returns": "A string.",
+    "example": {
+      "label": "trim.css",
+      "code": ".f { --value: state(\"\"); }\n.f textarea:on(input) { --value: set(trim(event(value))); }"
+    },
+    "behavior": [
+      "The result of `trim(event(value))` can calculate as a number when it is exactly a decimal number, such as `\"09\"`.",
+      "In the arguments, `--name` reads a state; `var(--name)` works too."
+    ],
+    "contexts": [
+      "`:on()` actions: `set(lower(event(value)))`.",
+      "`:when()` and `when()` conditions: `:when(includes(--a, --b))`.",
+      "Declarations, including `text:`: `text: length(trim(--value))`."
+    ],
+    "limits": [],
+    "related": [
+      "reference/length",
+      "reference/lower",
+      "reference/format"
+    ]
+  },
+  {
+    "id": "format",
+    "name": "format()",
+    "category": "Values",
+    "features": [
+      "function:format"
+    ],
+    "summary": "A number or a datetime as text, in the language of the nearest `lang` attribute.",
+    "signature": "format(<value>, \"decimal\" | \"integer\" | \"percent\" | \"currency\" | \"<date pattern>\" [, \"<currency code>\"])",
+    "params": [
+      {
+        "name": "value",
+        "type": "number, numeric string or datetime",
+        "required": "required",
+        "description": "A number is never taken as a timestamp, and a datetime never as a number."
+      },
+      {
+        "name": "style or pattern",
+        "type": "quoted text or keyword",
+        "required": "required",
+        "description": "Checked when the stylesheet is compiled."
+      },
+      {
+        "name": "currency",
+        "type": "ISO 4217 code",
+        "required": "for `\"currency\"`",
+        "description": "Any other style or pattern takes no third argument."
+      }
+    ],
+    "returns": "A string.",
+    "example": {
+      "label": "invoice.css",
+      "code": ".invoice { --qty: state(1); }\n.invoice button:on(click) { --qty: increment(1); }\n.invoice .total { text: format(--qty * 19.9, \"currency\", \"EUR\"); }\n.invoice .rate { text: format(0.19, \"percent\"); }"
+    },
+    "behavior": [
+      "**Numbers.** `\"decimal\"`: grouping, at most 3 decimals. `\"integer\"`: rounds half away from zero, never `-0`. `\"percent\"`: 0.42 is 42%. `\"currency\"`: needs a code.",
+      "**Dates.** Pattern fields: `yyyy yy M MM MMM MMMM d dd E EEE EEEE H HH h hh m mm s ss SSS a`. `'quoted'` text is literal; `''` is one quote. Numeric fields use the Gregorian calendar and Latin digits in every locale; names are localized.",
+      "**Language.** The nearest `lang` attribute, read once per element; none or invalid: the browser's.",
+      "**CSS.** `@font-face` `format(\"woff2\")` stays CSS: only calls with two or more arguments and an unquoted first one are claimed."
+    ],
+    "contexts": [
+      "`:on()` actions: `set(lower(event(value)))`.",
+      "`:when()` and `when()` conditions: `:when(includes(--a, --b))`.",
+      "Declarations, including `text:`: `text: length(trim(--value))`."
+    ],
+    "limits": [
+      "In a custom bundle without the `datetime` feature, a date pattern is reported by feature."
+    ],
+    "related": [
+      "reference/time",
+      "reference/timezone",
+      "reference/length"
+    ]
+  },
+  {
+    "id": "time",
+    "name": "time()",
+    "category": "Values",
+    "features": [
+      "function:time"
+    ],
+    "summary": "The current instant, a datetime value. In CSS it is its epoch milliseconds. It is a value, not a timer.",
+    "signature": "time()",
+    "params": [],
+    "returns": "A datetime.",
+    "example": {
+      "label": "resend.css",
+      "code": ".resend { --until: state(time()); --now: state(time()); --waiting: state(false); }\n.resend button:on(click) { --waiting: set(true); --until: set(time() + 30s); --now: set(time()); }\n.resend:when(--waiting):on(every(250ms)) { --now: set(time()); }\n.resend:when(--waiting):on(after(30s)) { --waiting: set(false); }\n.resend .left { text: format(max(0, round(up, (--until - --now) / 1s)), \"integer\"); }"
+    },
+    "behavior": [
+      "Every `time()` in one task gives the same instant.",
+      "`--x: state(time())` makes a datetime state.",
+      "A datetime ± a duration (`30s`, `500ms`) is a datetime, in the same zone. A datetime − a datetime is a duration in `ms`. Anything else is an error: a plain number is never a time.",
+      "It compares with a datetime or with a number of epoch milliseconds, by instant."
+    ],
+    "contexts": [
+      "`:on()` actions: `set(lower(event(value)))`.",
+      "`:when()` and `when()` conditions: `:when(includes(--a, --b))`.",
+      "Declarations, including `text:`: `text: length(trim(--value))`.",
+      "`state(time())`."
+    ],
+    "limits": [
+      "A declaration or condition with `time()` is evaluated when its states change, not as time passes. Use `every()` or `live()` to follow the clock."
+    ],
+    "related": [
+      "reference/timezone",
+      "reference/format",
+      "reference/every",
+      "reference/live"
+    ]
+  },
+  {
+    "id": "timezone",
+    "name": "timezone()",
+    "category": "Values",
+    "features": [
+      "function:timezone"
+    ],
+    "summary": "The same instant, shown by `format()` in an IANA time zone.",
+    "signature": "timezone(<datetime>, \"<Area/City>\")",
+    "params": [
+      {
+        "name": "datetime",
+        "type": "datetime",
+        "required": "required",
+        "description": "From `time()` or a datetime state."
+      },
+      {
+        "name": "zone",
+        "type": "quoted IANA name",
+        "required": "required",
+        "description": "A literal is checked when the stylesheet is compiled; a zone from a state when it is evaluated."
+      }
+    ],
+    "returns": "A datetime.",
+    "example": {
+      "label": "tokyo.css",
+      "code": ".clock { --now: state(time()); }\n.clock:on(every(1s)) { --now: set(time()); }\n.clock .tokyo { text: format(timezone(--now, \"Asia/Tokyo\"), \"HH:mm:ss\"); }"
+    },
+    "behavior": [
+      "Daylight saving comes from the browser's zone data. Without `timezone()`, `format()` uses the browser's zone."
+    ],
+    "contexts": [
+      "`:on()` actions: `set(lower(event(value)))`.",
+      "`:when()` and `when()` conditions: `:when(includes(--a, --b))`.",
+      "Declarations, including `text:`: `text: length(trim(--value))`."
+    ],
+    "limits": [],
+    "related": [
+      "reference/time",
+      "reference/format"
+    ]
+  },
+  {
+    "id": "after",
+    "name": ":on(after())",
+    "category": "Events",
+    "features": [
+      "rule:after"
+    ],
+    "summary": "Runs once, a delay after the rule becomes active: when its element starts matching the full selector, `:when()` included.",
+    "signature": "<selector>:on(after(<delay>)) {\n  --<state>: set(...);\n}",
+    "params": [
+      {
+        "name": "delay",
+        "type": "`ms` or `s`",
+        "required": "required",
+        "description": "Counted from activation."
+      }
+    ],
+    "returns": "No value. The run is a transaction, like an event.",
+    "example": {
+      "label": "toast.css",
+      "code": ".app { --visible: state(false); }\n.app .show:on(click) { --visible: set(true); }\n.toast:when(--visible):on(after(3s)) { --visible: set(false); }"
+    },
+    "behavior": [
+      "Leaving the selector, or removal, cancels the timer. Matching again starts a new one. An unrelated state change or a move inside the document does not restart it.",
+      "The deadline is wall-clock: in a hidden tab the browser may run it late, and it then runs once.",
+      "Each run resolves the state's owner again.",
+      "A timer starts one frame after the state change that activates it: the `:when()` marker is written in the frame."
+    ],
+    "contexts": [
+      "Unconditional rules and rules with `:when()`, classes and attributes in the selector."
+    ],
+    "limits": [
+      "No modifiers, and `event()` is not available.",
+      "Rules cannot depend on `:hover`, `:focus`, `:checked` and other states the runtime cannot follow, and cannot be nested in a rule with a state condition. Use a state.",
+      "It cannot be combined with other events in `a | b`."
+    ],
+    "related": [
+      "reference/every",
+      "reference/on-rule",
+      "reference/when-selector"
+    ]
+  },
+  {
+    "id": "every",
+    "name": ":on(every())",
+    "category": "Events",
+    "features": [
+      "rule:every"
+    ],
+    "summary": "Runs every interval while the rule is active, the first time after a first delay.",
+    "signature": "<selector>:on(every(<interval> [, <first delay>])) {\n  --<state>: increment(1);\n}",
+    "params": [
+      {
+        "name": "interval",
+        "type": "`ms` or `s`",
+        "required": "required",
+        "description": "Minimum 20 ms; smaller values are raised, with a diagnostic."
+      },
+      {
+        "name": "first delay",
+        "type": "`ms` or `s`",
+        "required": "optional",
+        "description": "Default: one interval."
+      }
+    ],
+    "returns": "No value. Each run is a transaction, like an event.",
+    "example": {
+      "label": "hold.css",
+      "code": ".counter { --held: state(false); --count: state(0); }\n.counter button:on(pointerdown) { --held: set(true); }\n.counter button:on(pointerup | pointerleave | pointercancel) { --held: set(false); }\n.counter:when(--held):on(every(80ms, 400ms)) { --count: increment(1); }"
+    },
+    "behavior": [
+      "No drift: each run is planned from the previous planned time. Missed runs are skipped, not replayed.",
+      "Paused while the page is hidden; on return, the next run is one interval later.",
+      "Timers due together share one `setTimeout` and one pass. Two active rules with the same trigger share one timer, and the cascade picks per state.",
+      "Ticks are not a clock: use `time()` for elapsed time."
+    ],
+    "contexts": [
+      "Unconditional rules and rules with `:when()`, classes and attributes in the selector."
+    ],
+    "limits": [
+      "No modifiers, and `event()` is not available.",
+      "Rules cannot depend on `:hover`, `:focus`, `:checked` and other states the runtime cannot follow, and cannot be nested in a rule with a state condition."
+    ],
+    "related": [
+      "reference/after",
+      "reference/time",
+      "reference/on-rule"
+    ]
+  },
+  {
+    "id": "computed",
+    "name": "Computed custom properties",
+    "category": "State",
+    "features": [
+      "declaration:computed"
+    ],
+    "summary": "`--clean: trim(--value)`: a custom property whose whole value is one value function is also a read-only state, computed from other states.",
+    "signature": "--<name>: <value function>(...);\n--<name>: live(<value function>(...) [, <interval>]);",
+    "params": [
+      {
+        "name": "value function",
+        "type": "`length`, `includes`, `lower`, `trim`, `format`, `timezone`; `time` inside `live()`",
+        "required": "required",
+        "description": "The call must be the whole value. It may read only states, literals and other value functions."
+      }
+    ],
+    "returns": "A read-only state of that name on each matched element, and the same value as a CSS custom property.",
+    "example": {
+      "label": "chain.css",
+      "code": ".form { --value: state(\"\"); --clean: trim(--value); --chars: length(--clean); }\n.form textarea:on(input) { --value: set(event(value)); }\n.form .count { text: var(--chars); }\n.form:when(--chars > 140) .count { color: red; }"
+    },
+    "behavior": [
+      "**Updates.** Recomputed synchronously when a state it reads changes, inputs before what reads them, before the change returns. An unchanged result notifies nobody. `previous()` never sees an intermediate value.",
+      "**Owner.** Each matched element owns one, while it matches. Consumers use the nearest owner, as for `state()`.",
+      "**Read-only.** `set()`, `toggle()` and other mutations, legacy `on:` actions and `bind:` input change nothing, with a diagnostic.",
+      "**Errors.** An evaluation error keeps the last value, with a diagnostic. A missing input gives no value, reported after a second."
+    ],
+    "contexts": [
+      "An unconditional style rule. `@layer` and nesting in an unconditional parent are allowed."
+    ],
+    "limits": [
+      "**Not a general CSS cascade.** The value is written inline on each owner. CSS shows the state on the owner unless `!important` or `@property` overrides it, and inside the owner unless another declaration of the name applies there.",
+      "A declaration of the same name in a processed stylesheet (one with reactive syntax), including `state()` and `@property`, turns the name off, with a diagnostic. In a stylesheet without reactive syntax, and for inline styles inside an owner, only development builds report it. Cross-origin stylesheets and shadow roots cannot be checked.",
+      "In `:when()`, state pseudo-class, pseudo-element, `@media`, `@supports` or `@container` rules, and with `!important`, the declaration stays CSS-only, with a diagnostic. So does one that reads `attr()`, `event()`, `element()`, `random()` or `time()` outside `live()`.",
+      "Names that read each other are rejected."
+    ],
+    "related": [
+      "reference/state",
+      "reference/live",
+      "reference/length",
+      "reference/format",
+      "reference/time"
     ]
   }
 ]

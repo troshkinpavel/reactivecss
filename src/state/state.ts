@@ -11,7 +11,7 @@
 
 import { dirty, settleLater, type Job } from '../core/scheduler';
 import { warn, dev, probes } from '../core/log';
-import type { Watcher } from '../core/elements';
+import { moveHooks, type Watcher } from '../core/elements';
 import { serialize, equal, type Typed } from './values';
 import { evaluate, type Expr } from './expr';
 import type { AttrBind, BoundAttribute } from './bindattr';
@@ -42,6 +42,17 @@ const cellsOf = new WeakMap<Element, Cell[]>();
 /** Called after every effective state change (text: re-reads the elements inside the owner). */
 export const stateChangeHooks = new Set<(c: Cell) => void>();
 const waiting = new Map<string, Set<StateRef>>();
+
+/**
+ * 0.10 (computed custom properties, functions/derived.ts): cells computed by a declaration.
+ * Actions, bind: and form resets cannot set them. A set, not a Cell field: Cell keeps its shape.
+ */
+export const readOnly = new WeakSet<Cell>();
+/** 0.10: runs once the outermost change has notified everyone (computed values settle there, in depth order). */
+export const changeHooks: { settled?: () => void } = {};
+let changing = 0;
+/** True while a change is notifying its subscribers. */
+export const isChanging = () => changing > 0;
 
 export class Cell implements Job {
   queued?: boolean;
@@ -83,8 +94,12 @@ export class Cell implements Job {
     this.bound?.write(next); // synchronously: the DOM attribute never lags the state
     this.persisted?.changed();
     dirty(this);
-    for (const s of this.subs) s.notify();
-    for (const fn of stateChangeHooks) fn(this);
+    changing++;
+    try {
+      for (const s of this.subs) s.notify();
+      for (const fn of stateChangeHooks) fn(this);
+    } finally { changing--; }
+    if (!changing) changeHooks.settled?.();
     return true;
   }
 
@@ -252,19 +267,47 @@ function createCell(owner: Styled, d: StateDecl) {
   // attribute or storage initialized it): write the owner's value.
   if (d.init.k !== 'lit' || bound || restored) c.writeAll();
   bound?.write(v);
+  adoptCell(c);
+}
+
+/** Makes `c` resolvable on its owner (0.10: shared with computed custom properties). */
+export function adoptCell(c: Cell) {
+  const { owner, name } = c;
   const list = cellsOf.get(owner);
   if (list) list.push(c);
   else cellsOf.set(owner, [c]);
   runtimeStats.states++;
   // References that should now resolve here: waiting ones inside the owner, and those
   // inside the owner that currently use an enclosing cell of the same name (shadowing).
-  const w = waiting.get(d.name);
+  const w = waiting.get(name);
   if (w) for (const r of [...w]) if (owner.contains(r.el)) r.invalidate();
-  const outer = findCell(owner.parentElement, d.name);
+  const outer = findCell(owner.parentElement, name);
   if (outer) for (const r of [...outer.subs]) if (owner.contains(r.el)) r.invalidate();
 }
 
-function disposeCell(c: Cell) {
+/** 0.10: references re-resolved because their element moved (bind: then shows the new owner's value). */
+export const movedRefs = new WeakSet<StateRef>();
+/**
+ * 0.10: subtrees moved inside the document. References inside them that used an owner on an old
+ * ancestor chain, or waited for one, resolve again (the nearest-owner rule, also after a move).
+ * A move under the same parent changes no owner. One scan per batch, however many subtrees moved.
+ */
+moveHooks.push((moves) => {
+  const roots = new Set<Element>(), cells = new Set<Cell>();
+  for (const [root, from] of moves) {
+    if (!root.isConnected || root.parentElement === from) continue;
+    roots.add(root);
+    for (let a: Element | null = from; a; a = a.parentElement) for (const c of cellsOf.get(a) ?? []) cells.add(c);
+  }
+  if (!roots.size) return;
+  const inside = (el: Element) => { for (let a: Element | null = el; a; a = a.parentElement) if (roots.has(a)) return true; return false; };
+  const stale: StateRef[] = [];
+  for (const c of cells) for (const r of c.subs) if (inside(r.el)) stale.push(r);
+  for (const set of waiting.values()) for (const r of set) if (inside(r.el)) stale.push(r);
+  for (const r of stale) { movedRefs.add(r); r.invalidate(); }
+});
+
+export function disposeCell(c: Cell) {
   c.dead = true;
   c.bound?.release();
   c.persisted?.release();

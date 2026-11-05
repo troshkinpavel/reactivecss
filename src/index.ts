@@ -3,6 +3,7 @@
 // and only the selected src/features/* (tools/bundle.mjs).
 
 import './features/events';
+import './features/event-timing';
 import './features/conditions';
 import './features/nth-var';
 import './features/history';
@@ -16,5 +17,10 @@ import './features/geometry';
 import './features/gestures';
 import './features/persist';
 import './features/blur';
+import './features/strings';
+import './features/format';
+import './features/datetime';
+import './features/timers';
+import './features/derived';
 
 export * from './api';

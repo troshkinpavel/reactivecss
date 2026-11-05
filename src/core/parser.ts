@@ -19,6 +19,12 @@ export interface ReactiveDecl {
   call: CallNode;
 }
 
+/** 0.10: `--name: f(…)` or `--name: live(f(…), interval)` (f a value function) in an unconditional rule. */
+export interface DerivedDecl {
+  name: string;
+  call: CallNode;
+}
+
 export interface ReactiveRule {
   /** Selector used to find elements that may need the bindings (state pseudo-classes removed). */
   match: string;
@@ -44,6 +50,8 @@ export interface ReactiveRule {
   onSpec?: OnRuleSpec;
   /** 0.9.0 state(…, bind(value | checked)): states bound to the matched control itself. */
   forms?: string[];
+  /** 0.10: computed custom properties, read-only states of the matched elements. */
+  derived?: DerivedDecl[];
   /** Token range of the rule's own selector, and the enclosing rule (nesting): read by content:. */
   prelude?: [number, number];
   parent?: ReactiveRule;
@@ -69,6 +77,8 @@ export interface CompiledSheet {
    * `act:set`, `fn:live`, `sel:when`… (the analyzer maps them to bundle features).
    */
   uses: Set<string>;
+  /** 0.10: how many times the sheet declares each custom property (any rule, state(), @property). */
+  declared: Map<string, number>;
 }
 
 declare const __RCSS_EXCLUDED__: Record<string, string> | undefined;
@@ -81,10 +91,22 @@ export const EXCLUDED: Record<string, string> = typeof __RCSS_EXCLUDED__ !== 'un
 /** Declarations the parser recognizes and the feature that provides their runtime. */
 const DECLARATION_FEATURE = { on: 'events', bind: 'forms', text: 'text', attr: 'attributes', focus: 'focus', typed: 'values', 'state-bind': 'attributes',
   'on-rule': 'events', drag: 'gestures', persist: 'persist', 'state-form': 'forms', 'attr-ns': 'attributes', content: 'text' } as const;
-const missing = (what: string, feature: string) =>
+export const missing = (what: string, feature: string) =>
   msg(`${what} is not included in this bundle (feature "${feature}"); build a bundle with it (reactive-css build --features ${feature}) or use the full bundle`);
 /** Names that may be the native CSS function of the same name: reported as a note, not a warning. */
 const NATIVE_TOO = new Set(['random', 'element']);
+/** True when `s` has a comma outside parentheses. */
+const topComma = (s: string) => { let d = 0; for (const c of s) { if (c === '(') d++; else if (c === ')') d--; else if (c === ',' && !d) return true; } return false; };
+/**
+ * 0.10: names CSS also uses, claimed only in their Reactive CSS form, also when the feature is
+ * left out of the bundle: [claim test of the argument text, pre-filter lookahead after "name("].
+ * format() needs two or more arguments and an unquoted first one, so @font-face
+ * src: … format("woff2") / format(woff2) stays CSS (and font-only sheets stay unprocessed).
+ */
+const CLAIM: Record<string, [(arg: string) => boolean, string]> = {
+  // shortcut: the lookahead sees a comma after at most two levels of nested parentheses; deeper first arguments need other reactive syntax in the sheet to be processed.
+  format: [(arg) => topComma(arg) && !/^\s*["']/.test(arg), `(?!\\s*["'])(?:[^()]|\\((?:[^()]|\\([^()]*\\))*\\))*,`],
+};
 
 export interface CompileOptions {
   /** Base URL of a linked sheet: relative URLs are made absolute. */
@@ -134,7 +156,7 @@ const GROUPING = new Set(['media', 'supports', 'layer', 'container', 'scope', 's
  * so we bind a superset of elements. Binding an extra element is harmless: the
  * generated var() is only used where the real selector matches.
  */
-const STATEFUL = new Set([
+export const STATEFUL = new Set([
   'hover', 'active', 'focus', 'focus-visible', 'focus-within', 'target', 'target-within',
   'visited', 'link', 'any-link', 'checked', 'indeterminate', 'default', 'disabled', 'enabled',
   'valid', 'invalid', 'user-valid', 'user-invalid', 'in-range', 'out-of-range', 'required',
@@ -154,6 +176,10 @@ export function compile(source: string, options: CompileOptions | string = {}): 
   const runtime: SheetRuntime = { setup: [] };
   const uses = new Set<string>();
   const use = (k: string) => { uses.add(k); };
+  const declared = new Map<string, number>();
+  const declare = (name: string) => declared.set(name, (declared.get(name) ?? 0) + 1);
+  /** 0.10: value functions in text the expression language parses (actions, conditions, state(), their arguments). */
+  const valueUses = (s: string) => runtimes.valueCalls?.(s, use);
 
   const raw = (i: number) => repl[i] ?? source.slice(tokens[i].start, tokens[i].end);
   /** Text of tokens [a, b) with comments dropped, as used for selectors and arguments. */
@@ -186,8 +212,8 @@ export function compile(source: string, options: CompileOptions | string = {}): 
 
   /** Is the function token at i a Reactive CSS call? (A def may decline, e.g. native element(#id).) */
   function claims(i: number): boolean {
-    const def = functions.get(tokens[i].value);
-    return !!def && (!def.matches || def.matches(text(i + 1, matching(tokens, i))));
+    const def = functions.get(tokens[i].value), claim = CLAIM[tokens[i].value];
+    return !!def && (!def.matches || def.matches(text(i + 1, matching(tokens, i)))) && (!claim || claim[0](text(i + 1, matching(tokens, i))));
   }
 
   /** A function of a feature left out of this bundle (the call is left to the browser). */
@@ -195,6 +221,7 @@ export function compile(source: string, options: CompileOptions | string = {}): 
     const name = tokens[i].value, feature = EXCLUDED['fn:' + name];
     const arg = text(i + 1, matching(tokens, i)).trim();
     if (name === 'element' && !/^(width|height)$/i.test(arg)) return; // native element(#id)
+    if (CLAIM[name] && !CLAIM[name][0](arg)) return; // native format("woff2")
     use('fn:' + name);
     if (NATIVE_TOO.has(name)) note(`${name}() may be the native CSS function; the Reactive CSS ${name}() is not included in this bundle (feature "${feature}"); build a bundle with it (reactive-css build --features ${feature}) or use the full bundle`);
     else warn(missing(`${name}()`, feature));
@@ -204,6 +231,7 @@ export function compile(source: string, options: CompileOptions | string = {}): 
     const name = tokens[open].value;
     const def = functions.get(name)!;
     use('fn:' + name);
+    valueUses(text(open + 1, close));
     const args: Arg[] = [];
     let start = open + 1;
     const flush = (end: number) => {
@@ -279,6 +307,7 @@ export function compile(source: string, options: CompileOptions | string = {}): 
     const first = text(...args[0]);
     if (/^(bind|persist)\(/i.test(first)) throw new Error(`state() needs an initial value first, e.g. state(false, ${first})`);
     const init = parseExpr(first);
+    valueUses(first);
     const initType = init.k === 'lit' ? init.t.type : init.k === 'attr' ? init.fallback.type : init.k === 'split' ? 'string' : undefined;
     let bind: AttrBind | undefined;
     let persist: PersistSpec | undefined;
@@ -461,7 +490,13 @@ export function compile(source: string, options: CompileOptions | string = {}): 
       }
       if (attr && !tokens.slice(value, to).some((t) => t.type !== 'ws' && t.type !== 'comment'))
         throw new Error(ns ? `${name} needs a value, e.g. ${name}: var(--state)` : `attr: ${attr} needs a value, e.g. attr: ${attr} var(--state)`);
-      const bad = tokens.slice(value, to).find((t) => (ns && t.type === 'url') || (t.type === 'function' && !TEXT_FUNCTIONS.has(t.value)));
+      let bad: Token | undefined;
+      for (let i = value; i < to && !bad; i++) {
+        const t = tokens[i];
+        if (t.type === 'function' && functions.get(t.value)?.value) i = matching(tokens, i); // 0.10: the expression language checks its arguments
+        else if ((ns && t.type === 'url') || (t.type === 'function' && !TEXT_FUNCTIONS.has(t.value))) bad = t;
+      }
+      if (bad?.type === 'function' && EXCLUDED['fn:' + bad.value]) throw new Error(missing(`${bad.value}()`, EXCLUDED['fn:' + bad.value])); // 0.10: a value function left out of this bundle
       if (bad) throw new Error(`${subject} takes ${TAKES[ns ? 'attr' : kind]}; ${bad.type === 'url' ? 'url' : bad.value}() is not supported`);
       if (kind === 'focus') { edits.push({ from, to: colon, text: '--rcss-focus' }); rule.focus = true; }
       else if (kind === 'text') { edits.push({ from, to: colon, text: '--rcss-text' }); rule.text = true; }
@@ -483,6 +518,7 @@ export function compile(source: string, options: CompileOptions | string = {}): 
     while (colon < to && tokens[colon].type !== ':') colon++;
     const name = text(from, colon);
     if (rule?.onSpec) { mutation(from, colon, to, rule.onSpec); return; }
+    if (name.startsWith('--')) declare(name.trim());
     if (tokens.slice(colon + 1, to).some((t) => t.type === 'function' && t.value === 'typed')) {
       try { typedDeclaration(name, colon, to); } catch (e) {
         warn(`${(e as Error).message} in "${snippet(from, to)}". Declaration left unchanged.`);
@@ -529,6 +565,17 @@ export function compile(source: string, options: CompileOptions | string = {}): 
     } catch (e) {
       warn(`${(e as Error).message} in "${snippet(from, to)}". Declaration left unchanged.`);
       return;
+    }
+    // 0.10: a value function (or live() around one) as the whole value of a custom property.
+    if (runtimes.derived && decls.length === 1 && local.length === 1 && name.startsWith('--')) {
+      const [end, imp] = important(colon + 1, to);
+      if (text(colon + 1, end).trim() === text(local[0].from, local[0].to).trim() && runtimes.derived.accept(name.trim(), decls[0].call, imp, rule!.certain === true, snippet(from, to))) {
+        use('decl:derived');
+        edits.push({ from, to: trimEnd(from, to), text: '' }); // the runtime writes it on each owner
+        if (!rules.includes(rule!)) rules.push(rule!);
+        (rule!.derived ??= []).push({ name: name.trim(), call: decls[0].call });
+        return;
+      }
     }
     edits.push(...local);
     if (decls.length) {
@@ -610,14 +657,22 @@ export function compile(source: string, options: CompileOptions | string = {}): 
     if (!name.startsWith('--') || name.startsWith('--attr-') || name.startsWith('--rcss-'))
       return dropDeclaration(from, to, `an :on() rule contains only state changes like --open: toggle(); "${name}" is not one (a rule describes either an event or a style)`);
     let m;
-    try { m = runtimes.onRules!.mutation(name, text(colon + 1, end), spec.trigger); } catch (e) { return dropDeclaration(from, to, (e as Error).message); }
+    const value = text(colon + 1, end);
+    try { m = runtimes.onRules!.mutation(name, value, spec.trigger); } catch (e) { return dropDeclaration(from, to, (e as Error).message); }
     const mut = { ...m, id: ++handlerCounter, rule: spec };
     use('mut:' + mut.op);
-    if (/\bevent\(/i.test(text(colon + 1, end))) use('expr:event');
-    const prop = slot(`${spec.trigger.key}|${name}`);
-    spec.slots = spec.slots.filter((x) => x.prop !== prop); // the last declaration in a rule wins, as in CSS
-    spec.slots.push({ prop, m: mut });
-    edits.push({ from, to: trimEnd(from, to), text: `${prop}: ${mut.id}${imp ? ' !important' : ''}` });
+    if (/\bevent\(/i.test(value)) use('expr:event');
+    valueUses(value);
+    // One slot per event the rule answers (0.10: each member of `a | b`), so the cascade picks a
+    // winner per event exactly as for single-event rules.
+    const out: string[] = [];
+    for (const key of spec.trigger.members?.map((t) => t.key) ?? [spec.trigger.key]) {
+      const prop = slot(`${key}|${name}`);
+      spec.slots = spec.slots.filter((x) => x.prop !== prop); // the last declaration in a rule wins, as in CSS
+      spec.slots.push({ prop, m: mut, key });
+      out.push(`${prop}: ${mut.id}${imp ? ' !important' : ''}`);
+    }
+    edits.push({ from, to: trimEnd(from, to), text: out.join('; ') });
   }
 
   // ---- selectors ---------------------------------------------------------------
@@ -654,9 +709,10 @@ export function compile(source: string, options: CompileOptions | string = {}): 
           try { c = runtimes.onRules.trigger(text(i + 2, end - 1)); } catch (e) {
             throw (e as Error).message === 'feature:gestures' ? new Error(missing(':on(drag)', DECLARATION_FEATURE.drag)) : e;
           }
-          use(c.trigger.phase !== undefined ? 'gesture:drag' : 'trigger:' + (c.trigger.outside ? 'outside' : c.trigger.dom));
+          for (const t of c.trigger.members ?? [c.trigger])
+            use(t.phase !== undefined ? 'gesture:drag' : 'trigger:' + (t.outside ? 'outside' : t.dom));
           for (const [k, v] of Object.entries(c.mods)) if (v) use('mod:' + k);
-          if (pre.on && (pre.on.trigger.key !== c.trigger.key || pre.on.mods.prevent !== c.mods.prevent || pre.on.mods.stop !== c.mods.stop))
+          if (pre.on && (pre.on.trigger.key !== c.trigger.key || JSON.stringify(pre.on.mods) !== JSON.stringify(c.mods)))
             throw new Error('every selector of an :on() rule must use the same trigger and modifiers; write one rule per trigger');
           pre.on = c;
           pre.special.push([i, end]);
@@ -674,6 +730,7 @@ export function compile(source: string, options: CompileOptions | string = {}): 
         if (def.functional !== (t.type === 'function')) throw new Error(`:${def.name} ${def.functional ? 'needs' : 'takes no'} arguments`);
         const end = def.functional ? matching(tokens, i + 1) + 1 : i + 2;
         const arg = def.functional ? text(i + 2, end - 1) : '';
+        valueUses(arg);
         const [cFrom, cTo] = compound(from, to, i);
         const candidate = resolveNesting(parent, strip(cFrom, i) + strip(end, cTo));
         local.push({ from: i, to: end, text: def.compile(arg, candidate, runtime) });
@@ -687,6 +744,19 @@ export function compile(source: string, options: CompileOptions | string = {}): 
     }
     edits.push(...local);
     return resolveNesting(parent, strip(from, to));
+  }
+
+  /** 0.10 timers: the rule's selector with this rule's edits applied (:when() markers, :on() as :is(*)). */
+  function editedSelector(a: number, b: number): string {
+    // This prelude's edits are the last ones selector() pushed (earlier edits are before `a`).
+    const own = new Map<number, (typeof edits)[number]>();
+    for (let k = edits.length; k-- && edits[k].from >= a;) if (edits[k].to <= b) own.set(edits[k].from, edits[k]);
+    let s = '';
+    for (let k = a; k < b;) {
+      const ed = own.get(k);
+      if (ed) { s += ed.text; k = ed.to; } else { s += tokens[k].type === 'comment' ? ' ' : raw(k); k++; }
+    }
+    return s;
   }
 
   /** Token range of the compound selector containing token `at`. */
@@ -765,6 +835,7 @@ export function compile(source: string, options: CompileOptions | string = {}): 
         if (rule?.onSpec) { const end = b >= to || tokens[b].type === ';' ? b + 1 : matching(tokens, b) + 1; dropNested(i, end, rule); i = end; continue; }
         if (b >= to || tokens[b].type === ';') { i = b + 1; continue; }
         const close = matching(tokens, b);
+        if (name === 'property') { const n = tokens.slice(i + 2, b).find((x) => x.type === 'ident'); if (n?.value.startsWith('--')) declare(n.value); }
         // @layer only orders the cascade; the other grouping rules make matching conditional.
         if (GROUPING.has(name)) block(b + 1, close, rule, conditional || name !== 'layer');
         else if (hasReactiveSyntax(source.slice(t.start, tokens[close]?.end ?? source.length)))
@@ -796,10 +867,22 @@ export function compile(source: string, options: CompileOptions | string = {}): 
           }
           plain = plain.replace(/\s+/g, ' ').trim();
         }
-        const certain = !conditional && (rule ? rule.certain === true : true) && strip(i, b) === plain;
+        let certain = !conditional && (rule ? rule.certain === true : true) && strip(i, b) === plain;
         if (match !== null) {
+          // 0.10 timers: the rule is active exactly while its element matches the full selector.
+          let exact: string | undefined;
+          if (pre.on?.trigger.timer) {
+            try { exact = runtimes.timers!.selector(editedSelector(i, b), rule ?? undefined); } catch (e) {
+              warn(`${(e as Error).message} in "${snippet(i, b)}". Rule dropped.`);
+              while (edits.length && edits[edits.length - 1].from >= i) edits.pop(); // its selector edits (the last ones): edits must not overlap
+              edits.push({ from: i, to: close + 1, text: '' });
+              i = close + 1;
+              continue;
+            }
+            certain = !conditional; // membership already includes every selector condition
+          }
           const r: ReactiveRule = { match, decls: [], states: [], certain, prelude: [i, b], parent: rule ?? undefined };
-          if (pre.on) onRule(r, pre.on, i, b, close);
+          if (pre.on) { onRule(r, pre.on, i, b, close); if (exact) r.onSpec!.exact = exact; }
           else block(b + 1, close, r, conditional);
         }
         i = close + 1;
@@ -818,7 +901,7 @@ export function compile(source: string, options: CompileOptions | string = {}): 
     if (edits[e]?.from === i) { css += edits[e].text; i = edits[e++].to; }
     else css += raw(i++);
   }
-  return { css, rules, runtime, handlers, uses, changed: edits.length > 0 || runtime.setup.length > 0 };
+  return { css, rules, runtime, handlers, uses, declared, changed: edits.length > 0 || runtime.setup.length > 0 };
 }
 
 /** Joins a nested selector with its parent the way CSS Nesting does (`&` = :is(parent)). */
@@ -876,7 +959,7 @@ export function hasReactiveSyntax(css: string): boolean {
   if (quickKey !== functions.size * 1000 + selectors.size) {
     quickKey = functions.size * 1000 + selectors.size;
     quick = new RegExp(
-      `(?:^|[^\\w-])(?:state|typed|${[...functions.keys(), ...excludedNames('fn:')].join('|')})\\(|:(?:${[...selectors.keys(), ...excludedNames('sel:')].join('|')})(?![\\w-])|(?:^|[;{\\s])(?:on|bind|text|attr|focus)\\s*:`
+      `(?:^|[^\\w-])(?:state|typed|${[...functions.keys(), ...excludedNames('fn:')].map((n) => (CLAIM[n] ? `${n}(?=\\(${CLAIM[n][1]})` : n)).join('|')})\\(|:(?:${[...selectors.keys(), ...excludedNames('sel:')].join('|')})(?![\\w-])|(?:^|[;{\\s])(?:on|bind|text|attr|focus)\\s*:`
       // 0.9.0: :on(), --attr-*, content: reading state, and a functional :focus() (reported: focus: is the API).
       + `|:(?:on|focus)\\(|--attr-[a-z]|(?:^|[;{\\s])content\\s*:[^;}]*\\b(?:var|when|previous|direction)\\(`,
       'i',

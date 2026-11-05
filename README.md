@@ -47,7 +47,7 @@ One small runtime reads your stylesheets and wires them up.
 
 The button owns the state, each click increments it, and the span shows it as text. No application JavaScript is involved, but the Reactive CSS runtime has to be loaded.
 
-> **Note: 0.9.1 is experimental.** [`@reactivecss/core`](https://www.npmjs.com/package/@reactivecss/core) 0.9.1 and the MCP server [`@reactivecss/mcp`](https://www.npmjs.com/package/@reactivecss/mcp) 0.1.1 are on npm. The website is [reactivecss.com](https://reactivecss.com). See [Installation](#installation).
+> **Note: 0.10.0 is experimental.** [`@reactivecss/core`](https://www.npmjs.com/package/@reactivecss/core) 0.10.0 and the MCP server [`@reactivecss/mcp`](https://www.npmjs.com/package/@reactivecss/mcp) 0.1.1 are on npm. The website is [reactivecss.com](https://reactivecss.com). See [Installation](#installation).
 
 ## Why Reactive CSS?
 
@@ -141,10 +141,10 @@ The runtime is one script with no dependencies. Once it loads, it processes the 
 
 ```html
 <link rel="stylesheet" href="style.css">
-<script src="https://cdn.jsdelivr.net/npm/@reactivecss/core@0.9.1/dist/reactive-css.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@reactivecss/core@0.10.0/dist/reactive-css.min.js" defer></script>
 ```
 
-The same file is on unpkg: `https://unpkg.com/@reactivecss/core@0.9.1/dist/reactive-css.min.js`.
+The same file is on unpkg: `https://unpkg.com/@reactivecss/core@0.10.0/dist/reactive-css.min.js`.
 
 **From npm.**
 
@@ -167,15 +167,15 @@ npm ci
 npm run build
 ```
 
-Then load `dist/reactive-css.min.js` with `defer`. To try a local build as an npm dependency, run `npm pack`, then `npm install path/to/reactivecss-core-0.9.1.tgz` in your project.
+Then load `dist/reactive-css.min.js` with `defer`. To try a local build as an npm dependency, run `npm pack`, then `npm install path/to/reactivecss-core-0.10.0.tgz` in your project.
 
-**Bundles.** Measured from the 0.9.1 build:
+**Bundles.** Measured from the 0.10.0 build:
 
 | File | Minified | gzip |
 |---|---:|---:|
-| `reactive-css.min.js` | 150,368 B | 49,736 B |
-| `reactive-css.compact.min.js` (same runtime, shorter `describe()` registry) | 129,824 B | 42,968 B |
-| `reactive-css.js` (development build, full diagnostic messages) | 268,961 B | 70,254 B |
+| `reactive-css.min.js` | 181,808 B | 60,828 B |
+| `reactive-css.compact.min.js` (same runtime, shorter `describe()` registry) | 155,385 B | 52,149 B |
+| `reactive-css.js` (development build, full diagnostic messages) | 326,861 B | 85,651 B |
 
 **Custom bundles** contain only the features your stylesheets use. The CLI builds them, with `esbuild`:
 

@@ -40,7 +40,6 @@ test('an unpublished version passes once its notes are written; the placeholder 
   // Turn the current version into a prepared, unpublished one.
   edit(dir, 'site/config/distribution.json', (s) => { const d = JSON.parse(s); d.core.npmVersions = d.core.npmVersions.filter((x) => x !== v); return JSON.stringify(d); });
   edit(dir, 'CHANGELOG.md', (s) => s.replace(new RegExp(`^## ${v.replaceAll('.', '\\.')}([^\\n]*)$`, 'm'), `## ${v}$1 (unpublished)\n\n${check.NOTES_PLACEHOLDER}\n`));
-  edit(dir, 'packages/mcp/package.json', (s) => s.replace(/"knowledge": "[^"]*"/, `"knowledge": "${v}"`));
   assert.deepEqual(files(dir), ['CHANGELOG.md']);
   edit(dir, 'CHANGELOG.md', (s) => s.replace(check.NOTES_PLACEHOLDER, '- Faster.'));
   assert.deepEqual(check.checkConsistency(dir).problems, []);

@@ -10,18 +10,21 @@
 
 import { warn } from '../core/log';
 import { fmt } from '../core/format';
+import { EXCLUDED, missing } from '../core/parser';
 import { sensitive } from './expr';
 import { resolveCell, type Cell } from './state';
-import { parseTyped, convert, serialize, type Typed } from './values';
+import { parseTyped, convert, serialize, numericString, datetimeOps, type Typed } from './values';
 
 /** What kind of event a trigger delivers: decides which event() fields exist. */
-export type Category = 'pointer' | 'mouse' | 'keyboard' | 'form' | 'focus' | 'scroll' | 'drag' | 'other';
+export type Category = 'pointer' | 'mouse' | 'keyboard' | 'form' | 'focus' | 'scroll' | 'drag' | 'other'
+  // 0.10: outside an event (value functions in :when() and declarations): no event().
+  | 'none';
 
 export type Node =
   | { k: 'lit'; t: Typed }
   | { k: 'op'; op: '+' | '-' | '*' | '/'; a: Node; b: Node }
   | { k: 'neg'; a: Node }
-  | { k: 'math'; fn: 'min' | 'max' | 'clamp' | 'abs'; args: Node[] }
+  | { k: 'math'; fn: 'min' | 'max' | 'clamp' | 'abs' | 'hypot' | 'sqrt' | 'pow'; args: Node[] }
   | { k: 'round'; mode: string; a: Node; b?: Node }
   | { k: 'var'; name: string; fallback?: Node }
   | { k: 'event'; field: string }
@@ -31,7 +34,9 @@ export type Node =
   | { k: 'pick'; items: Node[] }
   | { k: 'split'; of: Node; sep: string }
   | { k: 'random'; min: Node; max: Node; step?: Node }
-  | { k: 'sibling'; count: boolean };
+  | { k: 'sibling'; count: boolean }
+  /** 0.10: a value function added by a feature module (actionFns). */
+  | { k: 'fn'; name: string; args: Node[] };
 
 /** Drag gesture data (gesture.ts) for the drag fields of event(). */
 export interface DragInfo {
@@ -45,7 +50,8 @@ export interface DragInfo {
 }
 
 export interface EvalCtx {
-  e: Event;
+  /** Undefined outside an event (category 'none'). */
+  e?: Event;
   /** The element matched by the :on() rule. */
   el: Element;
   /** The state being mutated (event(x) / event(y) start from its value). */
@@ -56,6 +62,20 @@ export interface EvalCtx {
 }
 
 export class EvalError extends Error {}
+
+/**
+ * 0.10: value functions that feature modules add to the expression language (strings). They take
+ * typed values and return one; `--name` in their arguments reads a state, as in :when() (in the
+ * other CSS functions an action keeps the var(--name) rule).
+ */
+export interface ActionFn {
+  min: number;
+  max: number;
+  /** Parse-time checks of the arguments (format() styles). */
+  check?(args: Node[]): void;
+  eval(args: Typed[], ctx: EvalCtx): Typed | undefined;
+}
+export const actionFns = new Map<string, ActionFn>();
 
 // ---- event() field catalog ------------------------------------------------------------
 
@@ -142,6 +162,7 @@ export function parseAction(text: string, category: Category, trigger: string): 
   let i = 0;
   const peek = () => toks[i];
   const fail = (m: string): never => { throw new Error(m); };
+  let bare = 0; // > 0 inside the arguments of a value function (actionFns)
   const expect = (v: string) => { const t = toks[i++]; if (!t || t.t !== 'p' || t.v !== v) fail(`expected "${v}" in "${text}"`); };
   const args = (): Node[] => {
     const list: Node[] = [];
@@ -167,7 +188,7 @@ export function parseAction(text: string, category: Category, trigger: string): 
     if (t.t === 'num') return { k: 'lit', t: t.unit ? { type: 'dimension', v: t.v, unit: t.unit } : { type: 'number', v: t.v, unit: '' } };
     if (t.t === 'str') return { k: 'lit', t: { type: 'string', v: t.v } };
     if (t.t === 'id') {
-      if (t.v.startsWith('--')) fail(`write var(${t.v}) to read a state`);
+      if (t.v.startsWith('--')) { if (bare) return { k: 'var', name: t.v }; fail(`write var(${t.v}) to read a state`); }
       return { k: 'lit', t: parseTyped(t.v) };
     }
     if (t.t === 'p') {
@@ -179,6 +200,10 @@ export function parseAction(text: string, category: Category, trigger: string): 
       case 'min': case 'max': { const a = args(); if (!a.length) fail(`${t.v}() needs at least one value`); return { k: 'math', fn: t.v, args: a }; }
       case 'clamp': { const a = args(); if (a.length !== 3) fail('expected clamp(min, value, max)'); return { k: 'math', fn: 'clamp', args: a }; }
       case 'abs': { const a = args(); if (a.length !== 1) fail('expected abs(value)'); return { k: 'math', fn: 'abs', args: a }; }
+      // 0.10: CSS Values 4 exponential functions, with CSS's type rules (evaluated below).
+      case 'hypot': { const a = args(); if (!a.length) fail('hypot() needs at least one value'); return { k: 'math', fn: 'hypot', args: a }; }
+      case 'sqrt': { const a = args(); if (a.length !== 1) fail('expected sqrt(number)'); return { k: 'math', fn: 'sqrt', args: a }; }
+      case 'pow': { const a = args(); if (a.length !== 2) fail('expected pow(number, number)'); return { k: 'math', fn: 'pow', args: a }; }
       case 'round': {
         let mode = 'nearest';
         const save = i;
@@ -199,6 +224,7 @@ export function parseAction(text: string, category: Category, trigger: string): 
       case 'event': {
         const f = word();
         expect(')');
+        if (category === 'none') fail(`event(${f ?? ''}) is only available in :on() actions; ${trigger} has no event`);
         if (!f || !(f in FIELDS)) fail(`event(${f ?? ''}): unknown field; ${trigger} provides ${fieldsFor(category).join(', ')}`);
         const cats = FIELDS[f!];
         if (cats !== 'all' && !cats.includes(category)) fail(`event(${f}) is not available for ${trigger}; it provides ${fieldsFor(category).join(', ')}`);
@@ -260,7 +286,18 @@ export function parseAction(text: string, category: Category, trigger: string): 
       }
       case 'sibling-index': case 'sibling-count': expect(')'); return { k: 'sibling', count: t.v === 'sibling-count' };
     }
-    return fail(`${t.v}() is not available in actions; use calc(), min(), max(), clamp(), round(), abs(), var(), event(), mouse(), element(), viewport(), attr(), pick(), random(), sibling-index() or sibling-count()`);
+    const fn = actionFns.get(t.v);
+    if (fn) {
+      bare++;
+      const a = args();
+      bare--;
+      if (a.length < fn.min || a.length > fn.max) fail(`${t.v}() takes ${fn.min === fn.max ? fn.min : `${fn.min} to ${fn.max}`} argument${fn.max === 1 ? '' : 's'}, got ${a.length}`);
+      fn.check?.(a);
+      return { k: 'fn', name: t.v, args: a };
+    }
+    if (EXCLUDED['fn:' + t.v]) return fail(missing(`${t.v}()`, EXCLUDED['fn:' + t.v])); // 0.10: a value function left out of this bundle
+    const all = [...ACTION_FUNCTIONS, ...actionFns.keys()].map((f) => f + '()');
+    return fail(`${t.v}() is not available in actions; use ${all.slice(0, -1).join(', ')} or ${all[all.length - 1]}`);
   }
   function unary(): Node {
     if (peek()?.t === 'p' && peek().v === '-') { i++; return { k: 'neg', a: unary() }; }
@@ -294,6 +331,10 @@ const str = (v: string): Typed => ({ type: 'string', v });
 function numeric(t: Typed): Typed {
   if (t.type === 'boolean') return num(t.v ? 1 : 0);
   if (t.type === 'number' || t.type === 'dimension') return t;
+  // 0.10: a string that is exactly a decimal number ("09") calculates as that number.
+  const n = numericString(t);
+  if (n) return n;
+  if (t.type === 'datetime') throw new EvalError(`${serialize(t)} is a date and time; add or subtract a duration (time() + 30s), or subtract two datetimes`);
   throw new EvalError(`${serialize(t)} is not a number`);
 }
 const round6 = (v: number) => Math.round(v * 1e6) / 1e6;
@@ -318,6 +359,7 @@ function common(list: Typed[]): [Typed, number[]] {
 }
 
 function arith(op: string, x: Typed, y: Typed): Typed {
+  if (x.type === 'datetime' || y.type === 'datetime') return datetimeOps.arith!(op, x, y);
   const a = numeric(x), b = numeric(y);
   if (op === '+' || op === '-') {
     const [u, [av, bv]] = common([a, b]);
@@ -346,7 +388,7 @@ function field(f: string, ctx: EvalCtx): Typed | undefined {
   const e = ctx.e as PointerEvent & KeyboardEvent;
   const d = ctx.drag;
   switch (f) {
-    case 'type': return str(d ? 'drag' : e.type);
+    case 'type': return str(d ? 'drag' : e!.type);
     case 'client-x': return px(e.clientX);
     case 'client-y': return px(e.clientY);
     case 'page-x': return px(e.pageX);
@@ -437,7 +479,17 @@ export function value(n: Node, ctx: EvalCtx): Typed | undefined {
       if (vals.some((v) => !v)) return undefined;
       const all = vals as Typed[];
       if (n.fn === 'abs') { const a = numeric(all[0]); return like(a, Math.abs(a.v as number)); }
+      if (n.fn === 'sqrt' || n.fn === 'pow') {
+        // As in CSS: numbers only (the square root of a length has no CSS unit).
+        const ns = all.map(numeric);
+        const d = ns.find((t) => t.type === 'dimension');
+        if (d) throw new EvalError(`${n.fn}() takes numbers, not ${serialize(d)}`);
+        const r = n.fn === 'sqrt' ? Math.sqrt(ns[0].v as number) : (ns[0].v as number) ** (ns[1].v as number);
+        if (!Number.isFinite(r)) throw new EvalError(`${n.fn}(${ns.map(serialize).join(', ')}) has no finite value`);
+        return num(round6(r));
+      }
       const [u, v] = common(all);
+      if (n.fn === 'hypot') return like(u, Math.hypot(...v));
       if (n.fn === 'clamp') return like(u, Math.max(v[0], Math.min(v[1], v[2])));
       return like(u, n.fn === 'min' ? Math.min(...v) : Math.max(...v));
     }
@@ -498,8 +550,16 @@ export function value(n: Node, ctx: EvalCtx): Typed | undefined {
       return like(u, v);
     }
     case 'sibling': return num(n.count ? ctx.el.parentElement?.childElementCount ?? 1 : siblingIndex(ctx.el));
+    case 'fn': {
+      const vals = n.args.map((a) => value(a, ctx));
+      if (vals.some((v) => !v)) return undefined;
+      return actionFns.get(n.name)!.eval(vals as Typed[], ctx);
+    }
   }
 }
+
+/** The functions of the 0.9 expression language (and hypot(), sqrt(), pow()), for the message above. */
+const ACTION_FUNCTIONS = ['calc', 'min', 'max', 'clamp', 'round', 'abs', 'hypot', 'sqrt', 'pow', 'var', 'event', 'mouse', 'element', 'viewport', 'attr', 'pick', 'random', 'sibling-index', 'sibling-count'];
 
 /** Evaluates with one diagnostic per problem; undefined means "no write". */
 export function evaluateAction(n: Node, ctx: EvalCtx, where: () => string): Typed | undefined {

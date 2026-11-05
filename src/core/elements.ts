@@ -16,6 +16,11 @@ export interface Watcher {
    * event rules: their membership writes nothing, so it cannot feed back.
    */
   followsOwned?: boolean;
+  /**
+   * 0.10 (timers): also re-match when a runtime marker attribute changes (data-rcss-*, e.g. a
+   * :when() marker). Only for watchers whose membership writes nothing.
+   */
+  followsMarkers?: boolean;
 }
 
 interface Entry {
@@ -111,6 +116,8 @@ function observe() {
 let batchEnd: (() => void) | undefined;
 /** Called after each batch of mutations has been applied to all watchers. */
 export function afterMutations(fn: () => void): void { batchEnd = fn; }
+/** 0.10: called with the subtrees moved inside the document in a batch ([root, old parent]), once matches are up to date. */
+export const moveHooks: ((moves: [Element, Element][]) => void)[] = [];
 
 function handle(records: MutationRecord[], endOfBatch = true) {
   const added = new Set<Element>();
@@ -119,6 +126,7 @@ function handle(records: MutationRecord[], endOfBatch = true) {
   const changed = new Map<Element, Set<string>>(); // element -> changed attribute names
   const ownedChanged = new Map<Element, Set<string>>(); // the same, for attributes Reactive CSS writes
   const parents = new Set<Element>();
+  const from: [Element, Element][] = [];
   for (const r of records) {
     if (r.type === 'attributes') {
       const el = r.target as Element;
@@ -132,7 +140,7 @@ function handle(records: MutationRecord[], endOfBatch = true) {
     for (const n of r.removedNodes) {
       if (!(n instanceof Element)) continue;
       const stays = n.isConnected;
-      if (stays) moved.add(n);
+      if (stays) { moved.add(n); if (r.target instanceof Element) from.push([n, r.target]); }
       for (const el of subtree(n)) {
         for (const e of [...(memberOf.get(el) ?? [])]) {
           if (!stays) leave(e, el);
@@ -155,6 +163,7 @@ function handle(records: MutationRecord[], endOfBatch = true) {
     }
     if (e.sibling) for (const p of parents) if (p.isConnected) reconcile(e, p, true);
   }
+  if (from.length) for (const fn of moveHooks) fn(from);
   // Only a real observer callback ends a batch; records flushed while a watcher is being
   // added belong to the caller's batch, which settles itself.
   if (endOfBatch) batchEnd?.();
@@ -167,7 +176,7 @@ export function watch(w: Watcher): void {
   }
   const deps = attributesOf(w.selector);
   deps.delete('style'); // our own inline writes must never feed back into the observer
-  for (const a of deps) if (a.startsWith('data-rcss')) deps.delete(a);
+  if (!w.followsMarkers) for (const a of deps) if (a.startsWith('data-rcss')) deps.delete(a);
   const e: Entry = { w, members: new Set(), sibling: siblingSensitive(w.selector), deps };
   entries.set(w, e);
   observe();

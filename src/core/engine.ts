@@ -1,7 +1,7 @@
 // Engine: finds stylesheets, compiles the reactive ones into a generated <style> that
 // takes the original's place in the cascade, and binds matching elements.
 
-import { compile, hasReactiveSyntax, splitRules, type ReactiveDecl, type ReactiveRule } from './parser';
+import { compile, hasReactiveSyntax, splitRules, type ReactiveDecl, type ReactiveRule, type DerivedDecl } from './parser';
 import { watch, unwatch, stopObserving, afterMutations, type Watcher } from './elements';
 import * as scheduler from './scheduler';
 import { warn, note, withSource, dev, probes } from './log';
@@ -290,6 +290,9 @@ function apply(el: Source, text: string, base: string | undefined) {
   const swapped = withSource(label, () => rewrite(sheet, c.css));
   if (!swapped) return;
   const watchers: Watcher[] = [];
+  // 0.10: computed custom properties need every processed sheet's declared names (conflicts).
+  const computed = c.rules.flatMap((r) => (r.derived ?? []).map((d) => [r.match, d] as [string, DerivedDecl]));
+  const derived = runtimes.derived?.sheet(c.declared, computed.map(([, d]) => d));
   for (const r of c.rules) {
     if (r.states.length) watchers.push(stateWatcher(r.match, r.states));
     if (r.decls.length) watchers.push(ruleWatcher(r));
@@ -304,12 +307,14 @@ function apply(el: Source, text: string, base: string | undefined) {
     if (r.onSpec) watchers.push(runtimes.onRules!.watcher(r.match, r.onSpec, sheet));
     for (const name of r.forms ?? []) watchers.push(runtimes.bind!(r.match, { name }));
   }
+  // After the states they read, inputs before what reads them: nothing waits for an owner at start.
+  if (computed.length) watchers.push(...runtimes.derived!.watchers(computed));
   const rec: SheetRecord = { sheet, ...swapped, watchers, cleanups: [] };
   records.set(el, rec);
   runtimeStats.sheets++;
   rec.watchers.forEach(watch); // state owners exist before selector runtimes look for them
   rec.cleanups = [...c.runtime.setup.map((fn) => fn()), ...[...c.handlers].map(([id, set]) => runtimes.on!.register(id, set)),
-    ...c.rules.filter((r) => r.onSpec).map((r) => runtimes.onRules!.register(r.onSpec!))];
+    ...c.rules.filter((r) => r.onSpec).map((r) => runtimes.onRules!.register(r.onSpec!)), ...(derived ? [derived] : [])];
   scheduler.settle();
   sheetChangeHooks.forEach((fn) => fn());
   scheduler.flush(); // apply initial selector state in this task, not a frame later

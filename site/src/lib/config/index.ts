@@ -21,6 +21,7 @@ export const RELEASES = releasesSchema.parse(releases).releases;
 /** What is live: the repository, the production website and each npm package (config/distribution.json). */
 export const DISTRIBUTION = distributionSchema.parse(distribution);
 export const MCP_VERSION: string = mcpPackage.version;
+export const MCP_KNOWLEDGE: string = mcpPackage.reactivecss.knowledge;
 
 /** Whether the current version of a package is verified on npm. */
 export function onNpm(pkg: 'core' | 'mcp', d: Distribution = DISTRIBUTION) {

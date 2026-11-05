@@ -1,0 +1,65 @@
+---
+title: "Computed Values"
+description: "A custom property whose whole value is one value function is also a read-only state, recomputed synchronously from other states. It is written inline on its owners: not a general CSS cascade."
+group: Concepts
+type: Concept
+order: 18
+---
+Name a computed value once, then read it anywhere a state can be read:
+
+```css chain.css
+.form { --value: state(""); --clean: trim(--value); --chars: length(--clean); }
+.form textarea:on(input) { --value: set(event(value)); }
+.form .count { text: var(--chars); }
+.form:when(--chars > 140) .count { color: red; }
+```
+
+```css clock.css
+.clock { --now: live(time(), 1s); --tokyo: timezone(--now, "Asia/Tokyo"); }
+.clock .t { text: format(--tokyo, "HH:mm:ss"); }
+```
+
+Computed values are experimental. In a custom bundle they come from the feature `derived`.
+
+## The rules
+- **Form.** `--name: f(…)` or `--name: live(f(…) [, interval])`, where `f` is a value function and the call is the whole value.
+- **Unconditional rules only.** In a rule with `:when()`, a state pseudo-class, a pseudo-element, `@media`, `@supports` or `@container`, or with `!important`, the declaration stays a CSS-only value, with a diagnostic that gives the reason. `@layer` and nesting in an unconditional parent are allowed.
+- **Inputs are states.** It cannot read `attr()`, `event()`, `element()`, `random()` or `time()` outside `live()`: those change without a state change.
+- **One declaration per name.** See below.
+- **No cycles.** Names that read each other are rejected when the stylesheet is applied.
+- **Read-only.** `set()` and the other mutations, legacy `on:` actions and `bind:` input change nothing, with a diagnostic.
+
+## Updates
+Each element the rule matches owns one value, while it matches. Consumers use the nearest owner, as for `state()`.
+
+A change notifies its subscribers, then computed values settle in order, inputs before what reads them, before the change returns. An action later in the same task reads the final value. A value read through two paths is computed once, so `previous()` never sees an intermediate value.
+
+An evaluation error keeps the last value, with a diagnostic. An input that is not a state gives no value, reported after a second.
+
+## CSS and the state
+<Callout kind="caution" title="Not a general CSS cascade">
+
+The value is written inline on each owner, as the custom property itself. It takes part in the cascade only as that inline value.
+
+</Callout>
+
+| A declaration of the name | What CSS shows | Reported |
+| --- | --- | --- |
+| None | The state, on the owner and inside it | — |
+| In a processed stylesheet (one with reactive syntax): any rule, `!important`, `@property`, `state()`, also added later | The name is not computed while it exists | Every build |
+| In a same-origin or constructed stylesheet without reactive syntax, inside an owner | That value, where it applies. **CSS and the state disagree there** | Development builds only |
+| The same, on an owner, normal importance | The state: inline wins | Development builds only |
+| The same, on an owner, `!important` or `@property` | That value. **CSS and the state disagree** | Development builds only |
+| An inline `style` value on an owner | That value; the name is not computed on that element | Every build |
+| An inline `style` value inside an owner | That value, in its subtree | Development builds only |
+| A cross-origin stylesheet without CORS, inside an owner | That value, where it applies | **Cannot be checked.** Development builds say so |
+
+Shadow roots, and stylesheets or inline styles that scripts change after the owner appeared, are not checked.
+
+Use a name for one purpose, and use the development bundle (`reactive-css.js`) while you build.
+
+## Cost
+About 350–550 bytes of heap per computed value. A change that recomputes many values at once costs more than the same expression written inline in `:when()`: at 10,000 values, about 2.5 ms more per change. For lists of thousands of elements, prefer the inline expression.
+
+## Related
+<Related ids={["value-functions","state","reference/computed"]} />

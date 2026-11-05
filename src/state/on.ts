@@ -15,11 +15,13 @@ import { runtimeStats, runtimes, onEventNames } from '../core/registry';
 import { warn } from '../core/log';
 import type { Watcher } from '../core/elements';
 import { parseKey, keyMatches, type KeySpec } from './keys';
-import { resolveCell, warnMissing, describeElement, type Cell } from './state';
+import { resolveCell, warnMissing, describeElement, readOnly, type Cell } from './state';
 import { parseTyped, assignable, coerce, serialize, equal, type Typed } from './values';
 import { parseAction, evaluateAction, type Category, type Node, type DragInfo, type EvalCtx } from './actexpr';
 import { listen, cancel, preventEvent, editable, extensions } from './actions';
-import { activation } from '../core/scheduler';
+import { activation, sync, urgently } from '../core/scheduler';
+import { flushMutations } from '../core/elements';
+import { missing } from '../core/parser';
 
 /** DOM events :on() accepts: [bubbles, cancelable, category]. Adding an event is one row. */
 export const EVENT_INFO: Record<string, [boolean, boolean, Category]> = {
@@ -37,6 +39,13 @@ export const EVENT_INFO: Record<string, [boolean, boolean, Category]> = {
   scroll: [false, false, 'scroll'], scrollend: [false, false, 'scroll'], toggle: [false, false, 'other'],
 };
 const OUTSIDE = new Set(['click', 'pointerdown', 'focusin']);
+const TIME = /^(\d*\.?\d+)(ms|s)$/i;
+/** Milliseconds of a CSS time literal; `what` names the place for the message. */
+export function ms(text: string, what: string): number {
+  const m = TIME.exec(text);
+  if (!m) throw new Error(`${what} takes a time like 300ms or 2s, got "${text}"`);
+  return +m[1] * (m[2].toLowerCase() === 's' ? 1000 : 1);
+}
 const PHASES = new Set(['start', 'move', 'end', 'cancel']);
 
 export interface Trigger {
@@ -50,31 +59,89 @@ export interface Trigger {
   /** Drag phase, for :on(drag(...)). */
   phase?: string;
   cancelable: boolean;
+  /** 0.10: `a | b | c`, one rule for several DOM events (each has its own slots). */
+  members?: Trigger[];
+  /** 0.10: after(delay) (no `every`) or every(interval, first delay), run by functions/timers.ts. */
+  timer?: { first: number; every?: number };
 }
-/** Functional modifiers of :on(): prevent() and stop(). */
-export interface Modifiers { prevent: boolean; stop: boolean }
+/** Functional modifiers of :on(): prevent() and stop(); 0.10: debounce(t), throttle(t) in ms. */
+export interface Modifiers { prevent: boolean; stop: boolean; debounce?: number; throttle?: number }
 export type Op = 'set' | 'toggle' | 'increment' | 'decrement' | 'cycle';
 export interface Mutation { id: number; name: string; op: Op; expr?: Node; values?: Typed[]; rule?: OnRuleSpec }
 export interface OnRuleSpec {
   id: number;
   trigger: Trigger;
   mods: Modifiers;
-  slots: { prop: string; m: Mutation }[];
+  /** `key`: the trigger key the slot answers (a member's key for `a | b`). */
+  slots: { prop: string; m: Mutation; key: string }[];
   /** Modifier slot properties (valued with the rule id). */
   modSlots: { prevent?: string; stop?: string };
   certain: boolean;
+  /** 0.10 timers: the rule's full selector (:when() markers included); membership = the rule is active. */
+  exact?: string;
 }
 
 // ---- compile time (called by the parser through runtimes.onRules) -------------------------
 
-/** `click`, `keydown(Escape)`, `outside(click)`, `drag(start)` and the modifiers prevent() / stop(), as written in :on(). */
+/** `click`, `keydown(Escape)`, `outside(click)`, `drag(start)`, `click | keydown(Enter)` and the modifiers prevent() / stop(), as written in :on(). */
 export function compileTrigger(text: string): { trigger: Trigger; mods: Modifiers } {
   const parts = splitTop(text);
   if (!parts.length || !parts[0]) throw new Error(':on() needs an event, e.g. :on(click)');
-  const m = /^([a-z-]+)(?:\(\s*(.*?)\s*\))?$/is.exec(parts[0]);
-  if (!m) throw new Error(`cannot read the trigger "${parts[0]}"`);
+  const alts = splitTop(parts[0], '|');
+  let trigger: Trigger;
+  if (alts.length > 1) {
+    if (alts.some((a) => !a)) throw new Error(`an event is missing around "|" in "${parts[0]}"`);
+    const members = alts.map(single);
+    for (const t of members) if (t.outside || t.phase !== undefined || t.timer)
+      throw new Error(`${t.timer ? t.key : t.outside ? `outside(${t.dom})` : `drag(${t.phase})`} cannot be combined with other events in one :on(); write one rule for it`);
+    const keys = members.map((t) => t.key);
+    const dup = keys.find((k, i) => keys.indexOf(k) !== i);
+    if (dup) throw new Error(`${dup} is listed twice in :on(${parts[0]})`);
+    const cats = new Set(members.map((t) => t.category));
+    trigger = {
+      key: keys.join('|'), dom: members[0].dom, members,
+      // event() fields: those of the shared category; mixed categories give only the common ones (event(type)).
+      category: cats.size === 1 ? members[0].category : 'other',
+      cancelable: members.every((t) => t.cancelable),
+    };
+  } else trigger = single(parts[0]);
+  const mods: Modifiers = { prevent: false, stop: false };
+  if (trigger.timer && parts.length > 1) throw new Error(`${trigger.key} takes no modifiers (prevent(), stop(), debounce() and throttle() are for DOM events)`);
+  for (const p of parts.slice(1)) {
+    if (/^(debounce|throttle)\b/i.test(p)) {
+      if (!runtimes.eventTiming) throw new Error(missing('debounce() and throttle()', 'event-timing'));
+      runtimes.eventTiming.parse(p, mods);
+      continue;
+    }
+    const fn = /^(prevent|stop)\(\s*\)$/i.exec(p);
+    if (!fn) {
+      const bare = p.toLowerCase();
+      throw new Error(bare === 'prevent' || bare === 'stop' ? `write the modifier as a function: ${bare}()`
+        : /^once(\(\s*\))?$/.test(bare) ? 'once is not supported in :on(); for a one-time change, guard the rule with :when(), e.g. .b:when(not --done):on(click) { --done: set(true) }'
+        : `unknown modifier "${p}"; use prevent() or stop()`);
+    }
+    const k = fn[1].toLowerCase() as 'prevent' | 'stop';
+    if (mods[k]) throw new Error(`${k}() is given twice`);
+    mods[k] = true;
+  }
+  if (mods.prevent && !trigger.cancelable)
+    throw new Error(trigger.outside ? 'prevent() is not allowed with outside(): it would cancel events on unrelated elements anywhere on the page'
+      : `prevent() needs a cancelable event (click, dblclick, contextmenu, mousedown, pointerdown, keydown, keyup, submit, drag); ${(trigger.members?.find((t) => !t.cancelable) ?? trigger).key} is not`);
+  if (mods.stop && (trigger.outside || trigger.phase)) throw new Error(`stop() has no meaning for ${trigger.outside ? 'outside()' : 'drag'}`);
+  if (mods.debounce !== undefined || mods.throttle !== undefined) runtimes.eventTiming!.check(mods, trigger);
+  return { trigger, mods };
+}
+
+/** One trigger as written in :on(): an event, keydown(Key), outside(event), drag(phase), after() or every(). */
+function single(part: string): Trigger {
+  const m = /^([a-z-]+)(?:\(\s*(.*?)\s*\))?$/is.exec(part);
+  if (!m) throw new Error(`cannot read the trigger "${part}"`);
   const name = m[1].toLowerCase(), arg = m[2];
   let trigger: Trigger;
+  if ((name === 'after' || name === 'every') && arg !== undefined) {
+    if (!runtimes.timers) throw new Error(missing(':on(after()) and :on(every())', 'timers'));
+    return runtimes.timers.trigger(name, splitTop(arg));
+  }
   if (name === 'drag') {
     const phase = (arg ?? 'move').toLowerCase();
     if (!PHASES.has(phase)) throw new Error(`drag() takes start, move, end or cancel; got "${arg}"`);
@@ -91,24 +158,7 @@ export function compileTrigger(text: string): { trigger: Trigger; mods: Modifier
     const filter = arg === undefined ? undefined : parseKey(arg);
     trigger = { key: filter ? `${name}(${arg!.toLowerCase()})` : name, dom: name, category: info[2], filter, cancelable: info[1] };
   }
-  const mods: Modifiers = { prevent: false, stop: false };
-  for (const p of parts.slice(1)) {
-    const fn = /^(prevent|stop)\(\s*\)$/i.exec(p);
-    if (!fn) {
-      const bare = p.toLowerCase();
-      throw new Error(bare === 'prevent' || bare === 'stop' ? `write the modifier as a function: ${bare}()`
-        : /^once(\(\s*\))?$/.test(bare) ? 'once is not supported in :on(); for a one-time change, guard the rule with :when(), e.g. .b:when(not --done):on(click) { --done: set(true) }'
-        : `unknown modifier "${p}"; use prevent() or stop()`);
-    }
-    const k = fn[1].toLowerCase() as keyof Modifiers;
-    if (mods[k]) throw new Error(`${k}() is given twice`);
-    mods[k] = true;
-  }
-  if (mods.prevent && !trigger.cancelable)
-    throw new Error(trigger.outside ? 'prevent() is not allowed with outside(): it would cancel events on unrelated elements anywhere on the page'
-      : `prevent() needs a cancelable event (click, dblclick, contextmenu, mousedown, pointerdown, keydown, keyup, submit, drag); ${trigger.key} is not`);
-  if (mods.stop && (trigger.outside || trigger.phase)) throw new Error(`stop() has no meaning for ${trigger.outside ? 'outside()' : 'drag'}`);
-  return { trigger, mods };
+  return trigger;
 }
 
 /** `--count: increment(1)` in a rule with `trigger`. */
@@ -131,8 +181,8 @@ export function compileMutation(name: string, text: string, trigger: Trigger): O
   } catch (e) { throw new Error(`${op}() for ${where}: ${(e as Error).message}`); }
 }
 
-/** Splits at depth-0 commas (outside quotes and parentheses); trims. */
-function splitTop(s: string): string[] {
+/** Splits at depth-0 commas, or `sep` (outside quotes and parentheses); trims. */
+function splitTop(s: string, sep = ','): string[] {
   const out: string[] = [];
   let depth = 0, q = '', cur = '';
   for (const c of s) {
@@ -140,7 +190,7 @@ function splitTop(s: string): string[] {
     if (c === '"' || c === "'") q = c;
     else if (c === '(') depth++;
     else if (c === ')') depth--;
-    else if (c === ',' && !depth) { out.push(cur.trim()); cur = ''; continue; }
+    else if (c === sep && !depth) { out.push(cur.trim()); cur = ''; continue; }
     cur += c;
   }
   if (cur.trim() || out.length) out.push(cur.trim());
@@ -174,25 +224,32 @@ export function registerRule(spec: OnRuleSpec): () => void {
   if (spec.modSlots.stop) registerProp(spec.modSlots.stop);
   const gesture = spec.trigger.phase !== undefined;
   const release = gesture ? runtimes.gestures!.register(spec.mods.prevent) : undefined;
-  if (!gesture) { listen(spec.trigger.dom, 1); if (spec.mods.prevent) cancel(spec.trigger.dom, 1); }
+  const doms = spec.trigger.timer ? [] : [...new Set(spec.trigger.members?.map((t) => t.dom) ?? [spec.trigger.dom])];
+  if (!gesture) for (const d of doms) { listen(d, 1); if (spec.mods.prevent) cancel(d, 1); }
   return () => {
     for (const s of spec.slots) mutations.delete(s.m.id);
+    runtimes.eventTiming?.drop(spec);
     if (release) release();
-    else { if (spec.mods.prevent) cancel(spec.trigger.dom, -1); listen(spec.trigger.dom, -1); }
+    else for (const d of doms) { if (spec.mods.prevent) cancel(d, -1); listen(d, -1); }
   };
 }
 
 /** Tracks the elements a rule may apply to; only these are checked on events. */
 export function ruleWatcher(match: string, spec: OnRuleSpec, sheet?: CSSStyleSheet): Watcher {
   const entry: Candidate = { spec, sheet };
+  const timer = spec.trigger.timer ? runtimes.timers : undefined;
   return {
-    selector: match,
+    // 0.10 timers: the full selector, re-matched when a :when() marker changes, so membership
+    // is "the rule is active": joining starts the timer, leaving cancels it.
+    selector: timer ? spec.exact ?? match : match,
     followsOwned: true,
+    followsMarkers: !!timer,
     add(el) {
       const list = candidates.get(el);
       if (list) list.push(entry); else candidates.set(el, [entry]);
       if (spec.trigger.outside) outsiders.set(el, (outsiders.get(el) ?? 0) + 1);
       runtimeStats.bindings++;
+      timer?.start(el, spec.trigger);
     },
     remove(el) {
       const list = candidates.get(el);
@@ -201,7 +258,9 @@ export function ruleWatcher(match: string, spec: OnRuleSpec, sheet?: CSSStyleShe
       list!.splice(i, 1);
       if (!list!.length) candidates.delete(el);
       if (spec.trigger.outside) { const n = (outsiders.get(el) ?? 1) - 1; if (n) outsiders.set(el, n); else outsiders.delete(el); }
+      runtimes.eventTiming?.drop(spec, el);
       runtimeStats.bindings--;
+      timer?.stop(el, spec.trigger);
     },
   };
 }
@@ -226,8 +285,13 @@ export const dragTarget = Object.assign(
 );
 
 interface Write { cell: Cell; v: Typed; where: () => string }
-interface Tx { e: Event; writes: Write[]; drag?: DragInfo; rects?: Map<Element, DOMRect> }
-
+export interface Tx {
+  /** Undefined for a timer run. */
+  e?: Event;
+  writes: Write[]; drag?: DragInfo; rects?: Map<Element, DOMRect>;
+  /** 0.10: a debounced run of this rule only (its delay ended). */
+  only?: OnRuleSpec;
+}
 
 /** A value `v` stored in a cell holding `cur` (0.9 adds a unitless 0 for dimensions, 0 / 1 for booleans). */
 function fit(cur: Typed, v: Typed): Typed | undefined {
@@ -261,17 +325,37 @@ function compute(m: Mutation, cell: Cell, ctx: EvalCtx, where: () => string): Ty
   }
 }
 
+/** The key `t` answers with when `test` accepts it (or one of its `a | b` members), else undefined. */
+const keyFor = (t: Trigger, test: (m: Trigger) => boolean) => (t.members ? t.members.find(test)?.key : test(t) ? t.key : undefined);
+
 /**
- * Runs the rules of `el` whose trigger matches: winners per slot, then modifiers. Returns true
- * when a rule with `stop` ran (the caller then skips the element's ancestors).
+ * Runs the rules of `el` whose trigger matches (`match` returns the matched key): winners per
+ * slot, then modifiers. Returns true when a rule with `stop` ran (the caller then skips the
+ * element's ancestors).
  */
-function runElement(el: Element, tx: Tx, match: (t: Trigger) => boolean): boolean {
+export function runElement(el: Element, tx: Tx, match: (t: Trigger) => string | undefined): boolean {
   const all = candidates.get(el);
   if (!all) return false;
-  const cands = all.length === 1 ? (match(all[0].spec.trigger) ? all : []) : all.filter((c) => match(c.spec.trigger));
+  let keys: Map<OnRuleSpec, string> | undefined; // the member that matched, for `a | b` rules
+  const hit = (c: Candidate) => {
+    const k = match(c.spec.trigger);
+    if (k !== undefined && c.spec.trigger.members) (keys ??= new Map()).set(c.spec, k);
+    return k !== undefined;
+  };
+  const cands = all.length === 1 ? (hit(all[0]) ? all : []) : all.filter(hit);
   if (!cands.length) return false;
+  /** The candidate's slots for this event: all of them, except in an `a | b` rule (the matched member's). */
+  const slots = (c: Candidate) => (c.spec.trigger.members ? c.spec.slots.filter((s) => s.key === keys!.get(c.spec)) : c.spec.slots);
+  let gates: Map<OnRuleSpec, boolean> | undefined; // debounce / throttle: decided once per rule, element and event
   const run = (m: Mutation | undefined) => {
     if (!m || !m.rule) return;
+    if (tx.only && m.rule !== tx.only) return; // a debounced run executes only its own rule
+    const r = m.rule;
+    if (r.mods.debounce !== undefined || r.mods.throttle !== undefined) {
+      let g = gates?.get(r);
+      if (g === undefined) (gates ??= new Map()).set(r, (g = runtimes.eventTiming!.gate(r, el, tx, keys?.get(r) ?? r.trigger.key)));
+      if (!g) return;
+    }
     const cell = resolveCell(el, m.name);
     // Built only for a diagnostic: describing the element on every event cost more than the mutation.
     const where = () => `${m.name}: ${m.op}() on ${describeElement(el)} for :on(${m.rule!.trigger.key})`;
@@ -285,7 +369,7 @@ function runElement(el: Element, tx: Tx, match: (t: Trigger) => boolean): boolea
   const style = () => (cs ??= getComputedStyle(el));
   if (cands.length === 1 && applies(cands[0])) {
     // Fast path: one unconditional rule, no cascade question.
-    for (const s of cands[0].spec.slots) run(s.m);
+    for (const s of slots(cands[0])) run(s.m);
   } else {
     // Several rules: without a conditional rule or two rules for one state there is no cascade
     // question; otherwise the computed slot values pick each winner.
@@ -293,7 +377,7 @@ function runElement(el: Element, tx: Tx, match: (t: Trigger) => boolean): boolea
     let read = false;
     for (const c of cands) {
       if (!applies(c)) read = true;
-      for (const s of c.spec.slots) { if (props.has(s.prop)) read = true; props.set(s.prop, s.m); }
+      for (const s of slots(c)) { if (props.has(s.prop)) read = true; props.set(s.prop, s.m); }
     }
     for (const [prop, m] of props) {
       if (!read) { run(m); continue; }
@@ -306,6 +390,7 @@ function runElement(el: Element, tx: Tx, match: (t: Trigger) => boolean): boolea
     const prop = c.spec.modSlots[k];
     return !!prop && (applies(c) || style().getPropertyValue(prop).trim() !== '');
   });
+  if (!tx.e || tx.only) return false; // a timer or a debounced run: no event, or it is over
   if (modifier('prevent') && tx.drag === undefined) preventEvent(el, tx.e);
   const stop = modifier('stop');
   if (stop) {
@@ -319,11 +404,12 @@ function runElement(el: Element, tx: Tx, match: (t: Trigger) => boolean): boolea
 }
 
 /** Applies the writes in order; when one cell is written twice, only the last write (the outer element) applies. */
-function commit(tx: Tx) {
+export function commit(tx: Tx) {
   const w0 = tx.writes;
   const list = w0.length < 2 ? w0 : w0.filter((w, i) => !w0.some((x, j) => j > i && x.cell === w.cell));
   for (const w of list) {
     if (w.cell.dead) continue;
+    if (readOnly.has(w.cell)) { warn(`${w.where()}: ${w.cell.name} is computed by its declaration (read-only); nothing is changed.`); continue; }
     const v = fit(w.cell.value, w.v);
     if (!v) { warn(`${w.where()}: ${serialize(w.v)} cannot be stored in ${w.cell.name}, which holds ${serialize(w.cell.value)}.`); continue; }
     w.cell.set(v);
@@ -340,14 +426,14 @@ function dispatch(e: Event, path: EventTarget[]) {
   if (type === 'click' && afterDrag.el && path.includes(afterDrag.el)) return;
   const tx: Tx = { e, writes: [] };
   const key = type === 'keydown' || type === 'keyup';
-  const match = (t: Trigger) => t.dom === type && !t.outside && t.phase === undefined && (!t.filter || keyAllowed(t.filter, e as KeyboardEvent));
+  const match = (t: Trigger) => keyFor(t, (m) => m.dom === type && !m.outside && m.phase === undefined && (!m.filter || keyAllowed(m.filter, e as KeyboardEvent)));
   const own = info?.[0] ? path : path.slice(0, 1);
   for (const node of own) if (node instanceof Element && runElement(node, tx, match)) break;
   commit(tx);
   if (outsiders.size && OUTSIDE.has(type) && !key) {
     activation.event = null; // outside() dismissals never arm focus requests
     const out: Tx = { e, writes: [], rects: tx.rects };
-    const outside = (t: Trigger) => t.outside === true && t.dom === type;
+    const outside = (t: Trigger) => (t.outside === true && t.dom === type ? t.key : undefined);
     for (const el of [...outsiders.keys()]) if (!path.includes(el)) runElement(el, out, outside);
     commit(out);
   }
@@ -362,7 +448,7 @@ function keyAllowed(spec: KeySpec, e: KeyboardEvent) {
 /** A drag phase on its element (gesture.ts). */
 export function fireDrag(el: Element, phase: string, e: Event, drag: DragInfo) {
   const tx: Tx = { e, writes: [], drag };
-  runElement(el, tx, (t) => t.phase === phase);
+  runElement(el, tx, (t) => (t.phase === phase ? t.key : undefined));
   commit(tx);
 }
 

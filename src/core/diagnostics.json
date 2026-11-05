@@ -414,6 +414,110 @@
    "template": "stop() has no meaning for {0}",
    "module": "state/on.ts"
   },
+  "RCSS-E073": {
+   "template": "hypot() needs at least one value",
+   "module": "state/actexpr.ts"
+  },
+  "RCSS-E074": {
+   "template": "expected sqrt(number)",
+   "module": "state/actexpr.ts"
+  },
+  "RCSS-E075": {
+   "template": "expected pow(number, number)",
+   "module": "state/actexpr.ts"
+  },
+  "RCSS-E076": {
+   "template": "{0}() is not available in actions; use calc(), min(), max(), clamp(), round(), abs(), hypot(), sqrt(), pow(), var(), event(), mouse(), element(), viewport(), attr(), pick(), random(), sibling-index() or sibling-count()",
+   "module": "state/actexpr.ts"
+  },
+  "RCSS-E077": {
+   "template": "{0}() takes numbers, not {1}",
+   "module": "state/actexpr.ts"
+  },
+  "RCSS-E078": {
+   "template": "{0}({1}) has no finite value",
+   "module": "state/actexpr.ts"
+  },
+  "RCSS-E079": {
+   "template": "an event is missing around \"|\" in \"{0}\"",
+   "module": "state/on.ts"
+  },
+  "RCSS-E080": {
+   "template": "{0} cannot be combined with other events in one :on(); write one rule for it",
+   "module": "state/on.ts"
+  },
+  "RCSS-E081": {
+   "template": "{0} is listed twice in :on({1})",
+   "module": "state/on.ts"
+  },
+  "RCSS-E082": {
+   "template": "{0} takes a time like 300ms or 2s, got \"{1}\"",
+   "module": "state/on.ts"
+  },
+  "RCSS-E083": {
+   "template": "{0}() needs a time above 0",
+   "module": "state/on.ts"
+  },
+  "RCSS-E084": {
+   "template": "{0} needs a time: {1}(300ms)",
+   "module": "state/on.ts"
+  },
+  "RCSS-E085": {
+   "template": "use debounce() or throttle(), not both",
+   "module": "state/on.ts"
+  },
+  "RCSS-E086": {
+   "template": "{0}() is for DOM events, not {1}",
+   "module": "state/on.ts"
+  },
+  "RCSS-E087": {
+   "template": "event({0}) is only available in :on() actions; {1} has no event",
+   "module": "state/actexpr.ts"
+  },
+  "RCSS-E088": {
+   "template": "{0}() takes {1} argument{2}, got {3}",
+   "module": "state/actexpr.ts"
+  },
+  "RCSS-E089": {
+   "template": "{0}() is not available in actions; use {1} or {2}",
+   "module": "state/actexpr.ts"
+  },
+  "RCSS-E090": {
+   "template": "{0} is a date and time; add or subtract a duration (time() + 30s), or subtract two datetimes",
+   "module": "state/actexpr.ts"
+  },
+  "RCSS-E091": {
+   "template": "only subtraction works on two datetimes (it gives the duration between them), not {0}",
+   "module": "state/actexpr.ts"
+  },
+  "RCSS-E092": {
+   "template": "{0} {1} {2}: a datetime takes + or - with a time like 30s or 500ms",
+   "module": "state/actexpr.ts"
+  },
+  "RCSS-E093": {
+   "template": "{0} takes no modifiers (prevent(), stop(), debounce() and throttle() are for DOM events)",
+   "module": "state/on.ts"
+  },
+  "RCSS-E094": {
+   "template": "expected after(delay), e.g. after(3s)",
+   "module": "state/on.ts"
+  },
+  "RCSS-E095": {
+   "template": "expected every(interval) or every(interval, first delay), e.g. every(80ms, 400ms)",
+   "module": "state/on.ts"
+  },
+  "RCSS-E096": {
+   "template": "every({0}) is below the {1}ms minimum; using {2}ms.",
+   "module": "state/on.ts"
+  },
+  "RCSS-E097": {
+   "template": "{0}: {1} is computed by its declaration (read-only); nothing is changed.",
+   "module": "state/on.ts"
+  },
+  "RCSS-E098": {
+   "template": "{0}() on {1}: {2} is computed by its declaration (read-only); nothing is changed.",
+   "module": "state/actions.ts"
+  },
   "RCSS-F001": {
    "template": "bind: {0} on {1}: a {2} control cannot hold a {3} state (use {4}). Not bound.",
    "module": "state/bind.ts"
@@ -432,6 +536,10 @@
   },
   "RCSS-F005": {
    "template": "bind: {0} matches more than one bind: rule; the first one is used.",
+   "module": "state/bind.ts"
+  },
+  "RCSS-F006": {
+   "template": "bind: on {0}: {1} is computed by its declaration (read-only); nothing is changed.",
    "module": "state/bind.ts"
   },
   "RCSS-G001": {
@@ -774,6 +882,34 @@
    "template": ":on() is ignored in untrusted stylesheets (cross-origin, or inline <style> with trustInlineStyles: false); \"{0}\" is dropped.",
    "module": "core/parser.ts"
   },
+  "RCSS-P081": {
+   "template": "after() and every() rules cannot be nested inside a rule with a state condition; write the full selector",
+   "module": "core/parser.ts"
+  },
+  "RCSS-P082": {
+   "template": "after() and every() rules can depend on classes, attributes and :when() (which the runtime follows), not on :{0}; use a state, e.g. :when(--open)",
+   "module": "core/parser.ts"
+  },
+  "RCSS-P083": {
+   "template": "{0} in \"{1}\". Rule dropped.",
+   "module": "core/parser.ts"
+  },
+  "RCSS-P085": {
+   "template": "{0} is not a computed state: !important is not supported on it. It stays a CSS-only value that :when(), text: and actions cannot read, in \"{1}\".",
+   "module": "core/parser.ts"
+  },
+  "RCSS-P086": {
+   "template": "{0} is not a computed state: it is in a conditional rule (:when(), :hover and other state pseudo-classes, a pseudo-element, @media, @supports or @container), and computed custom properties need an unconditional rule. It stays a CSS-only value that :when(), text: and actions cannot read, in \"{1}\".",
+   "module": "core/parser.ts"
+  },
+  "RCSS-P087": {
+   "template": "{0} is not a computed state: it reads time() outside live(), which gives one instant; write live(time(), 1s) for a clock. It stays a CSS-only value that :when(), text: and actions cannot read, in \"{1}\".",
+   "module": "core/parser.ts"
+  },
+  "RCSS-P088": {
+   "template": "{0} is not a computed state: it reads {1}, which can change without a state change. It stays a CSS-only value that :when(), text: and actions cannot read, in \"{2}\".",
+   "module": "core/parser.ts"
+  },
   "RCSS-R001": {
    "template": "Invalid function name \"{0}\"",
    "module": "core/registry.ts"
@@ -926,6 +1062,14 @@
    "template": "unknown modifier \"{0}\" in \"{1}\" (use ctrl, shift, alt, meta)",
    "module": "state/keys.ts"
   },
+  "RCSS-S029": {
+   "template": "condition \"{0}\": missing \")\"",
+   "module": "state/values.ts"
+  },
+  "RCSS-S030": {
+   "template": "{0}() takes no arguments here",
+   "module": "state/expr.ts"
+  },
   "RCSS-T001": {
    "template": "text: on {0} is ignored: the element has other content (child elements or several nodes). Put the text in its own element, e.g. <span class=\"label\"></span>, and target that.",
    "module": "state/text.ts"
@@ -1033,6 +1177,110 @@
   "RCSS-V023": {
    "template": "step \"{0}\" must use the same unit as min and max; a third argument is a step, never an update interval: to re-roll over time use live(random(...), 2s)",
    "module": "functions/values.ts"
+  },
+  "RCSS-V024": {
+   "template": "{0}() takes text, not {1} ({2})",
+   "module": "functions/calls.ts"
+  },
+  "RCSS-V025": {
+   "template": "format(): \"{0}\" formats numbers; {1} is a {2}",
+   "module": "functions/format.ts"
+  },
+  "RCSS-V026": {
+   "template": "the second argument of format() is a style: \"decimal\", \"integer\", \"percent\" or \"currency\"",
+   "module": "functions/format.ts"
+  },
+  "RCSS-V027": {
+   "template": "\"{0}\" is not a format() style; use \"decimal\", \"integer\", \"percent\" or \"currency\"",
+   "module": "functions/format.ts"
+  },
+  "RCSS-V028": {
+   "template": "\"currency\" needs a three-letter ISO 4217 code, e.g. format(9.5, \"currency\", \"EUR\")",
+   "module": "functions/format.ts"
+  },
+  "RCSS-V029": {
+   "template": "\"{0}\" takes no third argument",
+   "module": "functions/format.ts"
+  },
+  "RCSS-V030": {
+   "template": "the second argument of format() is a style (\"decimal\", \"integer\", \"percent\", \"currency\") or a date pattern such as \"HH:mm\"",
+   "module": "functions/format.ts"
+  },
+  "RCSS-V031": {
+   "template": "\"{0}\" is neither a format() style (\"decimal\", \"integer\", \"percent\", \"currency\") nor a date pattern such as \"HH:mm\"",
+   "module": "functions/format.ts"
+  },
+  "RCSS-V032": {
+   "template": "a date pattern takes no third argument",
+   "module": "functions/format.ts"
+  },
+  "RCSS-V033": {
+   "template": "the zone of timezone() is a quoted IANA name, e.g. \"Europe/London\"",
+   "module": "functions/datetime.ts"
+  },
+  "RCSS-V034": {
+   "template": "timezone(): unknown time zone \"{0}\"",
+   "module": "functions/datetime.ts"
+  },
+  "RCSS-V035": {
+   "template": "timezone() needs a date and time from time(); {0} is a {1}",
+   "module": "functions/datetime.ts"
+  },
+  "RCSS-V036": {
+   "template": "the zone of timezone() is a quoted IANA name",
+   "module": "functions/datetime.ts"
+  },
+  "RCSS-V037": {
+   "template": "format(): a date pattern needs a date and time from time() or timezone(); {0} is a {1}",
+   "module": "functions/format.ts"
+  },
+  "RCSS-V038": {
+   "template": "format(): \"{0}\" formats numbers; {1} is a date and time, format it with a pattern such as \"HH:mm\"",
+   "module": "functions/format.ts"
+  },
+  "RCSS-V039": {
+   "template": "{0} on {1}: CSS shows {2}, its computed state is {3}. A declaration Reactive CSS does not process overrides it (!important, @property, or a stylesheet without reactive syntax); remove it or rename the property.",
+   "module": "functions/derived.ts"
+  },
+  "RCSS-V040": {
+   "template": "{0} on {1} reads {2}, but no element declares {3} as a state on it or its ancestors; {4} has no value.",
+   "module": "functions/derived.ts"
+  },
+  "RCSS-V041": {
+   "template": "{0} on {1} has an inline style value; it is not computed on that element.",
+   "module": "functions/derived.ts"
+  },
+  "RCSS-V042": {
+   "template": "{0} is declared {1} times in the processed stylesheets (state(), plain values, @property and other computed declarations count). A computed custom property must be the only declaration of its name, so {2} is not computed until the others are removed or renamed.",
+   "module": "functions/derived.ts"
+  },
+  "RCSS-V043": {
+   "template": "{0} reads itself through {1}; computed custom properties cannot form a cycle, so {2} is not computed.",
+   "module": "functions/derived.ts"
+  },
+  "RCSS-V044": {
+   "template": "{0} cannot be read (cross-origin without CORS), so Reactive CSS cannot check whether it declares {1}. Where such a declaration applies inside an owner, CSS shows its value instead of the computed state.",
+   "module": "functions/derived.ts"
+  },
+  "RCSS-V045": {
+   "template": "{0} is computed, and {1} also declares it ({2}). Reactive CSS does not process that stylesheet: where it applies inside an owner (or with !important on one), CSS shows its value, not the computed state. Remove it or rename the property.",
+   "module": "functions/derived.ts"
+  },
+  "RCSS-V046": {
+   "template": "{0} on {1} has an inline style value inside a computed owner ({2}): CSS there shows the inline value, not the computed state. Remove it or rename the property.",
+   "module": "functions/derived.ts"
+  },
+  "RCSS-V047": {
+   "template": "{0} on {1} reads {2}, which is no longer a state there; it keeps its last value.",
+   "module": "functions/derived.ts"
+  },
+  "RCSS-V048": {
+   "template": "{0} on {1}: {2}; it keeps its last value.",
+   "module": "functions/derived.ts"
+  },
+  "RCSS-V049": {
+   "template": "\"{0}\" is not a format() style (\"decimal\", \"integer\", \"percent\", \"currency\"), and date patterns are not included in this bundle (feature \"datetime\")",
+   "module": "functions/format.ts"
   },
   "RCSS-W001": {
    "template": ":changed() expects a state name like --count, got \"{0}\"",

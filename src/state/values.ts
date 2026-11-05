@@ -4,7 +4,9 @@
 
 import { fmt } from '../core/format';
 
-export type StateType = 'boolean' | 'number' | 'dimension' | 'value' | 'string';
+export type StateType = 'boolean' | 'number' | 'dimension' | 'value' | 'string'
+  // 0.10: an instant from time() (epoch ms), never parsed from text.
+  | 'datetime';
 
 /**
  * A logical value: booleans, unitless numbers, dimensions (number + unit), quoted strings
@@ -15,6 +17,8 @@ export interface Typed {
   v: boolean | number | string;
   /** Lower-case unit for dimensions ('px', '%', 'deg'...), '' for numbers. */
   unit?: string;
+  /** datetime only: the IANA time zone format() shows it in (timezone()); the browser's when absent. */
+  zone?: string;
 }
 
 const NUMBER = /^([+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?)([a-z%]*)$/i;
@@ -70,7 +74,7 @@ export function coerce(to: Typed, from: Typed): Typed {
 }
 
 export function equal(a: Typed, b: Typed): boolean {
-  return a.type === b.type && a.v === b.v && a.unit === b.unit;
+  return a.type === b.type && a.v === b.v && a.unit === b.unit && a.zone === b.zone;
 }
 
 // ---- conditions -------------------------------------------------------------------
@@ -82,11 +86,43 @@ export type Cond =
   | { k: 'lit'; t: Typed }
   | { k: 'not'; a: Cond }
   | { k: 'and' | 'or'; a: Cond; b: Cond }
-  | { k: 'cmp'; op: string; a: Cond; b: Cond };
+  | { k: 'cmp'; op: string; a: Cond; b: Cond }
+  /** 0.10: a value function call (strings), parsed and evaluated by conditionCalls. */
+  | { k: 'call'; node: unknown; text: string };
 
-export interface Condition { ast: Cond; names: string[]; text: string }
+/** 0.10: a string that is exactly a decimal number ("09", "-1.5", format(…) output) as that number. */
+export function numericString(t: Typed): Typed | undefined {
+  if (t.type !== 'string' || !/^[+-]?(?:\d+\.?\d*|\.\d+)$/.test(t.v as string)) return undefined;
+  return { type: 'number', v: +(t.v as string), unit: '' };
+}
 
-const TOKEN = /\s*((?:previous|direction)\(\s*--[\w-]+\s*\)|--[\w-]+|>=|<=|==|!=|>|<|\(|\)|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?[a-z%]*|#[0-9a-f]+|[a-z_][\w-]*)/iy;
+/**
+ * 0.10: value function calls in conditions, `:when(includes(lower(--name), --q))`. Installed by
+ * functions/calls.ts (the expression language lives in actexpr.ts, which imports this file);
+ * without it the grammar is unchanged.
+ */
+export const conditionCalls: {
+  /** Replaces each call in `text` with a placeholder token \x00<n>, kept in `out`. */
+  extract?(text: string, out: string[]): string;
+  parse?(text: string): { node: unknown; names: string[] };
+  /** Undefined = unknown; throws ConditionError for a type error. */
+  evaluate?(node: unknown, el: Element): Typed | undefined;
+} = {};
+
+/** 0.10: installed by functions/datetime.ts; a datetime value exists only with that feature. */
+export const datetimeOps: {
+  /** Both as numbers of epoch milliseconds; throws ConditionError for anything else. */
+  compare?(a: Typed, b: Typed): [Typed, Typed];
+  arith?(op: string, x: Typed, y: Typed): Typed;
+} = {};
+
+export interface Condition {
+  ast: Cond; names: string[]; text: string;
+  /** 0.10: states read inside call operands (resolved before each evaluation, to subscribe). */
+  calls?: string[];
+}
+
+const TOKEN = /\s*((?:previous|direction)\(\s*--[\w-]+\s*\)|\x00\d+|--[\w-]+|[<>=!]\s*=|>|<|\(|\)|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?[a-z%]*|#[0-9a-f]+|[a-z_][\w-]*)/iy;
 const OPS = new Set(['==', '!=', '>', '<', '>=', '<=']);
 
 /**
@@ -94,18 +130,25 @@ const OPS = new Set(['==', '!=', '>', '<', '>=', '<=']);
  *           not := 'not' not | cmp       cmp := operand (op operand)?
  *           operand := --state | previous(--state) | direction(--state) | number | dimension
  *                    | true | false | keyword | #hex | "string" | '(' or ')'
+ *                    | value function call (0.10: length(), includes(), lower(), trim())
  */
 export function parseCondition(text: string): Condition {
   const toks: string[] = [];
+  const calls: string[] = [];
+  const source = text;
+  if (conditionCalls.extract) text = conditionCalls.extract(text, calls);
   let pos = 0;
   TOKEN.lastIndex = 0;
   let m: RegExpExecArray | null;
-  while ((m = TOKEN.exec(text))) { toks.push(m[1]); pos = TOKEN.lastIndex; }
-  if (text.slice(pos).trim()) throw new Error(`cannot read condition "${text}" near "${text.slice(pos).trim()}"`);
+  // A two-character operator may contain whitespace after formatting: `> =` is `>=` (0.10).
+  // Only a spaced operator is longer than two characters and starts with one of < > = !.
+  while ((m = TOKEN.exec(text))) { const t = m[1]; toks.push(t.length > 2 && '<>=!'.includes(t[0]) ? t[0] + '=' : t); pos = TOKEN.lastIndex; }
+  if (text.slice(pos).trim()) throw new Error(`cannot read condition "${source}" near "${text.slice(pos).trim().replace(/\x00(\d+)/g, (_, n) => calls[+n])}"`);
   let i = 0;
   const names = new Set<string>();
+  let callNames: Set<string> | undefined;
   const peek = () => toks[i]?.toLowerCase();
-  const fail = (what: string): never => { throw new Error(`condition "${text}": ${what}`); };
+  const fail = (what: string): never => { throw new Error(`condition "${source}": ${what}`); };
 
   const operand = (): Cond => {
     const t = toks[i++];
@@ -114,6 +157,14 @@ export function parseCondition(text: string): Condition {
       const e = or();
       if (toks[i++] !== ')') fail('missing ")"');
       return e;
+    }
+    if (t[0] === '\x00') {
+      const call = calls[+t.slice(1)];
+      let parsed;
+      try { parsed = conditionCalls.parse!(call); } catch (e) { return fail(`${call}: ${(e as Error).message}`); }
+      callNames ??= new Set(); // also for a call that reads no state: time(), length("ab")
+      for (const n of parsed.names) { names.add(n); callNames.add(n); }
+      return { k: 'call', node: parsed.node, text: call };
     }
     if (t.startsWith('--')) { names.add(t); return { k: 'ref', name: t }; }
     const fn = /^(previous|direction)\(\s*(--[\w-]+)\s*\)$/i.exec(t);
@@ -140,7 +191,9 @@ export function parseCondition(text: string): Condition {
   };
   const ast = or();
   if (i < toks.length) fail(`unexpected "${toks[i]}"`);
-  return { ast, names: [...names], text };
+  const c: Condition = { ast, names: [...names], text: source };
+  if (callNames) c.calls = [...callNames];
+  return c;
 }
 
 /** Thrown for type errors; the caller reports it once and treats the condition as unknown. */
@@ -148,7 +201,10 @@ export class ConditionError extends Error {}
 
 /** What a condition can read from a state: its current and previous value. */
 export interface StateValues { value: Typed; previous: Typed }
-export type Lookup = (name: string) => StateValues | undefined;
+export type Lookup = ((name: string) => StateValues | undefined) & {
+  /** 0.10: evaluates a call operand for the element (conditions.ts). */
+  fn?(node: unknown): Typed | undefined; // not "call": Function.prototype.call would answer when it is unset
+};
 
 /** direction(): 1, 0 or -1 for number and dimension states; a ConditionError otherwise. */
 export function direction(s: StateValues, name = 'the state'): Typed {
@@ -197,15 +253,19 @@ function value(c: Cond, lookup: Lookup): Typed | undefined {
   if (c.k === 'prev') return lookup(c.name)?.previous;
   if (c.k === 'dir') { const s = lookup(c.name); return s && direction(s, c.name); }
   if (c.k === 'lit') return c.t;
+  if (c.k === 'call') return lookup.fn?.(c.node);
   const r = evaluate(c, lookup);
   return r === undefined ? undefined : { type: 'boolean', v: r };
 }
 
 const describe = (c: Cond) =>
-  c.k === 'ref' ? c.name : c.k === 'prev' ? `previous(${c.name})` : c.k === 'dir' ? `direction(${c.name})` : c.k === 'lit' ? serialize(c.t) : 'expression';
+  c.k === 'call' ? c.text : c.k === 'ref' ? c.name : c.k === 'prev' ? `previous(${c.name})` : c.k === 'dir' ? `direction(${c.name})` : c.k === 'lit' ? serialize(c.t) : 'expression';
 
 function compare(op: string, a: Typed, b: Typed): boolean {
   const ordered = op !== '==' && op !== '!=';
+  // 0.10: a numeric string compares with a number ("09" >= 9); two strings still compare as text.
+  if ((a.type === 'string') !== (b.type === 'string')) { a = numericString(a) ?? a; b = numericString(b) ?? b; }
+  if (a.type === 'datetime' || b.type === 'datetime') [a, b] = datetimeOps.compare!(a, b);
   if (a.type === 'boolean' || b.type === 'boolean' || a.type === 'value' || b.type === 'value' || a.type === 'string' || b.type === 'string') {
     if (a.type !== b.type) throw new ConditionError(`cannot compare ${serialize(a)} (${a.type}) with ${serialize(b)} (${b.type})`);
     if (ordered) throw new ConditionError(`${op} needs numbers, got ${a.type} values`);

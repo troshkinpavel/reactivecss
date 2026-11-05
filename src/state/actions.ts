@@ -12,7 +12,7 @@ import { defineAction, runtimeStats, runtimes, type ActionDef } from '../core/re
 import { urgently, sync, activation } from '../core/scheduler';
 import { warn, note, dev, probes } from '../core/log';
 import { flushMutations, type Watcher } from '../core/elements';
-import { resolveCell, warnMissing, describeElement } from './state';
+import { resolveCell, warnMissing, describeElement, readOnly } from './state';
 import { parseTyped, assignable, coerce, serialize, equal, type Typed } from './values';
 import { keyMatches, type KeySpec } from './keys';
 import { parseExpr, evaluate, type Expr } from './expr';
@@ -234,6 +234,7 @@ function scoped(args: string[]): [string[], string | undefined] {
 /** The state cell for an action, with a warning when there is none. */
 function target(el: Element, name: string, action: string, scope?: string) {
   const c = resolveCell(el, name, scope);
+  if (c && readOnly.has(c)) { warn(`${action}() on ${describeElement(el)}: ${name} is computed by its declaration (read-only); nothing is changed.`); return undefined; }
   if (!c) {
     if (scope) warnMissing(name, el, `${action}() with closest(${scope}) on ${describeElement(el)} (the owner must be exactly that ancestor)`);
     else warnMissing(name, el, `${action}() on ${describeElement(el)}`);

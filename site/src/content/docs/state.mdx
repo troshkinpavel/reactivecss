@@ -139,6 +139,9 @@ On an element, [`content: var(--count)`](/docs/reference/content/) writes the st
 }
 ```
 
+## Moving elements
+A consumer resolves its state when it needs it. When a consumer moves into another owner, it reads the new owner at once. A moved bound control shows the new owner's value and does not overwrite it.
+
 ## Lifetime
 A state is created when its element starts matching a `state()` rule and is disposed when it stops matching or is removed. Re-inserting the element starts over at the initial value. CSS recalculation never resets a state.
 

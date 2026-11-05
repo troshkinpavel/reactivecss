@@ -1,0 +1,253 @@
+{
+ "base": {
+  "reactive-css.min.js": {
+   "min": 150368,
+   "gzip": 49716,
+   "brotli": 43662
+  },
+  "reactive-css.compact.min.js": {
+   "min": 129824,
+   "gzip": 42940,
+   "brotli": 37970
+  },
+  "index.js": {
+   "min": 254476,
+   "gzip": 69260,
+   "brotli": 57243
+  },
+  "reactive-css.js": {
+   "min": 268961,
+   "gzip": 70238,
+   "brotli": 57952
+  },
+  "core": {
+   "min": 46286,
+   "gzip": 17256,
+   "brotli": 15669
+  },
+  "events": {
+   "min": 76771,
+   "gzip": 26488,
+   "brotli": 23851
+  },
+  "events+conditions": {
+   "min": 83424,
+   "gzip": 28604,
+   "brotli": 25792
+  },
+  "events+conditions+text": {
+   "min": 86195,
+   "gzip": 29413,
+   "brotli": 26451
+  },
+  "forms": {
+   "min": 95064,
+   "gzip": 31742,
+   "brotli": 28409
+  },
+  "strings": null,
+  "format": null,
+  "datetime": null,
+  "timers": null,
+  "derived": null,
+  "strings+text": null,
+  "format+text": null,
+  "datetime+text": null,
+  "derived+text": null,
+  "events+format+text": null
+ },
+ "s8": {
+  "reactive-css.min.js": {
+   "min": 183243,
+   "gzip": 61122,
+   "brotli": 53176
+  },
+  "reactive-css.compact.min.js": {
+   "min": 156258,
+   "gzip": 52229,
+   "brotli": 45761
+  },
+  "index.js": {
+   "min": 308933,
+   "gzip": 84215,
+   "brotli": 69587
+  },
+  "reactive-css.js": {
+   "min": 326116,
+   "gzip": 85220,
+   "brotli": 70199
+  },
+  "core": {
+   "min": 50262,
+   "gzip": 18722,
+   "brotli": 17023
+  },
+  "events": {
+   "min": 86497,
+   "gzip": 30239,
+   "brotli": 26771
+  },
+  "events+conditions": {
+   "min": 94975,
+   "gzip": 33181,
+   "brotli": 29419
+  },
+  "events+conditions+text": {
+   "min": 97752,
+   "gzip": 33966,
+   "brotli": 30093
+  },
+  "forms": {
+   "min": 104980,
+   "gzip": 35579,
+   "brotli": 31505
+  },
+  "strings": {
+   "min": 89527,
+   "gzip": 31261,
+   "brotli": 27702
+  },
+  "format": {
+   "min": 93775,
+   "gzip": 32793,
+   "brotli": 29076
+  },
+  "datetime": {
+   "min": 94669,
+   "gzip": 33029,
+   "brotli": 29248
+  },
+  "timers": {
+   "min": 88287,
+   "gzip": 30870,
+   "brotli": 27328
+  },
+  "derived": {
+   "min": 95334,
+   "gzip": 33133,
+   "brotli": 29447
+  },
+  "strings+text": {
+   "min": 92307,
+   "gzip": 32057,
+   "brotli": 28423
+  },
+  "format+text": {
+   "min": 96555,
+   "gzip": 33568,
+   "brotli": 29721
+  },
+  "datetime+text": {
+   "min": 97449,
+   "gzip": 33836,
+   "brotli": 29954
+  },
+  "derived+text": {
+   "min": 98110,
+   "gzip": 33932,
+   "brotli": 30096
+  },
+  "events+format+text": {
+   "min": 96555,
+   "gzip": 33568,
+   "brotli": 29721
+  }
+ },
+ "final": {
+  "reactive-css.min.js": {
+   "min": 181808,
+   "gzip": 60828,
+   "brotli": 52871
+  },
+  "reactive-css.compact.min.js": {
+   "min": 155385,
+   "gzip": 52149,
+   "brotli": 45545
+  },
+  "index.js": {
+   "min": 309604,
+   "gzip": 84585,
+   "brotli": 69688
+  },
+  "reactive-css.js": {
+   "min": 326861,
+   "gzip": 85651,
+   "brotli": 70357
+  },
+  "core": {
+   "min": 49000,
+   "gzip": 18310,
+   "brotli": 16645
+  },
+  "events": {
+   "min": 83191,
+   "gzip": 29216,
+   "brotli": 25968
+  },
+  "events+conditions": {
+   "min": 90634,
+   "gzip": 31783,
+   "brotli": 28269
+  },
+  "events+conditions+text": {
+   "min": 93414,
+   "gzip": 32584,
+   "brotli": 28951
+  },
+  "forms": {
+   "min": 101674,
+   "gzip": 34541,
+   "brotli": 30656
+  },
+  "strings": {
+   "min": 66206,
+   "gzip": 24055,
+   "brotli": 21631
+  },
+  "format": {
+   "min": 67220,
+   "gzip": 24474,
+   "brotli": 21909
+  },
+  "datetime": {
+   "min": 71247,
+   "gzip": 25926,
+   "brotli": 23137
+  },
+  "timers": {
+   "min": 85989,
+   "gzip": 30168,
+   "brotli": 26768
+  },
+  "derived": {
+   "min": 71155,
+   "gzip": 25733,
+   "brotli": 23015
+  },
+  "strings+text": {
+   "min": 68985,
+   "gzip": 24974,
+   "brotli": 22347
+  },
+  "format+text": {
+   "min": 69999,
+   "gzip": 25425,
+   "brotli": 22642
+  },
+  "datetime+text": {
+   "min": 74026,
+   "gzip": 26801,
+   "brotli": 23919
+  },
+  "derived+text": {
+   "min": 73934,
+   "gzip": 26620,
+   "brotli": 23808
+  },
+  "events+format+text": {
+   "min": 90991,
+   "gzip": 31806,
+   "brotli": 28151
+  }
+ }
+}

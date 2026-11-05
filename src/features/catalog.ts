@@ -4,7 +4,7 @@
 // in tests/unit/catalog.test.ts; dependencies are verified by building each entry alone
 // (tests/unit/catalog.test.ts). Semantics: docs/rfc-modular-runtime-0.8.md.
 
-export type FeatureId = 'core' | 'events' | 'gestures' | 'persist' | 'conditions' | 'nth-var' | 'history' | 'forms' | 'text' | 'attributes' | 'focus' | 'blur' | 'values' | 'dynamic' | 'geometry';
+export type FeatureId = 'core' | 'events' | 'gestures' | 'persist' | 'conditions' | 'nth-var' | 'history' | 'forms' | 'text' | 'attributes' | 'focus' | 'blur' | 'values' | 'dynamic' | 'geometry' | 'strings' | 'format' | 'datetime' | 'timers' | 'derived' | 'event-timing';
 export type Category = 'Core & State' | 'Events & Actions' | 'Conditions & Selectors' | 'Forms & DOM Bindings' | 'History' | 'Values & Strings' | 'Geometry & Observers' | 'Focus & Accessibility';
 
 export interface CatalogFeature {
@@ -95,6 +95,33 @@ export const CATALOG: CatalogFeature[] = [
     modules: ['functions/geometry.ts'], requires: ['core'], optional: [], status: 'experimental',
     provides: ['fn:element'],
     syntax: ['element(width)', 'element(height)'] },
+  { id: 'strings', title: 'Strings', category: 'Values & Strings', entry: 'src/features/strings.ts',
+    // state/actexpr.ts: the expression language, shared with events; no event runtime is needed.
+    modules: ['functions/calls.ts', 'functions/strings.ts', 'state/actexpr.ts'], requires: ['core'], optional: ['events', 'conditions'], status: 'experimental',
+    provides: ['fn:length', 'fn:includes', 'fn:lower', 'fn:trim'],
+    syntax: ['length(text)', 'includes(text, part)', 'lower(text)', 'trim(text)', 'in :on() actions, :when() / when() conditions and declarations; --name reads a state'] },
+  { id: 'format', title: 'Number and date formatting', category: 'Values & Strings', entry: 'src/features/format.ts',
+    modules: ['functions/format.ts', 'functions/intl.ts', 'functions/calls.ts', 'state/actexpr.ts'], requires: ['core'], optional: ['events', 'conditions'], status: 'experimental',
+    provides: ['fn:format'],
+    syntax: ['format(number, "decimal" | "integer" | "percent" | "currency" [, "EUR"]), in the nearest lang', 'format(datetime, "yyyy-MM-dd HH:mm"): a date pattern', 'a string that is exactly a decimal number ("09") compares and calculates as a number'] },
+  { id: 'datetime', title: 'Date and time', category: 'Values & Strings', entry: 'src/features/datetime.ts',
+    // format: the Intl helpers (functions/intl.ts) and the date patterns that show a datetime.
+    modules: ['functions/datetime.ts', 'functions/dates.ts'], requires: ['core', 'format'], optional: ['events', 'conditions', 'dynamic'], status: 'experimental',
+    provides: ['fn:time', 'fn:timezone'],
+    syntax: ['time(): the current instant, a datetime; state(time())', 'timezone(datetime, "Area/City")', 'datetime ± 30s; datetime - datetime = a duration in ms'] },
+  { id: 'event-timing', title: 'Event timing', category: 'Events & Actions', entry: 'src/features/event-timing.ts',
+    modules: ['state/on-timing.ts'], requires: ['core', 'events'], optional: [], status: 'experimental',
+    provides: ['mod:debounce', 'mod:throttle'],
+    syntax: [':on(input, debounce(300ms))', ':on(pointermove, throttle(16ms))'] },
+  { id: 'timers', title: 'Timers', category: 'Events & Actions', entry: 'src/features/timers.ts',
+    modules: ['functions/timers.ts'], requires: ['core', 'events'], optional: ['conditions'], status: 'experimental',
+    provides: ['trigger:after', 'trigger:every'],
+    syntax: [':on(after(3s)): once, 3s after the rule becomes active', ':on(every(1s)) / :on(every(80ms, 400ms)): while the rule is active (interval, first delay)', 'active = the element matches the full selector, :when() included'] },
+  { id: 'derived', title: 'Computed custom properties', category: 'Values & Strings', entry: 'src/features/derived.ts',
+    // strings: the value functions and their plumbing (functions/calls.ts).
+    modules: ['functions/derived.ts'], requires: ['core', 'strings'], optional: ['events', 'format', 'datetime', 'dynamic', 'conditions'], status: 'experimental',
+    provides: ['decl:derived'],
+    syntax: ['--clean: trim(--value); --chars: length(--clean): read-only states of the matched elements', '--now: live(time(), 1s)', 'unconditional rules only; the only declaration of its name', 'written inline on the owner: not a general CSS cascade'] },
 ];
 
 /** Example configurations (docs/bundle-builder-0.8.md). */

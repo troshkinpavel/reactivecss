@@ -17,10 +17,10 @@ test.beforeEach(async ({ page }) => {
   await expect(status(page)).toHaveText(new RegExp(RUNNING), { timeout: 10_000 });
 });
 
-test('opens on Toggle with the CSS tab; the runtime in the preview is 0.9.1', async ({ page }) => {
+test('opens on Toggle with the CSS tab; the runtime in the preview is 0.10.0', async ({ page }) => {
   await expect(preset(page, 'Toggle')).toHaveAttribute('aria-checked', 'true');
   await expect(page.getByRole('tab', { name: 'CSS' })).toHaveAttribute('aria-selected', 'true');
-  expect(await frame(page).locator('body').evaluate(() => (window as any).ReactiveCSS.version)).toBe('0.9.1');
+  expect(await frame(page).locator('body').evaluate(() => (window as any).ReactiveCSS.version)).toBe('0.10.0');
 });
 
 test('an edit restarts the preview with the new stylesheet', async ({ page }) => {

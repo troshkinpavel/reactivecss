@@ -72,7 +72,7 @@ reactive-css analyze public/ --build public/reactive-css.min.js
 reactive-css build --features events,conditions,focus --out public/reactive-css.min.js
 ```
 
-- **Features:** `core` (always), `events`, `gestures` (0.9), `persist` (0.9), `conditions`, `nth-var`, `history`, `forms`, `text`, `attributes`, `focus`, `blur` (0.9), `values`, `dynamic`, `geometry`.
+- **Features:** `core` (always), `events`, `gestures` (0.9), `persist` (0.9), `conditions`, `nth-var`, `history`, `forms`, `text`, `attributes`, `focus`, `blur` (0.9), `values`, `dynamic`, `geometry`. 0.10 adds `strings`, `format`, `datetime` (with `format`), `derived` (with `strings`), `timers` and `event-timing` (with `events`); `strings`, `format`, `datetime` and `derived` do not need `events`.
 - **Requirements** are added automatically (`focus` and `gestures` need `events`).
 - **Sizes (0.9.0):** about 76 KB minified for `basic` (state, `:on()` and `on:`), against 148 KB (49.9 KB gzip) for the full bundle (0.8.1: 52 KB and 115 KB). Production bundles report diagnostics as codes; decode them with `npx -p @reactivecss/core reactive-css explain`. Details: [docs/release-0.9.0-hardening.md](release-0.9.0-hardening.md).
 - **Missing features:** a feature left out is reported in `ReactiveCSS.diagnostics` with the feature it needs, never silently ignored.
@@ -80,7 +80,7 @@ reactive-css build --features events,conditions,focus --out public/reactive-css.
 
 Full reference: [docs/bundle-builder-0.8.md](bundle-builder-0.8.md).
 
-The package is [`@reactivecss/core`](https://www.npmjs.com/package/@reactivecss/core) on npm (0.9.1).
+The package is [`@reactivecss/core`](https://www.npmjs.com/package/@reactivecss/core) on npm (0.10.0).
 
 ## Browser support
 
@@ -111,6 +111,24 @@ The full matrix, with what was verified, is in [docs/compatibility.md](compatibi
 | `direction(--x)` | A number or dimension state | `1`, `0` or `-1` (last change up, none, down). Unknown for other types. | When the state changes | none | Same |
 | `element(width)` `element(height)` *(experimental)* | Axis keyword. Only these two forms are Reactive CSS: `element(#id)` stays the native image function. | The element's own **border-box** size in px. No value until first measured, so `var(--w, fallback)` uses the fallback: the browser measures before the element's first paint, and the value is written in the next frame, so one frame renders with the fallback. `display: none` is `0px`. | On resize, through one shared `ResizeObserver` | none for an element's own size (container units and `anchor-size()` cover containers and anchors) | Self-feedback (`width: calc(element(width) + 10px)`) is detected and frozen with a warning |
 | `typed(value, "<syntax>"?)` *(experimental)* | Only as the whole value of a custom property: `--angle: typed(0deg)`. The syntax is inferred for numbers, lengths, percentages, angles, times, resolutions and colors. | The value | — | It *is* a native registration: `CSS.registerProperty({ syntax, inherits: true, initialValue })`. Prefer a native `@property` rule when you can write one (differences under [Limitations](#limitations)). | Never overrides a native `@property` |
+
+**Value functions (0.10, experimental)** work in `:on()` actions, `:when()` / `when()` conditions and declarations. `--name` in their arguments reads a state.
+
+| Syntax | Returns | Notes |
+|---|---|---|
+| `length(text)` | Number | Grapheme clusters (`Intl.Segmenter`). |
+| `includes(text, part)` | Boolean | Case-sensitive, NFC, no accent folding. An empty part is found. |
+| `lower(text)` | String | Unicode default rules, no locale rules. |
+| `trim(text)` | String | Unicode white space at both ends. |
+| `format(value, style-or-pattern [, currency])` | String | `"decimal"`, `"integer"`, `"percent"`, `"currency"` + ISO 4217 code, or a date pattern (`yyyy yy M MM MMM MMMM d dd E EEE EEEE H HH h hh m mm s ss SSS a`, `'quoted'` text). In the nearest `lang`. Numeric date fields use the Gregorian calendar and Latin digits. Only calls with two or more arguments and an unquoted first one are claimed: `@font-face` `format("woff2")` stays CSS. |
+| `time()` | Datetime | The current instant, one per task; its epoch milliseconds in CSS. `state(time())` makes a datetime state. A datetime ± a duration is a datetime; a datetime − a datetime is a duration in `ms`. A value, not a timer. |
+| `timezone(datetime, "Area/City")` | Datetime | The same instant, in an IANA zone for `format()`. |
+
+A string that is exactly a decimal number (`"09"`) compares and calculates as a number. Two strings still compare as text.
+
+**Computed custom properties (0.10, experimental).** `--clean: trim(--value)` or `--now: live(time(), 1s)`: a value function, or `live()` around one, as the whole value of a custom property in an unconditional rule is also a read-only state of that name on each matched element. It is recomputed synchronously, inputs before what reads them. Names must not form a cycle, and it can read only states, not `attr()`, `event()`, `element()`, `random()` or `time()` outside `live()`.
+
+It is **not a general CSS cascade.** The value is written inline on each owner. CSS shows the state on the owner unless `!important` or `@property` overrides it, and inside the owner unless another declaration of the name applies there. Another declaration of the name in the processed stylesheets turns the name off, with a diagnostic. In a stylesheet without reactive syntax, and for an inline style inside an owner, only development builds report it. Cross-origin stylesheets and shadow roots cannot be checked.
 
 You can nest functions: `live(pick(red, blue), 1s)`, `random(0px, viewport(width))`, `calc(0.2 + visible() * 0.8)`, `rgb(random(0, 255) 0 0)`.
 
@@ -179,6 +197,8 @@ The full semantics (types, cascade, lifetime, resolution, trust model) are in [d
 ```
 
 **State.** `--x: state(value)` makes each matching element the owner of an independent state. Consumers use the **nearest owner**: the element itself, then its ancestors. An inner component shadows an outer one with the same name. `var(--x)` always works, and booleans read as `1`/`0`. A state is created when its element starts to match a `state()` rule and is disposed when it stops matching or is removed. Re-inserting the element starts over at the initial value. CSS recalculation never resets a state.
+
+**Event rules (0.10 additions).** `:on(a | b)` is one rule for several events. `:on(input, debounce(300ms))` and `:on(pointermove, throttle(16ms))` are modifiers. `:on(after(3s))` and `:on(every(1s [, first delay]))` are timers: they run while the element matches the rule's full selector, `:when()` included. A consumer moved into another owner reads that owner at once.
 
 **Actions.** `on:` is a declaration like any other: specificity, source order, `@media` and `:hover` decide which one applies to an element. Several events and actions go into one declaration: `on: click(increment(--n), toggle(--open)), pointerenter(set(--hot, true))`.
 

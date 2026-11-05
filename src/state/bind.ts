@@ -12,7 +12,7 @@ import { dirty, frame, settleLater, urgently, activation, type Job } from '../co
 import { warn, dev, probes } from '../core/log';
 import { sensitive } from './expr';
 import type { Watcher } from '../core/elements';
-import { StateRef, describeElement, type Cell, type Subscriber } from './state';
+import { StateRef, describeElement, readOnly, movedRefs, type Cell, type Subscriber } from './state';
 import { parseTyped, assignable, coerce, type Typed } from './values';
 import { fmt } from '../core/format';
 
@@ -103,11 +103,13 @@ class Binder implements Job, Subscriber {
 
   compute() {
     if (this.dead) return false;
+    const moved = movedRefs.delete(this.ref);
     const c = this.ref.state();
     if (c !== this.cell) {
       this.cell = c;
       if (!c || !this.compatible(c)) { this.cell = undefined; return false; }
-      this.takeControl = !c.restored && edited(this.el, this.kind); // a persisted value wins (0.9.0)
+      // A persisted value wins (0.9.0); after a move the new owner's value wins (0.10).
+      this.takeControl = !moved && !c.restored && edited(this.el, this.kind);
       return true;
     }
     if (!c) return false;
@@ -170,6 +172,7 @@ class Binder implements Job, Subscriber {
   fromControl() {
     const c = this.cell;
     if (!c || this.dead) return;
+    if (readOnly.has(c)) { warn(`bind: on ${describeElement(this.el)}: ${c.name} is computed by its declaration (read-only); nothing is changed.`); return; }
     const el = this.el;
     let next: Typed | undefined;
     switch (this.kind) {
@@ -224,7 +227,7 @@ function onReset(e: Event) {
     for (const b of controls.values()) {
       if (b.el.form !== form) continue;
       const c = b.ref.state();
-      if (!c) continue;
+      if (!c || readOnly.has(c)) continue; // 0.10: a computed value is not reset
       c.set(c.initial);
       b.forceWrite = true;
       b.notify();

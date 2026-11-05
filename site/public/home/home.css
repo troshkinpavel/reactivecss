@@ -173,6 +173,8 @@
 .home .hero:when(not --drag):changed(--y) .hv-hero-code .hv-ln:nth-child(6) { animation: hv-step 360ms linear; }
 .home .hero:when(not --drag):changed(--x) .hv-hero-code :is(.hv-ln:nth-child(7), .hv-ln:nth-child(8)),
 .home .hero:when(not --drag):changed(--y) .hv-hero-code :is(.hv-ln:nth-child(7), .hv-ln:nth-child(8)) { animation: hv-step-last 880ms linear 140ms; }
+.home .hv-hero-new { margin: 14px 0 0; font-size: 14px; color: var(--color-mute); }
+.home .hv-hero-new a { color: var(--color-ink); white-space: nowrap; }
 .home .hv-hint { margin-top: 10px; font-size: 13px; color: var(--color-mute); }
 
 /* ── 01 Syntax ──────────────────────────────────────────────────────────── */
@@ -418,7 +420,7 @@
 .home .hv-send:on(click) { --open: toggle(); }
 
 /* ── 04 Runtime ─────────────────────────────────────────────────────────── */
-.home .runtime { --bundle: state(full); --mods: state(9); }
+.home .runtime { --bundle: state(full); --mods: state(12); }
 .home .hv-runtime { display: flex; flex-wrap: wrap; gap: 40px 64px; align-items: flex-start; }
 .home .hv-runtime-copy { flex: 1 1 320px; max-width: 440px; display: flex; flex-direction: column; gap: 24px; }
 .home .hv-runtime-copy .hv-h2 { flex: none; }

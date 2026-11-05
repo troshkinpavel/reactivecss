@@ -5,9 +5,10 @@ import type { Watcher } from './elements';
 import type { HandlerSet } from '../state/actions';
 import type { BindSpec } from '../state/bind';
 import type { AttrBind, BoundAttribute } from '../state/bindattr';
-import type { Trigger, Modifiers, Mutation, OnRuleSpec } from '../state/on';
+import type { Trigger, Modifiers, Mutation, OnRuleSpec, Tx } from '../state/on';
 import type { PersistSpec, PersistLink, Cell } from '../state/state';
 import type { Typed } from '../state/values';
+import type { DerivedDecl, ReactiveRule } from './parser';
 // Registries for reactive functions and custom selectors. The parser, scheduler and
 // element manager only talk to these interfaces, so adding a function means adding
 // one definition object, nothing else.
@@ -66,6 +67,8 @@ export interface FunctionDef {
   syntax?: string;
   /** Argument positions kept as plain text (not parsed for nested reactive calls). */
   rawArgs?: number[];
+  /** 0.10: a value function (strings): also accepted in text:, attr:, --attr-* and focus: values. */
+  value?: boolean;
   /**
    * Context-aware claim: return false to leave a call with this name to the browser, e.g. the
    * standard element(#id) image function next to Reactive CSS element(width). Default: claim all.
@@ -197,6 +200,17 @@ export interface DeclarationRuntimes {
   gestures?: { register(prevent: boolean): () => void };
   /** persist() (persist feature): initial value from storage, then a link that writes changes. */
   persist?: { initial(spec: PersistSpec, owner: Element, fallback: Typed): Typed | undefined; link(spec: PersistSpec, cell: Cell): PersistLink };
+  /** 0.10 (state/on-timing.ts): debounce() and throttle() in :on(). */
+  eventTiming?: { parse(p: string, mods: Modifiers): void; check(mods: Modifiers, trigger: Trigger): void; gate(spec: OnRuleSpec, el: Element, tx: Tx, key: string): boolean; drop(spec: OnRuleSpec, el?: Element): void };
+  /** 0.10 (functions/calls.ts): records the value functions called in a text (compile().uses). */
+  valueCalls?(s: string, use: (key: string) => void): void;
+  /**
+   * 0.10 (functions/derived.ts): computed custom properties. `accept` decides, and reports, whether a declaration is one;
+   * `sheet` registers a stylesheet's declared names and computed declarations (returns its cleanup).
+   */
+  derived?: { accept(name: string, call: CallNode, important: boolean, unconditional: boolean, at: string): boolean; sheet(declared: Map<string, number>, decls: DerivedDecl[]): () => void; watchers(list: [match: string, d: DerivedDecl][]): Watcher[] };
+  /** 0.10 (functions/timers.ts): one timer per (element, trigger key) while an after() / every() rule is active. */
+  timers?: { trigger(name: string, args: string[]): Trigger; selector(edited: string, parent?: ReactiveRule): string; start(el: Element, t: Trigger): void; stop(el: Element, t: Trigger): void };
 }
 export const runtimes: DeclarationRuntimes = {};
 /** Set by on.ts: the events :on() accepts (describe()). */

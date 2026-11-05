@@ -25,7 +25,12 @@ export type Expr =
   | { k: 'lit'; t: Typed }
   | { k: 'attr'; name: string; fallback: Typed }
   | { k: 'pick'; items: Expr[] }
-  | { k: 'split'; of: Expr; sep: string };
+  | { k: 'split'; of: Expr; sep: string }
+  /** 0.10: an initializer from a feature module, e.g. state(time()). */
+  | { k: 'fn'; get(): Typed };
+
+/** 0.10: functions a feature module allows as a state() initial value, from their arguments. */
+export const initFns = new Map<string, (args: string[]) => Expr>();
 
 /** HTML attribute names (data-*, aria-*, title...); no selectors, no namespaces. */
 const ATTR_NAME = /^[a-z_][\w.-]*$/i;
@@ -60,6 +65,8 @@ export const EXPRESSIONS = ['attr', 'pick', 'split'];
 /** Parses an expression; plain values go through parseTyped() as before. */
 export function parseExpr(text: string, top = true): Expr {
   const c = call(text);
+  const init = c && top && initFns.get(c.name);
+  if (init) return init(c.args);
   if (!c || !EXPRESSIONS.includes(c.name)) return { k: 'lit', t: parseTyped(text) };
   if (c.name === 'attr') {
     if (c.args.length < 1 || c.args.length > 2) throw new Error('expected attr(name) or attr(name, "fallback")');
@@ -129,6 +136,7 @@ function list(e: Expr, el: Element): Typed[] {
 function scalar(e: Expr, el: Element): Typed | undefined {
   switch (e.k) {
     case 'lit': return e.t;
+    case 'fn': return e.get();
     case 'attr': return attribute(e, el);
     case 'split': return undefined; // a list is never a value
     case 'pick': {
