@@ -148,16 +148,16 @@ test('04 runtime: measured sizes; Compact keeps every module; Custom toggles mod
   await seg.getByRole('radio', { name: 'Compact' }).click();
   await expect(seg.getByRole('radio', { name: 'Compact' })).toHaveAttribute('aria-checked', 'true');
   await expect(num).toHaveText(gz('dist compact'), { useInnerText: true });
-  await expect(page.locator('.mod[aria-pressed="true"]')).toHaveCount(9);
+  await expect(page.locator('.mod[aria-pressed="true"]')).toHaveCount(12);
   await expect(page.locator('.mod.events')).toBeDisabled();
   await seg.getByRole('radio', { name: 'Custom' }).click();
   await expect(page.locator('.mod.core')).toBeDisabled();
   await page.locator('.mod.gestures').click();
   await page.locator('.mod.history').click();
   await expect(page.locator('.mod.gestures')).toHaveAttribute('aria-pressed', 'false');
-  await expect(num).toHaveText('7/9', { useInnerText: true });
+  await expect(num).toHaveText('10/12', { useInnerText: true });
   await page.locator('.mod.history').click();
-  await expect(num).toHaveText('8/9', { useInnerText: true });
+  await expect(num).toHaveText('11/12', { useInnerText: true });
 });
 
 test('06 specimens: mouse(), element(), viewport(), visible() and live() read live; random() and pick() redraw on click', async ({ page }) => {
@@ -241,4 +241,22 @@ test('08 Tooling: the MCP block shows what the server returns and links to the M
   const rows = page.locator('table tr');
   await expect(rows.filter({ hasText: 'MCP Inspector' })).toContainText('Verified');
   for (const c of ['Claude Code', 'Cursor']) await expect(rows.filter({ hasText: c })).toContainText('Not verified');
+});
+
+test('the release line names this release; the syntax section does not claim to be new', async ({ page }) => {
+  await page.goto('/');
+  const line = page.locator('.hv-hero-new');
+  await expect(line).toContainText(/New in v0\.10\.0: Value functions, timers and computed values/);
+  await expect(line.locator('a')).toHaveAttribute('href', '/docs/changelog/');
+  await expect(page.locator('#syntax .hv-kicker')).not.toContainText('New in');
+});
+
+test('the runtime section covers every catalog feature, and the MCP section names its knowledge version', async ({ page }) => {
+  await page.goto('/');
+  const titles = await page.locator('.mod').evaluateAll((els) => els.map((e) => e.getAttribute('title')!));
+  const listed = titles.flatMap((t) => t.replace('Catalog features: ', '').split(', ')).sort();
+  expect(listed).toEqual(bundles.catalog.features.map((f: { id: string }) => f.id).sort());
+  await expect(page.locator('.hv-mod-note [data-for="fixed"]')).toHaveText(`The library's ${listed.length} catalog features, in ${titles.length} groups. Full and Compact include every one.`);
+  const mcp = JSON.parse(readFileSync(new URL('../../../packages/mcp/package.json', import.meta.url), 'utf8'));
+  await expect(page.locator('#mcp')).toContainText(`Reactive CSS ${mcp.reactivecss.knowledge} docs`);
 });
