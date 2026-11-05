@@ -12,11 +12,23 @@ import { DISTRIBUTION } from '~/lib/config';
 const tools = await import(new URL('../../../tools/bundle.mjs', import.meta.url).href);
 const compiler = () => import(new URL('../../../dist/index.js', import.meta.url).href);
 const optional = CATALOG.map((f) => f.id).filter((id) => id !== 'core');
-const subsets = Array.from({ length: 2 ** optional.length }, (_, m) => optional.filter((_, i) => m & (1 << i)));
+// Every selection of up to three features, their complements, and a seeded sample of the rest: all
+// 2^n selections became too many to compare (2^20 with the 0.10 features).
+const upTo3 = (from = 0, left = 3): string[][] => [[], ...(left ? optional.slice(from).flatMap((id, i) => upTo3(from + i + 1, left - 1).map((s) => [id, ...s])) : [])];
+const complement = (s: string[]) => optional.filter((id) => !s.includes(id));
+const minstd = (seed = 1) => () => (seed = (seed * 48271) % 2147483647);
+const seeded = (n: number, next = minstd()) => Array.from({ length: n }, () => optional.filter(() => next() / 2147483647 < 0.5));
+const small = upTo3();
+const large = small.map(complement);
+const sample = seeded(2000);
+const subsets = [...small, ...large, ...sample];
+const byId = new Map(CATALOG.map((f) => [f.id, f]));
+/** The feature and everything it needs, directly or not. */
+const closure = (id: string, seen = new Set<string>()): Set<string> => { if (!seen.has(id)) { seen.add(id); byId.get(id)!.requires.forEach((r) => closure(r, seen)); } return seen; };
 const strip = (r: { features: string[]; added: unknown[]; optionalMissing: unknown[] }) => ({ features: r.features, added: r.added, optionalMissing: r.optionalMissing });
 
 describe('resolver = the library resolver', () => {
-  it(`every one of the ${subsets.length} possible selections`, () => {
+  it(`${subsets.length} selections`, () => {
     for (const s of subsets) expect(strip(resolve({ features: s })), s.join()).toEqual(strip(tools.resolve({ features: s })));
   });
   it('selections in any order, with duplicates', () => {
@@ -40,6 +52,88 @@ describe('resolver = the library resolver', () => {
     expect(profileOf(PROFILES.full!.filter((f) => f !== 'core'))).toBe('full');
     expect(profileOf([])).toBeUndefined();
   });
+});
+
+describe('the selections cover what they claim', () => {
+  const n = optional.length, key = (s: string[]) => [...s].sort().join();
+  it('every selection of up to three features, once', () => {
+    expect(small).toHaveLength(1 + n + (n * (n - 1)) / 2 + (n * (n - 1) * (n - 2)) / 6);
+    expect(new Set(small.map(key)).size).toBe(small.length);
+    expect(Math.max(...small.map((s) => s.length))).toBe(3);
+  });
+  it('the complement of each, once', () => {
+    expect(new Set(large.map(key)).size).toBe(small.length);
+    expect(Math.min(...large.map((s) => s.length))).toBe(n - 3);
+    expect(large[0]).toEqual(optional); // the complement of nothing: every feature
+  });
+  it('the random sample is reproducible', () => {
+    const next = minstd();
+    expect([next(), next(), next()]).toEqual([48271, 182605794, 1291394886]); // MINSTD from seed 1
+    expect(seeded(2000)).toEqual(sample);
+    expect(seeded(2000, minstd(2))).not.toEqual(sample);
+  });
+  it('the random sample reaches sizes the other two do not, with every feature in and out', () => {
+    expect(sample.filter((s) => s.length > 3 && s.length < n - 3).length).toBeGreaterThan(1900);
+    expect(new Set(sample.map(key)).size).toBeGreaterThan(1900);
+    for (const id of optional) {
+      expect(sample.some((s) => s.includes(id)), id).toBe(true);
+      expect(sample.some((s) => !s.includes(id)), id).toBe(true);
+    }
+  });
+});
+
+describe('dependency closure', () => {
+  it(`${subsets.length} selections: all requirements in, nothing else, in catalog order`, () => {
+    const order = CATALOG.map((f) => f.id);
+    for (const s of subsets) {
+      const { features, added } = resolve({ features: s });
+      expect(features, s.join()).toEqual(order.filter((id) => id === 'core' || s.some((x) => closure(x).has(id))));
+      expect(added.map((a) => a.id).sort(), s.join()).toEqual(features.filter((id) => id !== 'core' && !s.includes(id)).sort());
+      for (const a of added) expect(byId.get(a.requiredBy)!.requires, s.join()).toContain(a.id);
+    }
+  });
+  it('the requirements of each 0.10 feature, and who added them', () => {
+    const r = (f: string) => { const x = resolve({ features: [f] }); return [x.features, x.added]; };
+    expect(r('strings')).toEqual([['core', 'strings'], []]);
+    expect(r('format')).toEqual([['core', 'format'], []]);
+    expect(r('datetime')).toEqual([['core', 'format', 'datetime'], [{ id: 'format', requiredBy: 'datetime' }]]);
+    expect(r('derived')).toEqual([['core', 'strings', 'derived'], [{ id: 'strings', requiredBy: 'derived' }]]);
+    expect(r('event-timing')).toEqual([['core', 'events', 'event-timing'], [{ id: 'events', requiredBy: 'event-timing' }]]);
+    expect(r('timers')).toEqual([['core', 'events', 'timers'], [{ id: 'events', requiredBy: 'timers' }]]);
+  });
+});
+
+describe('invalid combinations', () => {
+  const errors = (r: { errors: { code: string; feature?: string }[] }) => r.errors.map((e) => [e.code, e.feature]);
+  for (const features of [['evnts'], ['Events'], ['events', 'nope'], ['nope', 'nada'], ['datetime', 'date-time'], ['derived', 'computed']]) {
+    it(`[${features}]: same errors as the CLI, and only the known features selected`, () => {
+      const mine = resolve({ features }), lib = tools.resolve({ features });
+      expect(errors(mine)).toEqual(errors(lib));
+      expect(mine.errors.length).toBeGreaterThan(0);
+      expect(mine.features).toEqual(lib.features);
+    });
+  }
+  it('an unknown profile', () => {
+    expect(errors(resolve({ profile: 'nope', features: ['events'] }))).toEqual(errors(tools.resolve({ profile: 'nope', features: ['events'] })));
+  });
+  it('a profile with more features', () => {
+    for (const p of Object.keys(PROFILES)) expect(strip(resolve({ profile: p, features: ['derived'] })), p).toEqual(strip(tools.resolve({ profile: p, features: ['derived'] })));
+  });
+});
+
+describe('feature exclusion', () => {
+  const needs = (f: string) => optional.filter((id) => closure(id).has(f));
+  for (const f of optional) {
+    it(`${f}: left out with everything that needs it, kept by anything that needs it`, () => {
+      const rest = optional.filter((id) => !needs(f).includes(id));
+      for (const r of [resolve({ features: rest }), tools.resolve({ features: rest })]) {
+        expect(r.errors).toEqual([]);
+        expect(r.features).not.toContain(f);
+        expect(r.features).toEqual(['core', ...rest].sort((a, b) => CATALOG.findIndex((x) => x.id === a) - CATALOG.findIndex((x) => x.id === b)));
+      }
+      for (const dependent of needs(f)) expect(resolve({ features: [dependent] }).features, dependent).toContain(f);
+    });
+  }
 });
 
 describe('analyzer = the library analyzer, with the real compiler', () => {

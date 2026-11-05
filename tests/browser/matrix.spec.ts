@@ -79,3 +79,46 @@ test('sensors (dynamic, geometry)', async ({ page }) => {
   await page.waitForFunction(() => getComputedStyle(document.querySelector('.s')!).getPropertyValue('--w').trim() === '123px');
   expect(await page.$eval('.s', (e) => getComputedStyle(e).opacity)).toBe('1');
 });
+
+// 0.10 features under the same strict CSP: computed values are written with style.setProperty.
+test('computed form (events, conditions, text, strings, derived): settles, and an unmount reports nothing', async ({ page }) => {
+  await page0(page, ['events', 'conditions', 'text', 'derived'], '.f { --v: state(""); --c: trim(--v); --n: length(--c) } .f input:on(input) { --v: set(event(value)) } .f b { text: var(--n) } .f:when(--n > 3) i { color: rgb(255, 0, 0) }', '<div class="f"><input><b></b><i>w</i></div>');
+  await page.fill('input', '  hello ');
+  await frames(page);
+  expect(await page.textContent('.f b')).toBe('5');
+  expect(await prop(page, '.f', '--c')).toBe('"hello"');
+  expect(await page.$eval('.f i', (e) => getComputedStyle(e).color)).toBe('rgb(255, 0, 0)');
+  await page.$eval('.f', (e) => e.remove());
+  await page.waitForTimeout(50);
+  expect(await diagnostics(page)).toEqual([]);
+  expect(await page.evaluate(() => (window as any).ReactiveCSS.stats().states)).toBe(0);
+});
+
+test('debounced search (events, event-timing)', async ({ page }) => {
+  await page0(page, ['events', 'event-timing'], '.a { --q: state("") } .a input:on(input, debounce(50ms)) { --q: set(event(value)) }', '<div class="a"><input></div>');
+  await page.fill('input', 'hi');
+  expect(await prop(page, '.a', '--q')).toBe('""');
+  await expect.poll(() => prop(page, '.a', '--q')).toBe('"hi"');
+  expect(await diagnostics(page)).toEqual([]);
+});
+
+test('toast (events, timers, conditions)', async ({ page }) => {
+  await page0(page, ['events', 'timers', 'conditions'], '.a { --v: state(true) } .a:when(--v):on(after(50ms)) { --v: set(false) }', '<div class="a"></div>');
+  await expect.poll(() => prop(page, '.a', '--v')).toBe('0');
+  expect(await page.evaluate(() => (window as any).ReactiveCSS.stats().sources)).toBe(0);
+  expect(await diagnostics(page)).toEqual([]);
+});
+
+test('clock (dynamic, text, datetime, derived)', async ({ page }) => {
+  await page0(page, ['dynamic', 'text', 'datetime', 'derived'], '.c { --now: live(time(), 50ms); --t: timezone(--now, "Asia/Tokyo") } .c b { text: format(--t, "HH:mm:ss.SSS") }', '<div class="c" lang="en-US"><b></b></div>');
+  const first = await page.textContent('.c b');
+  expect(first).toMatch(/^\d\d:\d\d:\d\d\.\d{3}$/);
+  await expect.poll(() => page.textContent('.c b')).not.toBe(first);
+  expect(await diagnostics(page)).toEqual([]);
+});
+
+test('number format (format, text): date patterns and string functions are left out and reported', async ({ page }) => {
+  await page0(page, ['format', 'text'], '.f { --n: state(1234.5) } .f .a { text: format(--n, "integer") } .f .b { text: length("abc") }', '<div class="f" lang="en-US"><i class="a"></i><i class="b"></i></div>');
+  expect(await page.textContent('.f .a')).toBe('1,235');
+  expect((await diagnostics(page)).join('\n')).toMatch(/⟦length\(\)⟧⟦strings⟧|⟦strings⟧/);
+});

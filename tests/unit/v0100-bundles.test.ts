@@ -2,7 +2,7 @@
 // expression language, not the event runtime; format() does not bring the string functions.
 import { describe, it, expect } from 'vitest';
 // @ts-expect-error: plain ESM tooling
-import { build, resolve, analyze } from '../../tools/bundle.mjs';
+import { build, resolve, analyze, catalog } from '../../tools/bundle.mjs';
 
 const modules = async (features: string[]) => (await build({ features, minify: false, format: 'esm' })).manifest.modules as string[];
 const EVENT_RUNTIME = ['src/state/on.ts', 'src/state/actions.ts'];
@@ -42,5 +42,39 @@ describe('dependency boundaries', () => {
     const m = await modules([]);
     for (const x of ['calls', 'strings', 'format', 'intl', 'dates', 'datetime', 'timers', 'derived']) expect(m).not.toContain(`src/functions/${x}.ts`);
     expect(m).not.toContain('src/state/actexpr.ts');
+  }, 30000);
+});
+
+describe('feature exclusion', () => {
+  const FEATURES = catalog().features as { id: string; requires: string[]; modules: string[] }[];
+  const optional = FEATURES.map((f) => f.id).filter((id) => id !== 'core');
+  const needing = (f: string): string[] => { const out = FEATURES.filter((x) => x.requires.includes(f)).map((x) => x.id); return [...new Set([...out, ...out.flatMap(needing)])]; };
+  const codes = (r: { errors: { code: string; feature?: string }[] }) => r.errors.map((e) => [e.code, e.feature]);
+
+  it('the core cannot be excluded', async () => {
+    expect(codes(resolve({ exclude: ['core'] }))).toEqual([['core-required', 'core']]);
+    expect((await build({ exclude: ['core'] })).ok).toBe(false);
+  });
+  it('an unknown exclusion is an error', () => expect(codes(resolve({ exclude: ['evnts'] }))).toEqual([['unknown-feature', 'evnts']]));
+  it('a feature both requested and excluded is a conflict', async () => {
+    expect(codes(resolve({ features: ['text'], exclude: ['text'] }))).toEqual([['conflict', 'text']]);
+    expect((await build({ features: ['text'], exclude: ['text'] })).ok).toBe(false);
+  });
+  for (const f of optional) for (const d of needing(f)) it(`${d} with ${f} excluded is a conflict that names both`, () => {
+    const e = resolve({ features: [d], exclude: [f] }).errors;
+    expect(e.map((x: { code: string }) => x.code)).toContain('conflict');
+    expect(e.some((x: { message: string }) => x.message.includes(`"${f}"`))).toBe(true);
+  });
+  for (const f of optional) it(`full without ${f}: its own modules are not in the build`, async () => {
+    const left = needing(f).concat(f), keep = optional.filter((id) => !left.includes(id));
+    const r = await build({ features: keep, exclude: left, format: 'esm', minify: false });
+    expect(r.ok).toBe(true);
+    expect(r.manifest.features).not.toContain(f);
+    const others = new Set(FEATURES.filter((x) => !left.includes(x.id)).flatMap((x) => x.modules));
+    for (const m of FEATURES.find((x) => x.id === f)!.modules) if (!others.has(m)) expect(r.manifest.modules, m).not.toContain(m);
+  }, 30000);
+  it('a selection without exclusions gives byte-identical output when reordered', async () => {
+    const a = await build({ features: ['derived', 'timers', 'text'] }), b = await build({ features: ['text', 'timers', 'derived', 'text'] });
+    expect(b.code).toBe(a.code);
   }, 30000);
 });

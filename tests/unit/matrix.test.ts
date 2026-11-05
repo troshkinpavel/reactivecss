@@ -22,6 +22,12 @@ const MARKERS: Record<string, RegExp> = {
   dynamic: /IntersectionObserver/,
   geometry: /ResizeObserver/,
   values: /random\(0px, 1000000px\)/,
+  strings: /Segmenter/,
+  format: /NumberFormat/,
+  datetime: /DateTimeFormat/,
+  'event-timing': /RCSS-E085/,
+  timers: /RCSS-E094/,
+  derived: /RCSS-V047/,
 };
 
 export const CONFIGS: { name: string; features: string[]; css: string }[] = [
@@ -32,6 +38,13 @@ export const CONFIGS: { name: string; features: string[]; css: string }[] = [
   { name: 'persistence', features: ['persist'], css: '.t { --dark: state(false, persist("t")) }' },
   { name: 'drag', features: ['events', 'gestures'], css: '.k { --x: state(0px) } .k:on(drag) { --x: set(event(x)) }' },
   { name: 'sensors', features: ['dynamic', 'geometry'], css: '.s { --mx: mouse(x); --w: element(width); opacity: visible(0.5) }' },
+  // 0.10
+  { name: 'value functions', features: ['strings', 'text'], css: '.a { --v: state(" x ") } .a b { text: trim(--v) }' },
+  { name: 'number format', features: ['format', 'text'], css: '.a { --n: state(1) } .a b { text: format(--n, "integer") }' },
+  { name: 'date format', features: ['format', 'datetime', 'text'], css: '.a { --t: state(time()) } .a b { text: format(--t, "HH:mm") }' },
+  { name: 'debounced search', features: ['events', 'event-timing'], css: '.a { --q: state("") } .a input:on(input, debounce(300ms)) { --q: set(event(value)) }' },
+  { name: 'toast', features: ['events', 'timers', 'conditions'], css: '.a { --v: state(true) } .a:when(--v):on(after(3s)) { --v: set(false) }' },
+  { name: 'computed form', features: ['events', 'conditions', 'text', 'strings', 'derived'], css: '.f { --v: state(""); --c: trim(--v); --n: length(--c) } .f input:on(input) { --v: set(event(value)) } .f b { text: var(--n) } .f:when(--n > 3) i { color: red }' },
 ];
 
 describe('representative custom bundles', () => {
