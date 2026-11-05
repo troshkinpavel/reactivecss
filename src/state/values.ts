@@ -86,7 +86,7 @@ export type Cond =
 
 export interface Condition { ast: Cond; names: string[]; text: string }
 
-const TOKEN = /\s*((?:previous|direction)\(\s*--[\w-]+\s*\)|--[\w-]+|>=|<=|==|!=|>|<|\(|\)|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?[a-z%]*|#[0-9a-f]+|[a-z_][\w-]*)/iy;
+const TOKEN = /\s*((?:previous|direction)\(\s*--[\w-]+\s*\)|--[\w-]+|[<>=!]\s*=|>|<|\(|\)|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?[a-z%]*|#[0-9a-f]+|[a-z_][\w-]*)/iy;
 const OPS = new Set(['==', '!=', '>', '<', '>=', '<=']);
 
 /**
@@ -100,7 +100,8 @@ export function parseCondition(text: string): Condition {
   let pos = 0;
   TOKEN.lastIndex = 0;
   let m: RegExpExecArray | null;
-  while ((m = TOKEN.exec(text))) { toks.push(m[1]); pos = TOKEN.lastIndex; }
+  // A two-character operator may contain whitespace after formatting: `> =` is `>=` (0.10).
+  while ((m = TOKEN.exec(text))) { toks.push(m[1].replace(/^([<>=!])\s+=$/, '$1=')); pos = TOKEN.lastIndex; }
   if (text.slice(pos).trim()) throw new Error(`cannot read condition "${text}" near "${text.slice(pos).trim()}"`);
   let i = 0;
   const names = new Set<string>();

@@ -414,6 +414,30 @@
    "template": "stop() has no meaning for {0}",
    "module": "state/on.ts"
   },
+  "RCSS-E073": {
+   "template": "hypot() needs at least one value",
+   "module": "state/actexpr.ts"
+  },
+  "RCSS-E074": {
+   "template": "expected sqrt(number)",
+   "module": "state/actexpr.ts"
+  },
+  "RCSS-E075": {
+   "template": "expected pow(number, number)",
+   "module": "state/actexpr.ts"
+  },
+  "RCSS-E076": {
+   "template": "{0}() is not available in actions; use calc(), min(), max(), clamp(), round(), abs(), hypot(), sqrt(), pow(), var(), event(), mouse(), element(), viewport(), attr(), pick(), random(), sibling-index() or sibling-count()",
+   "module": "state/actexpr.ts"
+  },
+  "RCSS-E077": {
+   "template": "{0}() takes numbers, not {1}",
+   "module": "state/actexpr.ts"
+  },
+  "RCSS-E078": {
+   "template": "{0}({1}) has no finite value",
+   "module": "state/actexpr.ts"
+  },
   "RCSS-F001": {
    "template": "bind: {0} on {1}: a {2} control cannot hold a {3} state (use {4}). Not bound.",
    "module": "state/bind.ts"

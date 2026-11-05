@@ -21,7 +21,7 @@ export type Node =
   | { k: 'lit'; t: Typed }
   | { k: 'op'; op: '+' | '-' | '*' | '/'; a: Node; b: Node }
   | { k: 'neg'; a: Node }
-  | { k: 'math'; fn: 'min' | 'max' | 'clamp' | 'abs'; args: Node[] }
+  | { k: 'math'; fn: 'min' | 'max' | 'clamp' | 'abs' | 'hypot' | 'sqrt' | 'pow'; args: Node[] }
   | { k: 'round'; mode: string; a: Node; b?: Node }
   | { k: 'var'; name: string; fallback?: Node }
   | { k: 'event'; field: string }
@@ -179,6 +179,10 @@ export function parseAction(text: string, category: Category, trigger: string): 
       case 'min': case 'max': { const a = args(); if (!a.length) fail(`${t.v}() needs at least one value`); return { k: 'math', fn: t.v, args: a }; }
       case 'clamp': { const a = args(); if (a.length !== 3) fail('expected clamp(min, value, max)'); return { k: 'math', fn: 'clamp', args: a }; }
       case 'abs': { const a = args(); if (a.length !== 1) fail('expected abs(value)'); return { k: 'math', fn: 'abs', args: a }; }
+      // 0.10: CSS Values 4 exponential functions, with CSS's type rules (evaluated below).
+      case 'hypot': { const a = args(); if (!a.length) fail('hypot() needs at least one value'); return { k: 'math', fn: 'hypot', args: a }; }
+      case 'sqrt': { const a = args(); if (a.length !== 1) fail('expected sqrt(number)'); return { k: 'math', fn: 'sqrt', args: a }; }
+      case 'pow': { const a = args(); if (a.length !== 2) fail('expected pow(number, number)'); return { k: 'math', fn: 'pow', args: a }; }
       case 'round': {
         let mode = 'nearest';
         const save = i;
@@ -260,7 +264,7 @@ export function parseAction(text: string, category: Category, trigger: string): 
       }
       case 'sibling-index': case 'sibling-count': expect(')'); return { k: 'sibling', count: t.v === 'sibling-count' };
     }
-    return fail(`${t.v}() is not available in actions; use calc(), min(), max(), clamp(), round(), abs(), var(), event(), mouse(), element(), viewport(), attr(), pick(), random(), sibling-index() or sibling-count()`);
+    return fail(`${t.v}() is not available in actions; use calc(), min(), max(), clamp(), round(), abs(), hypot(), sqrt(), pow(), var(), event(), mouse(), element(), viewport(), attr(), pick(), random(), sibling-index() or sibling-count()`);
   }
   function unary(): Node {
     if (peek()?.t === 'p' && peek().v === '-') { i++; return { k: 'neg', a: unary() }; }
@@ -437,7 +441,17 @@ export function value(n: Node, ctx: EvalCtx): Typed | undefined {
       if (vals.some((v) => !v)) return undefined;
       const all = vals as Typed[];
       if (n.fn === 'abs') { const a = numeric(all[0]); return like(a, Math.abs(a.v as number)); }
+      if (n.fn === 'sqrt' || n.fn === 'pow') {
+        // As in CSS: numbers only (the square root of a length has no CSS unit).
+        const ns = all.map(numeric);
+        const d = ns.find((t) => t.type === 'dimension');
+        if (d) throw new EvalError(`${n.fn}() takes numbers, not ${serialize(d)}`);
+        const r = n.fn === 'sqrt' ? Math.sqrt(ns[0].v as number) : (ns[0].v as number) ** (ns[1].v as number);
+        if (!Number.isFinite(r)) throw new EvalError(`${n.fn}(${ns.map(serialize).join(', ')}) has no finite value`);
+        return num(round6(r));
+      }
       const [u, v] = common(all);
+      if (n.fn === 'hypot') return like(u, Math.hypot(...v));
       if (n.fn === 'clamp') return like(u, Math.max(v[0], Math.min(v[1], v[2])));
       return like(u, n.fn === 'min' ? Math.min(...v) : Math.max(...v));
     }
