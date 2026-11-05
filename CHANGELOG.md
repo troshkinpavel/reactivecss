@@ -2,6 +2,41 @@
 
 All notable changes. 0.9.0 is the first version published to npm, as `@reactivecss/core`; earlier versions were local builds.
 
+## 0.10.0 — Value functions, timers and computed values
+
+New language features, all experimental. Nothing is removed. Two behaviors change on purpose: see Changed. DOM updates after an event stay synchronous.
+
+### Added
+- **Several events in one rule.** `.x:on(click | keydown(Enter)) { … }`. The cascade picks a winner per event, as for separate rules. `outside()`, `drag` and timers cannot be combined.
+- **`debounce(time)` and `throttle(time)`** as `:on()` modifiers. Debounce runs on the trailing edge with the last event's values, and the rule must still apply then. Throttle runs on the leading edge.
+- **Timers.** `.toast:when(--visible):on(after(3s)) { --visible: set(false) }` and `:on(every(1s))`, `:on(every(80ms, 400ms))`.
+  - A timer runs while its element matches the rule's full selector, `:when()` included. An unrelated state change does not restart it; matching again starts a new one.
+  - `every()` has no drift, skips missed runs instead of replaying them, and pauses while the page is hidden. Minimum 20 ms.
+  - Rules cannot depend on `:hover`, `:focus`, `:checked` and other states the runtime cannot follow, and `event()` is not available.
+- **Value functions:** `length()`, `includes()`, `lower()`, `trim()`, `format()`, `time()`, `timezone()`. One definition works in `:on()` actions, `:when()` / `when()` conditions and declarations, and `--name` in their arguments reads a state.
+  - `length()` counts grapheme clusters. `includes()` compares NFC-normalized text. `lower()` uses no locale rules.
+- **`format()`.** Numbers: `"decimal"`, `"integer"`, `"percent"`, `"currency"` with an ISO 4217 code. Dates: patterns such as `"yyyy-MM-dd HH:mm"`, with the Gregorian calendar and Latin digits in every locale and localized names. The language is the nearest `lang` attribute. `@font-face` `format("woff2")` stays CSS.
+- **Date and time.** `time()` is the current instant, one per task. `timezone(value, "Area/City")` keeps the instant and sets the zone `format()` uses. `state(time())` makes a datetime state. A datetime ± a duration is a datetime; a datetime − a datetime is a duration in ms. A plain number is never a time.
+- **Computed custom properties.** `.form { --value: state(""); --clean: trim(--value); --chars: length(--clean) }` and `.clock { --now: live(time(), 1s); --tokyo: timezone(--now, "Asia/Tokyo") }`.
+  - A value function (or `live()` around one) as the whole value, in an unconditional rule, is also a read-only state of that name on each matched element. Elsewhere it stays a CSS-only value, with a diagnostic that gives the reason.
+  - It is recomputed synchronously, inputs before what reads them, so a chain settles inside the change and `previous()` never sees an intermediate value.
+  - It must be the only declaration of its name in the processed stylesheets. Name cycles are rejected, and it can read only states, not `attr()`, `event()`, `element()`, `random()` or the clock outside `live()`.
+  - **Not a general CSS cascade.** The value is written inline on each owner. CSS shows the state on the owner unless `!important` or `@property` overrides it, and inside the owner unless another declaration of the name applies there. Such declarations in processed stylesheets turn the name off, with a diagnostic. Those in stylesheets without reactive syntax and inline styles inside an owner are reported only by development builds. Cross-origin stylesheets and shadow roots cannot be checked.
+- **`hypot()`, `sqrt()`, `pow()`** in `:on()` actions, and whitespace inside comparison operators (`> =`).
+
+### Changed
+- **Numeric strings.** A string that is exactly a decimal number (`"09"`, `"-1.5"`) now compares with a number and calculates as that number; mixing them was an error. Two strings still compare as text.
+- **A consumer moved into another owner reads that owner at once,** for `text:`, `when()`, `attr:`, `bind:` and value functions. It used to keep the old owner until that owner went away, while CSS already followed the new one. A moved bound control shows the new owner's value and no longer overwrites it.
+
+### Custom bundles
+- **New features:** `strings`, `format`, `datetime`, `timers`, `derived`, `event-timing` (`debounce()` and `throttle()`). `reactive-css analyze` adds what a stylesheet uses.
+- `strings`, `format`, `datetime` and `derived` do not need `events`: a page without `:on()` does not carry the event runtime. Sizes (brotli): `strings` 21.6 KB, `format` 21.9 KB, `datetime` 23.1 KB, `derived` 23.0 KB.
+
+### Notes
+- **Tests:** Chromium and WebKit: 1106 passed, 6 skipped. Firefox (CI's Playwright image): 549 passed, 7 skipped. Unit: 376 passed. These are automated engine runs. A smoke test by hand passed in Mobile Safari on an iOS Simulator. Real devices and screen readers were not tested for this version.
+- **Sizes (brotli):** full bundle 43,662 → 52,871 B; compact 37,970 → 45,545 B; core-only custom bundle 15,669 → 16,645 B; `events` custom bundle 23,851 → 25,968 B.
+- **Performance:** common updates at 1,000 elements are within about 3–8 % of 0.9.1, and within noise at 10,000. Measurements: `docs/release-0.10.0-preparation.md`.
+
 ## 0.9.1 — Fixes and faster start-up
 
 Bug fixes and one start-up improvement. No syntax or API change; DOM updates after an event stay synchronous.

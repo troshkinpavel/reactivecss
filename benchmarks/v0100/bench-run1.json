@@ -1,0 +1,469 @@
+{
+ "date": "2026-11-05T20:52:38.212Z",
+ "compile": {
+  "conditions (1,000)": {
+   "base": 3.58,
+   "s8": 3.72,
+   "opt": 3.69
+  },
+  ":on() actions (1,000)": {
+   "base": 3.93,
+   "s8": 4.04,
+   "opt": 4
+  },
+  "plain rules with state (1,000)": {
+   "base": 2.12,
+   "s8": 2.17,
+   "opt": 2.14
+  },
+  "text: format() (500)": {
+   "base": null,
+   "s8": 2.54,
+   "opt": 2.3
+  },
+  "computed declarations (1,000)": {
+   "base": null,
+   "s8": 2.7,
+   "opt": 2.63
+  },
+  "timer rules (1,000)": {
+   "base": null,
+   "s8": 6.35,
+   "opt": 6.36
+  }
+ },
+ "browser": [
+  {
+   "n": 1000,
+   "workload": "event dispatch: cards",
+   "tree": "base",
+   "startMs": 2.4,
+   "heapKB": 583,
+   "updateMs": 2.6,
+   "retainedKB": 40
+  },
+  {
+   "n": 1000,
+   "workload": "event dispatch: cards",
+   "tree": "s8",
+   "startMs": 2.5,
+   "heapKB": 596,
+   "updateMs": 2.8,
+   "retainedKB": 63
+  },
+  {
+   "n": 1000,
+   "workload": "event dispatch: cards",
+   "tree": "opt",
+   "startMs": 2.5,
+   "heapKB": 596,
+   "updateMs": 2.8,
+   "retainedKB": 61
+  },
+  {
+   "n": 1000,
+   "workload": "state update: 1 state, N readers",
+   "tree": "base",
+   "startMs": 2.4,
+   "heapKB": 278,
+   "updateMs": 4.2,
+   "retainedKB": -86
+  },
+  {
+   "n": 1000,
+   "workload": "state update: 1 state, N readers",
+   "tree": "s8",
+   "startMs": 2.5,
+   "heapKB": 292,
+   "updateMs": 4.3,
+   "retainedKB": -60
+  },
+  {
+   "n": 1000,
+   "workload": "state update: 1 state, N readers",
+   "tree": "opt",
+   "startMs": 2.4,
+   "heapKB": 288,
+   "updateMs": 4.3,
+   "retainedKB": -65
+  },
+  {
+   "n": 1000,
+   "workload": "state update: text:",
+   "tree": "base",
+   "startMs": 4.5,
+   "heapKB": 674,
+   "updateMs": 2.4,
+   "retainedKB": 134
+  },
+  {
+   "n": 1000,
+   "workload": "state update: text:",
+   "tree": "s8",
+   "startMs": 4.8,
+   "heapKB": 676,
+   "updateMs": 2.4,
+   "retainedKB": 150
+  },
+  {
+   "n": 1000,
+   "workload": "state update: text:",
+   "tree": "opt",
+   "startMs": 4.8,
+   "heapKB": 676,
+   "updateMs": 2.5,
+   "retainedKB": 150
+  },
+  {
+   "n": 1000,
+   "workload": "moves: 100 subtrees",
+   "tree": "base",
+   "startMs": 1.3,
+   "heapKB": 139,
+   "updateMs": 0.6,
+   "retainedKB": -50
+  },
+  {
+   "n": 1000,
+   "workload": "moves: 100 subtrees",
+   "tree": "s8",
+   "startMs": 1.3,
+   "heapKB": 142,
+   "updateMs": 2.9,
+   "retainedKB": -29
+  },
+  {
+   "n": 1000,
+   "workload": "moves: 100 subtrees",
+   "tree": "opt",
+   "startMs": 1.3,
+   "heapKB": 142,
+   "updateMs": 0.9,
+   "retainedKB": -25
+  },
+  {
+   "n": 1000,
+   "workload": "value functions inline",
+   "tree": "s8",
+   "startMs": 9.4,
+   "heapKB": 948,
+   "updateMs": 4.4,
+   "retainedKB": -123
+  },
+  {
+   "n": 1000,
+   "workload": "value functions inline",
+   "tree": "opt",
+   "startMs": 9.4,
+   "heapKB": 946,
+   "updateMs": 4.5,
+   "retainedKB": -124
+  },
+  {
+   "n": 1000,
+   "workload": "derived chain: form",
+   "tree": "s8",
+   "startMs": 10.7,
+   "heapKB": 1863,
+   "updateMs": 4.4,
+   "retainedKB": 168
+  },
+  {
+   "n": 1000,
+   "workload": "derived chain: form",
+   "tree": "opt",
+   "startMs": 10.8,
+   "heapKB": 1748,
+   "updateMs": 4.5,
+   "retainedKB": 45
+  },
+  {
+   "n": 1000,
+   "workload": "derived fan-out: filter",
+   "tree": "s8",
+   "startMs": 4.7,
+   "heapKB": 1192,
+   "updateMs": 1.9,
+   "retainedKB": 22
+  },
+  {
+   "n": 1000,
+   "workload": "derived fan-out: filter",
+   "tree": "opt",
+   "startMs": 4.7,
+   "heapKB": 1187,
+   "updateMs": 2,
+   "retainedKB": 18
+  },
+  {
+   "n": 1000,
+   "workload": "timers: every(1s), one tick",
+   "tree": "s8",
+   "startMs": 2,
+   "heapKB": 726,
+   "updateMs": 6.2,
+   "retainedKB": 179
+  },
+  {
+   "n": 1000,
+   "workload": "timers: every(1s), one tick",
+   "tree": "opt",
+   "startMs": 2,
+   "heapKB": 726,
+   "updateMs": 6.2,
+   "retainedKB": 176
+  },
+  {
+   "n": 1000,
+   "workload": "clocks: live(time()) derived, one tick",
+   "tree": "s8",
+   "startMs": 7.2,
+   "heapKB": 1583,
+   "updateMs": 26.9,
+   "retainedKB": 124
+  },
+  {
+   "n": 1000,
+   "workload": "clocks: live(time()) derived, one tick",
+   "tree": "opt",
+   "startMs": 7.2,
+   "heapKB": 1582,
+   "updateMs": 25.6,
+   "retainedKB": 120
+  },
+  {
+   "n": 1000,
+   "workload": "modifiers: throttle()",
+   "tree": "s8",
+   "startMs": 1.7,
+   "heapKB": 510,
+   "updateMs": 2.3,
+   "retainedKB": 203
+  },
+  {
+   "n": 1000,
+   "workload": "modifiers: throttle()",
+   "tree": "opt",
+   "startMs": 1.7,
+   "heapKB": 510,
+   "updateMs": 2.2,
+   "retainedKB": 199
+  },
+  {
+   "n": 10000,
+   "workload": "event dispatch: cards",
+   "tree": "base",
+   "startMs": 13.3,
+   "heapKB": 6409,
+   "updateMs": 3.1,
+   "retainedKB": -261
+  },
+  {
+   "n": 10000,
+   "workload": "event dispatch: cards",
+   "tree": "s8",
+   "startMs": 13,
+   "heapKB": 5323,
+   "updateMs": 3.4,
+   "retainedKB": -1355
+  },
+  {
+   "n": 10000,
+   "workload": "event dispatch: cards",
+   "tree": "opt",
+   "startMs": 13.2,
+   "heapKB": 5323,
+   "updateMs": 3.3,
+   "retainedKB": -1356
+  },
+  {
+   "n": 10000,
+   "workload": "state update: 1 state, N readers",
+   "tree": "base",
+   "startMs": 11.8,
+   "heapKB": 3062,
+   "updateMs": 19.6,
+   "retainedKB": -1493
+  },
+  {
+   "n": 10000,
+   "workload": "state update: 1 state, N readers",
+   "tree": "s8",
+   "startMs": 11.7,
+   "heapKB": 3069,
+   "updateMs": 19.3,
+   "retainedKB": -1464
+  },
+  {
+   "n": 10000,
+   "workload": "state update: 1 state, N readers",
+   "tree": "opt",
+   "startMs": 11.5,
+   "heapKB": 3065,
+   "updateMs": 20.1,
+   "retainedKB": -1469
+  },
+  {
+   "n": 10000,
+   "workload": "state update: text:",
+   "tree": "base",
+   "startMs": 32.7,
+   "heapKB": 6086,
+   "updateMs": 2.9,
+   "retainedKB": -563
+  },
+  {
+   "n": 10000,
+   "workload": "state update: text:",
+   "tree": "s8",
+   "startMs": 32.3,
+   "heapKB": 6092,
+   "updateMs": 3.1,
+   "retainedKB": -545
+  },
+  {
+   "n": 10000,
+   "workload": "state update: text:",
+   "tree": "opt",
+   "startMs": 32.4,
+   "heapKB": 6092,
+   "updateMs": 3.1,
+   "retainedKB": -546
+  },
+  {
+   "n": 10000,
+   "workload": "moves: 100 subtrees",
+   "tree": "base",
+   "startMs": 5.5,
+   "heapKB": 871,
+   "updateMs": 0.7,
+   "retainedKB": -1176
+  },
+  {
+   "n": 10000,
+   "workload": "moves: 100 subtrees",
+   "tree": "s8",
+   "startMs": 5.5,
+   "heapKB": 875,
+   "updateMs": 13.9,
+   "retainedKB": -1153
+  },
+  {
+   "n": 10000,
+   "workload": "moves: 100 subtrees",
+   "tree": "opt",
+   "startMs": 5.6,
+   "heapKB": 875,
+   "updateMs": 1.7,
+   "retainedKB": -1149
+  },
+  {
+   "n": 10000,
+   "workload": "value functions inline",
+   "tree": "s8",
+   "startMs": 78.1,
+   "heapKB": 10480,
+   "updateMs": 6.1,
+   "retainedKB": -869
+  },
+  {
+   "n": 10000,
+   "workload": "value functions inline",
+   "tree": "opt",
+   "startMs": 78.5,
+   "heapKB": 10478,
+   "updateMs": 6.1,
+   "retainedKB": -873
+  },
+  {
+   "n": 10000,
+   "workload": "derived chain: form",
+   "tree": "s8",
+   "startMs": 96.7,
+   "heapKB": 17499,
+   "updateMs": 6.4,
+   "retainedKB": -600
+  },
+  {
+   "n": 10000,
+   "workload": "derived chain: form",
+   "tree": "opt",
+   "startMs": 96.6,
+   "heapKB": 17499,
+   "updateMs": 6.3,
+   "retainedKB": -600
+  },
+  {
+   "n": 10000,
+   "workload": "derived fan-out: filter",
+   "tree": "s8",
+   "startMs": 29,
+   "heapKB": 11878,
+   "updateMs": 8.8,
+   "retainedKB": 27
+  },
+  {
+   "n": 10000,
+   "workload": "derived fan-out: filter",
+   "tree": "opt",
+   "startMs": 29.1,
+   "heapKB": 11873,
+   "updateMs": 9.2,
+   "retainedKB": 23
+  },
+  {
+   "n": 10000,
+   "workload": "timers: every(1s), one tick",
+   "tree": "s8",
+   "startMs": 9.1,
+   "heapKB": 6833,
+   "updateMs": 25.2,
+   "retainedKB": -97
+  },
+  {
+   "n": 10000,
+   "workload": "timers: every(1s), one tick",
+   "tree": "opt",
+   "startMs": 9.2,
+   "heapKB": 6833,
+   "updateMs": 24.6,
+   "retainedKB": -101
+  },
+  {
+   "n": 10000,
+   "workload": "clocks: live(time()) derived, one tick",
+   "tree": "s8",
+   "startMs": 58.6,
+   "heapKB": 14700,
+   "updateMs": 74.6,
+   "retainedKB": -716
+  },
+  {
+   "n": 10000,
+   "workload": "clocks: live(time()) derived, one tick",
+   "tree": "opt",
+   "startMs": 59.6,
+   "heapKB": 14701,
+   "updateMs": 75.4,
+   "retainedKB": -718
+  },
+  {
+   "n": 10000,
+   "workload": "modifiers: throttle()",
+   "tree": "s8",
+   "startMs": 9.3,
+   "heapKB": 4533,
+   "updateMs": 2.5,
+   "retainedKB": -217
+  },
+  {
+   "n": 10000,
+   "workload": "modifiers: throttle()",
+   "tree": "opt",
+   "startMs": 9.5,
+   "heapKB": 4534,
+   "updateMs": 2.6,
+   "retainedKB": -220
+  }
+ ]
+}
