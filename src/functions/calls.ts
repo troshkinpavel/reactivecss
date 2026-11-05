@@ -6,7 +6,7 @@
 //   - declarations          .count { text: length(trim(--value)) }
 // In their arguments `--name` reads a state, as in :when().
 
-import { defineFunction, type Ctx, type Instance } from '../core/registry';
+import { defineFunction, runtimes, type Ctx, type Instance } from '../core/registry';
 import { warn } from '../core/log';
 import { actionFns, parseAction, value, EvalError, type ActionFn, type Node } from '../state/actexpr';
 import { conditionCalls, ConditionError, serialize, type Typed } from '../state/values';
@@ -23,7 +23,48 @@ function refsOf(n: unknown, out = new Set<string>()): string[] {
   return [...out];
 }
 
-const names = (conditionCalls.names ??= new Set());
+const names = new Set<string>();
+
+let callTest: { size: number; re: RegExp } | undefined;
+/** Whether `text` may contain a call of `names` (a cheap test, so conditions without calls skip the scan below). */
+function hasCall(text: string): boolean {
+  if (!text.includes('(')) return false;
+  if (callTest?.size !== names.size) callTest = { size: names.size, re: new RegExp(`(?:^|[^\\w-])(?:${[...names].join('|')})\\(`, 'i') };
+  return callTest.re.test(text);
+}
+
+/** Replaces each call of `names` (outside strings) with a placeholder token \x00<n>, kept in `out`. */
+function extractCalls(text: string, out: string[]): string {
+  let s = '';
+  for (let i = 0; i < text.length;) {
+    const c = text[i];
+    if (c === '"' || c === "'") {
+      let j = i + 1;
+      while (j < text.length && text[j] !== c) j += text[j] === '\\' ? 2 : 1;
+      s += text.slice(i, j + 1); i = j + 1; continue;
+    }
+    const m = /^[a-z][\w-]*\(/i.exec(text.slice(i));
+    if (m && names.has(m[0].slice(0, -1).toLowerCase()) && !/[\w-]/.test(text[i - 1] ?? '')) {
+      let depth = 0, j = i + m[0].length - 1, q = '';
+      for (; j < text.length; j++) {
+        const d = text[j];
+        if (q) { if (d === '\\') j++; else if (d === q) q = ''; continue; }
+        if (d === '"' || d === "'") q = d;
+        else if (d === '(') depth++;
+        else if (d === ')' && --depth === 0) break;
+      }
+      if (j >= text.length) throw new Error(`condition "${text}": missing ")"`);
+      s += ` \x00${out.length} `;
+      out.push(text.slice(i, j + 1));
+      i = j + 1;
+      continue;
+    }
+    s += c; i++;
+  }
+  return s;
+}
+
+conditionCalls.extract = (text, out) => (hasCall(text) ? extractCalls(text, out) : text);
 conditionCalls.parse = (text) => {
   const node = parseAction(text, 'none', ':when()');
   return { node, names: refsOf(node) };
@@ -33,6 +74,14 @@ conditionCalls.evaluate = (node, el) => {
     if (e instanceof EvalError) throw new ConditionError(e.message);
     throw e;
   }
+};
+
+/** Value functions called in text the expression language parses (compile().uses). */
+let usesRe: { size: number; re: RegExp } | undefined;
+runtimes.valueCalls = (s) => {
+  if (!s.includes('(')) return [];
+  if (usesRe?.size !== names.size) usesRe = { size: names.size, re: new RegExp(`(?<![\\w-])(${[...names].join('|')})\\(`, 'g') };
+  return [...s.matchAll(usesRe.re)].map((m) => m[1]);
 };
 
 interface Compiled { node: Node; names: string[]; text: string }

@@ -200,6 +200,8 @@ export interface DeclarationRuntimes {
   gestures?: { register(prevent: boolean): () => void };
   /** persist() (persist feature): initial value from storage, then a link that writes changes. */
   persist?: { initial(spec: PersistSpec, owner: Element, fallback: Typed): Typed | undefined; link(spec: PersistSpec, cell: Cell): PersistLink };
+  /** 0.10 (functions/calls.ts): the value functions called in a text. */
+  valueCalls?(s: string): string[];
   /**
    * 0.10 (functions/derived.ts): computed custom properties. `accept` decides, and reports, whether a declaration is one;
    * `sheet` registers a stylesheet's declared names and computed declarations (returns its cleanup).

@@ -95,15 +95,6 @@ export const missing = (what: string, feature: string) =>
   msg(`${what} is not included in this bundle (feature "${feature}"); build a bundle with it (reactive-css build --features ${feature}) or use the full bundle`);
 /** Names that may be the native CSS function of the same name: reported as a note, not a warning. */
 const NATIVE_TOO = new Set(['random', 'element']);
-/** 0.10: calls of the registered value functions (rebuilt when a feature registers more functions). */
-let valueCalls: [number, RegExp | false] = [-1, false];
-function valueCallRe() {
-  if (valueCalls[0] !== functions.size) {
-    const names = [...functions.values()].filter((d) => d.value).map((d) => d.name);
-    valueCalls = [functions.size, names.length > 0 && new RegExp(`(?<![\\w-])(${names.join('|')})\\(`, 'g')];
-  }
-  return valueCalls[1];
-}
 /** True when `s` has a comma outside parentheses. */
 const topComma = (s: string) => { let d = 0; for (const c of s) { if (c === '(') d++; else if (c === ')') d--; else if (c === ',' && !d) return true; } return false; };
 /**
@@ -188,7 +179,7 @@ export function compile(source: string, options: CompileOptions | string = {}): 
   const declared = new Map<string, number>();
   const declare = (name: string) => declared.set(name, (declared.get(name) ?? 0) + 1);
   /** 0.10: value functions in text the expression language parses (actions, conditions, state(), their arguments). */
-  const valueUses = (s: string) => { const re = s.includes('(') && valueCallRe(); if (re) for (const [, n] of s.matchAll(re)) use('fn:' + n); };
+  const valueUses = (s: string) => { for (const n of runtimes.valueCalls?.(s) ?? []) use('fn:' + n); };
 
   const raw = (i: number) => repl[i] ?? source.slice(tokens[i].start, tokens[i].end);
   /** Text of tokens [a, b) with comments dropped, as used for selectors and arguments. */

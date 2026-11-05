@@ -103,7 +103,8 @@ export function numericString(t: Typed): Typed | undefined {
  * without it the grammar is unchanged.
  */
 export const conditionCalls: {
-  names?: Set<string>;
+  /** Replaces each call in `text` with a placeholder token \x00<n>, kept in `out`. */
+  extract?(text: string, out: string[]): string;
   parse?(text: string): { node: unknown; names: string[] };
   /** Undefined = unknown; throws ConditionError for a type error. */
   evaluate?(node: unknown, el: Element): Typed | undefined;
@@ -129,7 +130,7 @@ export function parseCondition(text: string): Condition {
   const toks: string[] = [];
   const calls: string[] = [];
   const source = text;
-  if (conditionCalls.names?.size && hasCall(text, conditionCalls.names)) text = extractCalls(text, conditionCalls.names, calls);
+  if (conditionCalls.extract) text = conditionCalls.extract(text, calls);
   let pos = 0;
   TOKEN.lastIndex = 0;
   let m: RegExpExecArray | null;
@@ -187,45 +188,6 @@ export function parseCondition(text: string): Condition {
   const c: Condition = { ast, names: [...names], text: source };
   if (callNames) c.calls = [...callNames];
   return c;
-}
-
-let callTest: { size: number; re: RegExp } | undefined;
-/** Whether `text` may contain a call of `names` (a cheap test, so conditions without calls skip the scan below). */
-function hasCall(text: string, names: Set<string>): boolean {
-  if (!text.includes('(')) return false;
-  if (callTest?.size !== names.size) callTest = { size: names.size, re: new RegExp(`(?:^|[^\\w-])(?:${[...names].join('|')})\\(`, 'i') };
-  return callTest.re.test(text);
-}
-
-/** Replaces each call of `names` (outside strings) with a placeholder token \x00<n>, kept in `out`. */
-function extractCalls(text: string, names: Set<string>, out: string[]): string {
-  let s = '';
-  for (let i = 0; i < text.length;) {
-    const c = text[i];
-    if (c === '"' || c === "'") {
-      let j = i + 1;
-      while (j < text.length && text[j] !== c) j += text[j] === '\\' ? 2 : 1;
-      s += text.slice(i, j + 1); i = j + 1; continue;
-    }
-    const m = /^[a-z][\w-]*\(/i.exec(text.slice(i));
-    if (m && names.has(m[0].slice(0, -1).toLowerCase()) && !/[\w-]/.test(text[i - 1] ?? '')) {
-      let depth = 0, j = i + m[0].length - 1, q = '';
-      for (; j < text.length; j++) {
-        const d = text[j];
-        if (q) { if (d === '\\') j++; else if (d === q) q = ''; continue; }
-        if (d === '"' || d === "'") q = d;
-        else if (d === '(') depth++;
-        else if (d === ')' && --depth === 0) break;
-      }
-      if (j >= text.length) throw new Error(`condition "${text}": missing ")"`);
-      s += ` \x00${out.length} `;
-      out.push(text.slice(i, j + 1));
-      i = j + 1;
-      continue;
-    }
-    s += c; i++;
-  }
-  return s;
 }
 
 /** Thrown for type errors; the caller reports it once and treats the condition as unknown. */
