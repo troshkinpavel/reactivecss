@@ -6,7 +6,7 @@ import { watch, unwatch, type Watcher } from '../core/elements';
 import { warn } from '../core/log';
 import { config } from '../core/config';
 import { StateRef, type Subscriber } from './state';
-import { parseCondition, evaluate, ConditionError, type Condition, type Cond } from './values';
+import { parseCondition, evaluate, ConditionError, conditionCalls, type Condition, type Cond, type Lookup } from './values';
 
 // ---- native if() for when() ---------------------------------------------------------------
 // when(c, a, b) becomes `if(T(c): a; F(c): b)` with separate truth and falsity style queries,
@@ -46,9 +46,14 @@ export function nativeWhen(cond: Condition, branches: string[]): string | undefi
 }
 
 /** Evaluates a condition for one element; undefined = unknown (missing state or type error). */
-function check(cond: Condition, refs: StateRef[]): boolean | undefined {
+function check(cond: Condition, refs: StateRef[], el: Element): boolean | undefined {
   try {
-    return evaluate(cond.ast, (name) => refs[cond.names.indexOf(name)].state());
+    const lookup: Lookup = (name) => refs[cond.names.indexOf(name)].state();
+    if (cond.calls) { // 0.10: calls read their states themselves; subscribe first
+      for (const n of cond.calls) refs[cond.names.indexOf(n)].state();
+      lookup.call = (node: unknown) => conditionCalls.evaluate!(node, el);
+    }
+    return evaluate(cond.ast, lookup);
   } catch (e) {
     if (!(e instanceof ConditionError)) throw e;
     warn(`${e.message} (in "${cond.text}"). The condition counts as unknown: when() gives no value, :when() does not match.`);
@@ -71,7 +76,7 @@ defineFunction({
     if (nested || args.slice(1).some((a) => a.parts.some((p) => typeof p !== 'string'))) return undefined;
     return nativeWhen(cond, args.length > 1 ? args.slice(1).map((a) => a.text) : ['true', 'false']);
   },
-  create: (ctx, args, cond: Condition) => new WhenValue(ctx, args, cond),
+  create: (ctx, args, cond: Condition) => (cond.calls ? new WhenCallValue(ctx, args, cond) : new WhenValue(ctx, args, cond)),
 });
 
 /**
@@ -85,12 +90,20 @@ class WhenValue implements Instance {
     this.refs = refsFor(cond, ctx.el, ctx);
   }
   get() {
-    const r = check(this.cond, this.refs);
+    const r = check(this.cond, this.refs, this.at());
     if (r === undefined) return '';
     if (this.args.length === 1) return r ? 'true' : 'false'; // when(condition) alone: a boolean
     return r ? this.args[1].get() : (this.args[2]?.get() ?? '');
   }
   dispose() { for (const r of this.refs) r.dispose(); }
+  /** The element (read only by conditions with calls: WhenCallValue). */
+  at(): Element { return undefined as unknown as Element; }
+}
+
+/** 0.10: when() with call operands needs its element (a subclass: WhenValue keeps its shape). */
+class WhenCallValue extends WhenValue {
+  constructor(readonly ctx: Ctx, args: ArgInstance[], cond: Condition) { super(ctx, args, cond); }
+  at() { return this.ctx.el; }
 }
 
 /** One element that a :when() rule may apply to: toggles a private marker attribute. */
@@ -106,7 +119,7 @@ class WhenMatch implements Job, Subscriber {
   notify() { if (!this.dead) dirty(this); }
   compute() {
     if (this.dead) return false;
-    const on = check(this.cond, this.refs) === true;
+    const on = check(this.cond, this.refs, this.el) === true;
     if (on === this.on) return false;
     this.on = on;
     return true;

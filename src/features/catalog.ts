@@ -4,7 +4,7 @@
 // in tests/unit/catalog.test.ts; dependencies are verified by building each entry alone
 // (tests/unit/catalog.test.ts). Semantics: docs/rfc-modular-runtime-0.8.md.
 
-export type FeatureId = 'core' | 'events' | 'gestures' | 'persist' | 'conditions' | 'nth-var' | 'history' | 'forms' | 'text' | 'attributes' | 'focus' | 'blur' | 'values' | 'dynamic' | 'geometry';
+export type FeatureId = 'core' | 'events' | 'gestures' | 'persist' | 'conditions' | 'nth-var' | 'history' | 'forms' | 'text' | 'attributes' | 'focus' | 'blur' | 'values' | 'dynamic' | 'geometry' | 'strings';
 export type Category = 'Core & State' | 'Events & Actions' | 'Conditions & Selectors' | 'Forms & DOM Bindings' | 'History' | 'Values & Strings' | 'Geometry & Observers' | 'Focus & Accessibility';
 
 export interface CatalogFeature {
@@ -95,6 +95,10 @@ export const CATALOG: CatalogFeature[] = [
     modules: ['functions/geometry.ts'], requires: ['core'], optional: [], status: 'experimental',
     provides: ['fn:element'],
     syntax: ['element(width)', 'element(height)'] },
+  { id: 'strings', title: 'Strings', category: 'Values & Strings', entry: 'src/features/strings.ts',
+    modules: ['functions/calls.ts', 'functions/strings.ts'], requires: ['core', 'events'], optional: ['conditions'], status: 'experimental',
+    provides: ['fn:length', 'fn:includes', 'fn:lower', 'fn:trim'],
+    syntax: ['length(text)', 'includes(text, part)', 'lower(text)', 'trim(text)', 'in :on() actions, :when() / when() conditions and declarations; --name reads a state'] },
 ];
 
 /** Example configurations (docs/bundle-builder-0.8.md). */

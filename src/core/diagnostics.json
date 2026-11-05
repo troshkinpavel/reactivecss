@@ -470,6 +470,18 @@
    "template": "{0}() is for DOM events, not {1}",
    "module": "state/on.ts"
   },
+  "RCSS-E087": {
+   "template": "event({0}) is only available in :on() actions; {1} has no event",
+   "module": "state/actexpr.ts"
+  },
+  "RCSS-E088": {
+   "template": "{0}() takes {1} argument{2}, got {3}",
+   "module": "state/actexpr.ts"
+  },
+  "RCSS-E089": {
+   "template": "{0}() is not available in actions; use {1} or {2}",
+   "module": "state/actexpr.ts"
+  },
   "RCSS-F001": {
    "template": "bind: {0} on {1}: a {2} control cannot hold a {3} state (use {4}). Not bound.",
    "module": "state/bind.ts"
@@ -982,6 +994,10 @@
    "template": "unknown modifier \"{0}\" in \"{1}\" (use ctrl, shift, alt, meta)",
    "module": "state/keys.ts"
   },
+  "RCSS-S029": {
+   "template": "condition \"{0}\": missing \")\"",
+   "module": "state/values.ts"
+  },
   "RCSS-T001": {
    "template": "text: on {0} is ignored: the element has other content (child elements or several nodes). Put the text in its own element, e.g. <span class=\"label\"></span>, and target that.",
    "module": "state/text.ts"
@@ -1089,6 +1105,10 @@
   "RCSS-V023": {
    "template": "step \"{0}\" must use the same unit as min and max; a third argument is a step, never an update interval: to re-roll over time use live(random(...), 2s)",
    "module": "functions/values.ts"
+  },
+  "RCSS-V024": {
+   "template": "{0}() takes text, not {1} ({2})",
+   "module": "functions/calls.ts"
   },
   "RCSS-W001": {
    "template": ":changed() expects a state name like --count, got \"{0}\"",

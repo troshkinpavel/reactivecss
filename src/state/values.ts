@@ -82,11 +82,29 @@ export type Cond =
   | { k: 'lit'; t: Typed }
   | { k: 'not'; a: Cond }
   | { k: 'and' | 'or'; a: Cond; b: Cond }
-  | { k: 'cmp'; op: string; a: Cond; b: Cond };
+  | { k: 'cmp'; op: string; a: Cond; b: Cond }
+  /** 0.10: a value function call (strings), parsed and evaluated by conditionCalls. */
+  | { k: 'call'; node: unknown; text: string };
 
-export interface Condition { ast: Cond; names: string[]; text: string }
+/**
+ * 0.10: value function calls in conditions, `:when(includes(lower(--name), --q))`. Installed by
+ * functions/calls.ts (the expression language lives in actexpr.ts, which imports this file);
+ * without it the grammar is unchanged.
+ */
+export const conditionCalls: {
+  names?: Set<string>;
+  parse?(text: string): { node: unknown; names: string[] };
+  /** Undefined = unknown; throws ConditionError for a type error. */
+  evaluate?(node: unknown, el: Element): Typed | undefined;
+} = {};
 
-const TOKEN = /\s*((?:previous|direction)\(\s*--[\w-]+\s*\)|--[\w-]+|[<>=!]\s*=|>|<|\(|\)|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?[a-z%]*|#[0-9a-f]+|[a-z_][\w-]*)/iy;
+export interface Condition {
+  ast: Cond; names: string[]; text: string;
+  /** 0.10: states read inside call operands (resolved before each evaluation, to subscribe). */
+  calls?: string[];
+}
+
+const TOKEN = /\s*((?:previous|direction)\(\s*--[\w-]+\s*\)|\x00\d+|--[\w-]+|[<>=!]\s*=|>|<|\(|\)|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?[a-z%]*|#[0-9a-f]+|[a-z_][\w-]*)/iy;
 const OPS = new Set(['==', '!=', '>', '<', '>=', '<=']);
 
 /**
@@ -94,19 +112,24 @@ const OPS = new Set(['==', '!=', '>', '<', '>=', '<=']);
  *           not := 'not' not | cmp       cmp := operand (op operand)?
  *           operand := --state | previous(--state) | direction(--state) | number | dimension
  *                    | true | false | keyword | #hex | "string" | '(' or ')'
+ *                    | value function call (0.10: length(), includes(), lower(), trim())
  */
 export function parseCondition(text: string): Condition {
   const toks: string[] = [];
+  const calls: string[] = [];
+  const source = text;
+  if (conditionCalls.names?.size && hasCall(text, conditionCalls.names)) text = extractCalls(text, conditionCalls.names, calls);
   let pos = 0;
   TOKEN.lastIndex = 0;
   let m: RegExpExecArray | null;
   // A two-character operator may contain whitespace after formatting: `> =` is `>=` (0.10).
   while ((m = TOKEN.exec(text))) { toks.push(m[1].replace(/^([<>=!])\s+=$/, '$1=')); pos = TOKEN.lastIndex; }
-  if (text.slice(pos).trim()) throw new Error(`cannot read condition "${text}" near "${text.slice(pos).trim()}"`);
+  if (text.slice(pos).trim()) throw new Error(`cannot read condition "${source}" near "${text.slice(pos).trim().replace(/\x00(\d+)/g, (_, n) => calls[+n])}"`);
   let i = 0;
   const names = new Set<string>();
+  const callNames = new Set<string>();
   const peek = () => toks[i]?.toLowerCase();
-  const fail = (what: string): never => { throw new Error(`condition "${text}": ${what}`); };
+  const fail = (what: string): never => { throw new Error(`condition "${source}": ${what}`); };
 
   const operand = (): Cond => {
     const t = toks[i++];
@@ -115,6 +138,13 @@ export function parseCondition(text: string): Condition {
       const e = or();
       if (toks[i++] !== ')') fail('missing ")"');
       return e;
+    }
+    if (t[0] === '\x00') {
+      const call = calls[+t.slice(1)];
+      let parsed;
+      try { parsed = conditionCalls.parse!(call); } catch (e) { return fail(`${call}: ${(e as Error).message}`); }
+      for (const n of parsed.names) { names.add(n); callNames.add(n); }
+      return { k: 'call', node: parsed.node, text: call };
     }
     if (t.startsWith('--')) { names.add(t); return { k: 'ref', name: t }; }
     const fn = /^(previous|direction)\(\s*(--[\w-]+)\s*\)$/i.exec(t);
@@ -141,7 +171,45 @@ export function parseCondition(text: string): Condition {
   };
   const ast = or();
   if (i < toks.length) fail(`unexpected "${toks[i]}"`);
-  return { ast, names: [...names], text };
+  return { ast, names: [...names], text: source, ...(callNames.size ? { calls: [...callNames] } : {}) };
+}
+
+let callTest: { size: number; re: RegExp } | undefined;
+/** Whether `text` may contain a call of `names` (a cheap test, so conditions without calls skip the scan below). */
+function hasCall(text: string, names: Set<string>): boolean {
+  if (callTest?.size !== names.size) callTest = { size: names.size, re: new RegExp(`(?:^|[^\\w-])(?:${[...names].join('|')})\\(`, 'i') };
+  return callTest.re.test(text);
+}
+
+/** Replaces each call of `names` (outside strings) with a placeholder token \x00<n>, kept in `out`. */
+function extractCalls(text: string, names: Set<string>, out: string[]): string {
+  let s = '';
+  for (let i = 0; i < text.length;) {
+    const c = text[i];
+    if (c === '"' || c === "'") {
+      let j = i + 1;
+      while (j < text.length && text[j] !== c) j += text[j] === '\\' ? 2 : 1;
+      s += text.slice(i, j + 1); i = j + 1; continue;
+    }
+    const m = /^[a-z][\w-]*\(/i.exec(text.slice(i));
+    if (m && names.has(m[0].slice(0, -1).toLowerCase()) && !/[\w-]/.test(text[i - 1] ?? '')) {
+      let depth = 0, j = i + m[0].length - 1, q = '';
+      for (; j < text.length; j++) {
+        const d = text[j];
+        if (q) { if (d === '\\') j++; else if (d === q) q = ''; continue; }
+        if (d === '"' || d === "'") q = d;
+        else if (d === '(') depth++;
+        else if (d === ')' && --depth === 0) break;
+      }
+      if (j >= text.length) throw new Error(`condition "${text}": missing ")"`);
+      s += ` \x00${out.length} `;
+      out.push(text.slice(i, j + 1));
+      i = j + 1;
+      continue;
+    }
+    s += c; i++;
+  }
+  return s;
 }
 
 /** Thrown for type errors; the caller reports it once and treats the condition as unknown. */
@@ -149,7 +217,10 @@ export class ConditionError extends Error {}
 
 /** What a condition can read from a state: its current and previous value. */
 export interface StateValues { value: Typed; previous: Typed }
-export type Lookup = (name: string) => StateValues | undefined;
+export type Lookup = ((name: string) => StateValues | undefined) & {
+  /** 0.10: evaluates a call operand for the element (conditions.ts). */
+  call?(node: unknown): Typed | undefined;
+};
 
 /** direction(): 1, 0 or -1 for number and dimension states; a ConditionError otherwise. */
 export function direction(s: StateValues, name = 'the state'): Typed {
@@ -198,12 +269,13 @@ function value(c: Cond, lookup: Lookup): Typed | undefined {
   if (c.k === 'prev') return lookup(c.name)?.previous;
   if (c.k === 'dir') { const s = lookup(c.name); return s && direction(s, c.name); }
   if (c.k === 'lit') return c.t;
+  if (c.k === 'call') return lookup.call?.(c.node);
   const r = evaluate(c, lookup);
   return r === undefined ? undefined : { type: 'boolean', v: r };
 }
 
 const describe = (c: Cond) =>
-  c.k === 'ref' ? c.name : c.k === 'prev' ? `previous(${c.name})` : c.k === 'dir' ? `direction(${c.name})` : c.k === 'lit' ? serialize(c.t) : 'expression';
+  c.k === 'call' ? c.text : c.k === 'ref' ? c.name : c.k === 'prev' ? `previous(${c.name})` : c.k === 'dir' ? `direction(${c.name})` : c.k === 'lit' ? serialize(c.t) : 'expression';
 
 function compare(op: string, a: Typed, b: Typed): boolean {
   const ordered = op !== '==' && op !== '!=';

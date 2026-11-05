@@ -15,7 +15,9 @@ import { resolveCell, type Cell } from './state';
 import { parseTyped, convert, serialize, type Typed } from './values';
 
 /** What kind of event a trigger delivers: decides which event() fields exist. */
-export type Category = 'pointer' | 'mouse' | 'keyboard' | 'form' | 'focus' | 'scroll' | 'drag' | 'other';
+export type Category = 'pointer' | 'mouse' | 'keyboard' | 'form' | 'focus' | 'scroll' | 'drag' | 'other'
+  // 0.10: outside an event (value functions in :when() and declarations): no event().
+  | 'none';
 
 export type Node =
   | { k: 'lit'; t: Typed }
@@ -31,7 +33,9 @@ export type Node =
   | { k: 'pick'; items: Node[] }
   | { k: 'split'; of: Node; sep: string }
   | { k: 'random'; min: Node; max: Node; step?: Node }
-  | { k: 'sibling'; count: boolean };
+  | { k: 'sibling'; count: boolean }
+  /** 0.10: a value function added by a feature module (actionFns). */
+  | { k: 'fn'; name: string; args: Node[] };
 
 /** Drag gesture data (gesture.ts) for the drag fields of event(). */
 export interface DragInfo {
@@ -45,7 +49,8 @@ export interface DragInfo {
 }
 
 export interface EvalCtx {
-  e: Event;
+  /** Undefined outside an event (category 'none'). */
+  e?: Event;
   /** The element matched by the :on() rule. */
   el: Element;
   /** The state being mutated (event(x) / event(y) start from its value). */
@@ -56,6 +61,18 @@ export interface EvalCtx {
 }
 
 export class EvalError extends Error {}
+
+/**
+ * 0.10: value functions that feature modules add to the expression language (strings). They take
+ * typed values and return one; `--name` in their arguments reads a state, as in :when() (in the
+ * other CSS functions an action keeps the var(--name) rule).
+ */
+export interface ActionFn {
+  min: number;
+  max: number;
+  eval(args: Typed[], ctx: EvalCtx): Typed | undefined;
+}
+export const actionFns = new Map<string, ActionFn>();
 
 // ---- event() field catalog ------------------------------------------------------------
 
@@ -142,6 +159,7 @@ export function parseAction(text: string, category: Category, trigger: string): 
   let i = 0;
   const peek = () => toks[i];
   const fail = (m: string): never => { throw new Error(m); };
+  let bare = 0; // > 0 inside the arguments of a value function (actionFns)
   const expect = (v: string) => { const t = toks[i++]; if (!t || t.t !== 'p' || t.v !== v) fail(`expected "${v}" in "${text}"`); };
   const args = (): Node[] => {
     const list: Node[] = [];
@@ -167,7 +185,7 @@ export function parseAction(text: string, category: Category, trigger: string): 
     if (t.t === 'num') return { k: 'lit', t: t.unit ? { type: 'dimension', v: t.v, unit: t.unit } : { type: 'number', v: t.v, unit: '' } };
     if (t.t === 'str') return { k: 'lit', t: { type: 'string', v: t.v } };
     if (t.t === 'id') {
-      if (t.v.startsWith('--')) fail(`write var(${t.v}) to read a state`);
+      if (t.v.startsWith('--')) { if (bare) return { k: 'var', name: t.v }; fail(`write var(${t.v}) to read a state`); }
       return { k: 'lit', t: parseTyped(t.v) };
     }
     if (t.t === 'p') {
@@ -203,6 +221,7 @@ export function parseAction(text: string, category: Category, trigger: string): 
       case 'event': {
         const f = word();
         expect(')');
+        if (category === 'none') fail(`event(${f ?? ''}) is only available in :on() actions; ${trigger} has no event`);
         if (!f || !(f in FIELDS)) fail(`event(${f ?? ''}): unknown field; ${trigger} provides ${fieldsFor(category).join(', ')}`);
         const cats = FIELDS[f!];
         if (cats !== 'all' && !cats.includes(category)) fail(`event(${f}) is not available for ${trigger}; it provides ${fieldsFor(category).join(', ')}`);
@@ -264,7 +283,16 @@ export function parseAction(text: string, category: Category, trigger: string): 
       }
       case 'sibling-index': case 'sibling-count': expect(')'); return { k: 'sibling', count: t.v === 'sibling-count' };
     }
-    return fail(`${t.v}() is not available in actions; use calc(), min(), max(), clamp(), round(), abs(), hypot(), sqrt(), pow(), var(), event(), mouse(), element(), viewport(), attr(), pick(), random(), sibling-index() or sibling-count()`);
+    const fn = actionFns.get(t.v);
+    if (fn) {
+      bare++;
+      const a = args();
+      bare--;
+      if (a.length < fn.min || a.length > fn.max) fail(`${t.v}() takes ${fn.min === fn.max ? fn.min : `${fn.min} to ${fn.max}`} argument${fn.max === 1 ? '' : 's'}, got ${a.length}`);
+      return { k: 'fn', name: t.v, args: a };
+    }
+    const all = [...ACTION_FUNCTIONS, ...actionFns.keys()].map((f) => f + '()');
+    return fail(`${t.v}() is not available in actions; use ${all.slice(0, -1).join(', ')} or ${all[all.length - 1]}`);
   }
   function unary(): Node {
     if (peek()?.t === 'p' && peek().v === '-') { i++; return { k: 'neg', a: unary() }; }
@@ -350,7 +378,7 @@ function field(f: string, ctx: EvalCtx): Typed | undefined {
   const e = ctx.e as PointerEvent & KeyboardEvent;
   const d = ctx.drag;
   switch (f) {
-    case 'type': return str(d ? 'drag' : e.type);
+    case 'type': return str(d ? 'drag' : e!.type);
     case 'client-x': return px(e.clientX);
     case 'client-y': return px(e.clientY);
     case 'page-x': return px(e.pageX);
@@ -512,8 +540,16 @@ export function value(n: Node, ctx: EvalCtx): Typed | undefined {
       return like(u, v);
     }
     case 'sibling': return num(n.count ? ctx.el.parentElement?.childElementCount ?? 1 : siblingIndex(ctx.el));
+    case 'fn': {
+      const vals = n.args.map((a) => value(a, ctx));
+      if (vals.some((v) => !v)) return undefined;
+      return actionFns.get(n.name)!.eval(vals as Typed[], ctx);
+    }
   }
 }
+
+/** The functions of the 0.9 expression language (and hypot(), sqrt(), pow()), for the message above. */
+const ACTION_FUNCTIONS = ['calc', 'min', 'max', 'clamp', 'round', 'abs', 'hypot', 'sqrt', 'pow', 'var', 'event', 'mouse', 'element', 'viewport', 'attr', 'pick', 'random', 'sibling-index', 'sibling-count'];
 
 /** Evaluates with one diagnostic per problem; undefined means "no write". */
 export function evaluateAction(n: Node, ctx: EvalCtx, where: () => string): Typed | undefined {

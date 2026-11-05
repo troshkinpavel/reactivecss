@@ -461,7 +461,7 @@ export function compile(source: string, options: CompileOptions | string = {}): 
       }
       if (attr && !tokens.slice(value, to).some((t) => t.type !== 'ws' && t.type !== 'comment'))
         throw new Error(ns ? `${name} needs a value, e.g. ${name}: var(--state)` : `attr: ${attr} needs a value, e.g. attr: ${attr} var(--state)`);
-      const bad = tokens.slice(value, to).find((t) => (ns && t.type === 'url') || (t.type === 'function' && !TEXT_FUNCTIONS.has(t.value)));
+      const bad = tokens.slice(value, to).find((t) => (ns && t.type === 'url') || (t.type === 'function' && !TEXT_FUNCTIONS.has(t.value) && !functions.get(t.value)?.value));
       if (bad) throw new Error(`${subject} takes ${TAKES[ns ? 'attr' : kind]}; ${bad.type === 'url' ? 'url' : bad.value}() is not supported`);
       if (kind === 'focus') { edits.push({ from, to: colon, text: '--rcss-focus' }); rule.focus = true; }
       else if (kind === 'text') { edits.push({ from, to: colon, text: '--rcss-text' }); rule.text = true; }

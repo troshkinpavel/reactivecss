@@ -122,7 +122,7 @@ describe('parse-time errors', () => {
     expect(parse('hypot(event(client-x), event(client-y))', 'pointer')).toBe('');
   });
   it('other unknown functions still name the available ones', () => {
-    expect(parse('log(2)')).toBe('log() is not available in actions; use calc(), min(), max(), clamp(), round(), abs(), hypot(), sqrt(), pow(), var(), event(), mouse(), element(), viewport(), attr(), pick(), random(), sibling-index() or sibling-count()');
+    expect(parse('log(2)')).toBe('log() is not available in actions; use calc(), min(), max(), clamp(), round(), abs(), hypot(), sqrt(), pow(), var(), event(), mouse(), element(), viewport(), attr(), pick(), random(), sibling-index(), sibling-count(), length(), includes(), lower() or trim()'); // step 4 adds the value functions
   });
   it('compile() reports them on the declaration and keeps the rest of the rule', () => {
     compile('.p { --d: state(0) } .p:on(click) { --d: set(sqrt()); } .p:on(dblclick) { --d: set(pow(2, 3)) }');

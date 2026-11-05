@@ -66,6 +66,8 @@ export interface FunctionDef {
   syntax?: string;
   /** Argument positions kept as plain text (not parsed for nested reactive calls). */
   rawArgs?: number[];
+  /** 0.10: a value function (strings): also accepted in text:, attr:, --attr-* and focus: values. */
+  value?: boolean;
   /**
    * Context-aware claim: return false to leave a call with this name to the browser, e.g. the
    * standard element(#id) image function next to Reactive CSS element(width). Default: claim all.
