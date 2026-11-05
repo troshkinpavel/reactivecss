@@ -86,6 +86,12 @@ export type Cond =
   /** 0.10: a value function call (strings), parsed and evaluated by conditionCalls. */
   | { k: 'call'; node: unknown; text: string };
 
+/** 0.10: a string that is exactly a decimal number ("09", "-1.5", format(…) output) as that number. */
+export function numericString(t: Typed): Typed | undefined {
+  if (t.type !== 'string' || !/^[+-]?(?:\d+\.?\d*|\.\d+)$/.test(t.v as string)) return undefined;
+  return { type: 'number', v: +(t.v as string), unit: '' };
+}
+
 /**
  * 0.10: value function calls in conditions, `:when(includes(lower(--name), --q))`. Installed by
  * functions/calls.ts (the expression language lives in actexpr.ts, which imports this file);
@@ -123,11 +129,12 @@ export function parseCondition(text: string): Condition {
   TOKEN.lastIndex = 0;
   let m: RegExpExecArray | null;
   // A two-character operator may contain whitespace after formatting: `> =` is `>=` (0.10).
-  while ((m = TOKEN.exec(text))) { toks.push(m[1].replace(/^([<>=!])\s+=$/, '$1=')); pos = TOKEN.lastIndex; }
+  // Only a spaced operator is longer than two characters and starts with one of < > = !.
+  while ((m = TOKEN.exec(text))) { const t = m[1]; toks.push(t.length > 2 && '<>=!'.includes(t[0]) ? t[0] + '=' : t); pos = TOKEN.lastIndex; }
   if (text.slice(pos).trim()) throw new Error(`cannot read condition "${source}" near "${text.slice(pos).trim().replace(/\x00(\d+)/g, (_, n) => calls[+n])}"`);
   let i = 0;
   const names = new Set<string>();
-  const callNames = new Set<string>();
+  let callNames: Set<string> | undefined;
   const peek = () => toks[i]?.toLowerCase();
   const fail = (what: string): never => { throw new Error(`condition "${source}": ${what}`); };
 
@@ -143,7 +150,7 @@ export function parseCondition(text: string): Condition {
       const call = calls[+t.slice(1)];
       let parsed;
       try { parsed = conditionCalls.parse!(call); } catch (e) { return fail(`${call}: ${(e as Error).message}`); }
-      for (const n of parsed.names) { names.add(n); callNames.add(n); }
+      for (const n of parsed.names) { names.add(n); (callNames ??= new Set()).add(n); }
       return { k: 'call', node: parsed.node, text: call };
     }
     if (t.startsWith('--')) { names.add(t); return { k: 'ref', name: t }; }
@@ -171,12 +178,15 @@ export function parseCondition(text: string): Condition {
   };
   const ast = or();
   if (i < toks.length) fail(`unexpected "${toks[i]}"`);
-  return { ast, names: [...names], text: source, ...(callNames.size ? { calls: [...callNames] } : {}) };
+  const c: Condition = { ast, names: [...names], text: source };
+  if (callNames) c.calls = [...callNames];
+  return c;
 }
 
 let callTest: { size: number; re: RegExp } | undefined;
 /** Whether `text` may contain a call of `names` (a cheap test, so conditions without calls skip the scan below). */
 function hasCall(text: string, names: Set<string>): boolean {
+  if (!text.includes('(')) return false;
   if (callTest?.size !== names.size) callTest = { size: names.size, re: new RegExp(`(?:^|[^\\w-])(?:${[...names].join('|')})\\(`, 'i') };
   return callTest.re.test(text);
 }
@@ -279,6 +289,8 @@ const describe = (c: Cond) =>
 
 function compare(op: string, a: Typed, b: Typed): boolean {
   const ordered = op !== '==' && op !== '!=';
+  // 0.10: a numeric string compares with a number ("09" >= 9); two strings still compare as text.
+  if ((a.type === 'string') !== (b.type === 'string')) { a = numericString(a) ?? a; b = numericString(b) ?? b; }
   if (a.type === 'boolean' || b.type === 'boolean' || a.type === 'value' || b.type === 'value' || a.type === 'string' || b.type === 'string') {
     if (a.type !== b.type) throw new ConditionError(`cannot compare ${serialize(a)} (${a.type}) with ${serialize(b)} (${b.type})`);
     if (ordered) throw new ConditionError(`${op} needs numbers, got ${a.type} values`);

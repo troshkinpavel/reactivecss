@@ -17,5 +17,6 @@ import './features/gestures';
 import './features/persist';
 import './features/blur';
 import './features/strings';
+import './features/format';
 
 export * from './api';

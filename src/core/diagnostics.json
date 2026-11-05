@@ -1110,6 +1110,26 @@
    "template": "{0}() takes text, not {1} ({2})",
    "module": "functions/calls.ts"
   },
+  "RCSS-V025": {
+   "template": "format(): \"{0}\" formats numbers; {1} is a {2}",
+   "module": "functions/format.ts"
+  },
+  "RCSS-V026": {
+   "template": "the second argument of format() is a style: \"decimal\", \"integer\", \"percent\" or \"currency\"",
+   "module": "functions/format.ts"
+  },
+  "RCSS-V027": {
+   "template": "\"{0}\" is not a format() style; use \"decimal\", \"integer\", \"percent\" or \"currency\"",
+   "module": "functions/format.ts"
+  },
+  "RCSS-V028": {
+   "template": "\"currency\" needs a three-letter ISO 4217 code, e.g. format(9.5, \"currency\", \"EUR\")",
+   "module": "functions/format.ts"
+  },
+  "RCSS-V029": {
+   "template": "\"{0}\" takes no third argument",
+   "module": "functions/format.ts"
+  },
   "RCSS-W001": {
    "template": ":changed() expects a state name like --count, got \"{0}\"",
    "module": "state/changed.ts"

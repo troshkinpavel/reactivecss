@@ -85,6 +85,18 @@ const missing = (what: string, feature: string) =>
   msg(`${what} is not included in this bundle (feature "${feature}"); build a bundle with it (reactive-css build --features ${feature}) or use the full bundle`);
 /** Names that may be the native CSS function of the same name: reported as a note, not a warning. */
 const NATIVE_TOO = new Set(['random', 'element']);
+/** True when `s` has a comma outside parentheses. */
+const topComma = (s: string) => { let d = 0; for (const c of s) { if (c === '(') d++; else if (c === ')') d--; else if (c === ',' && !d) return true; } return false; };
+/**
+ * 0.10: names CSS also uses, claimed only in their Reactive CSS form, also when the feature is
+ * left out of the bundle: [claim test of the argument text, pre-filter lookahead after "name("].
+ * format() needs two or more arguments and an unquoted first one, so @font-face
+ * src: … format("woff2") / format(woff2) stays CSS (and font-only sheets stay unprocessed).
+ */
+const CLAIM: Record<string, [(arg: string) => boolean, string]> = {
+  // shortcut: the lookahead sees a comma after at most two levels of nested parentheses; deeper first arguments need other reactive syntax in the sheet to be processed.
+  format: [(arg) => topComma(arg) && !/^\s*["']/.test(arg), `(?!\\s*["'])(?:[^()]|\\((?:[^()]|\\([^()]*\\))*\\))*,`],
+};
 
 export interface CompileOptions {
   /** Base URL of a linked sheet: relative URLs are made absolute. */
@@ -186,8 +198,8 @@ export function compile(source: string, options: CompileOptions | string = {}): 
 
   /** Is the function token at i a Reactive CSS call? (A def may decline, e.g. native element(#id).) */
   function claims(i: number): boolean {
-    const def = functions.get(tokens[i].value);
-    return !!def && (!def.matches || def.matches(text(i + 1, matching(tokens, i))));
+    const def = functions.get(tokens[i].value), claim = CLAIM[tokens[i].value];
+    return !!def && (!def.matches || def.matches(text(i + 1, matching(tokens, i)))) && (!claim || claim[0](text(i + 1, matching(tokens, i))));
   }
 
   /** A function of a feature left out of this bundle (the call is left to the browser). */
@@ -195,6 +207,7 @@ export function compile(source: string, options: CompileOptions | string = {}): 
     const name = tokens[i].value, feature = EXCLUDED['fn:' + name];
     const arg = text(i + 1, matching(tokens, i)).trim();
     if (name === 'element' && !/^(width|height)$/i.test(arg)) return; // native element(#id)
+    if (CLAIM[name] && !CLAIM[name][0](arg)) return; // native format("woff2")
     use('fn:' + name);
     if (NATIVE_TOO.has(name)) note(`${name}() may be the native CSS function; the Reactive CSS ${name}() is not included in this bundle (feature "${feature}"); build a bundle with it (reactive-css build --features ${feature}) or use the full bundle`);
     else warn(missing(`${name}()`, feature));
@@ -462,6 +475,7 @@ export function compile(source: string, options: CompileOptions | string = {}): 
       if (attr && !tokens.slice(value, to).some((t) => t.type !== 'ws' && t.type !== 'comment'))
         throw new Error(ns ? `${name} needs a value, e.g. ${name}: var(--state)` : `attr: ${attr} needs a value, e.g. attr: ${attr} var(--state)`);
       const bad = tokens.slice(value, to).find((t) => (ns && t.type === 'url') || (t.type === 'function' && !TEXT_FUNCTIONS.has(t.value) && !functions.get(t.value)?.value));
+      if (bad?.type === 'function' && EXCLUDED['fn:' + bad.value]) throw new Error(missing(`${bad.value}()`, EXCLUDED['fn:' + bad.value])); // 0.10: a value function left out of this bundle
       if (bad) throw new Error(`${subject} takes ${TAKES[ns ? 'attr' : kind]}; ${bad.type === 'url' ? 'url' : bad.value}() is not supported`);
       if (kind === 'focus') { edits.push({ from, to: colon, text: '--rcss-focus' }); rule.focus = true; }
       else if (kind === 'text') { edits.push({ from, to: colon, text: '--rcss-text' }); rule.text = true; }
@@ -883,7 +897,7 @@ export function hasReactiveSyntax(css: string): boolean {
   if (quickKey !== functions.size * 1000 + selectors.size) {
     quickKey = functions.size * 1000 + selectors.size;
     quick = new RegExp(
-      `(?:^|[^\\w-])(?:state|typed|${[...functions.keys(), ...excludedNames('fn:')].join('|')})\\(|:(?:${[...selectors.keys(), ...excludedNames('sel:')].join('|')})(?![\\w-])|(?:^|[;{\\s])(?:on|bind|text|attr|focus)\\s*:`
+      `(?:^|[^\\w-])(?:state|typed|${[...functions.keys(), ...excludedNames('fn:')].map((n) => (CLAIM[n] ? `${n}(?=\\(${CLAIM[n][1]})` : n)).join('|')})\\(|:(?:${[...selectors.keys(), ...excludedNames('sel:')].join('|')})(?![\\w-])|(?:^|[;{\\s])(?:on|bind|text|attr|focus)\\s*:`
       // 0.9.0: :on(), --attr-*, content: reading state, and a functional :focus() (reported: focus: is the API).
       + `|:(?:on|focus)\\(|--attr-[a-z]|(?:^|[;{\\s])content\\s*:[^;}]*\\b(?:var|when|previous|direction)\\(`,
       'i',

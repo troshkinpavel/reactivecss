@@ -12,7 +12,7 @@ import { warn } from '../core/log';
 import { fmt } from '../core/format';
 import { sensitive } from './expr';
 import { resolveCell, type Cell } from './state';
-import { parseTyped, convert, serialize, type Typed } from './values';
+import { parseTyped, convert, serialize, numericString, type Typed } from './values';
 
 /** What kind of event a trigger delivers: decides which event() fields exist. */
 export type Category = 'pointer' | 'mouse' | 'keyboard' | 'form' | 'focus' | 'scroll' | 'drag' | 'other'
@@ -70,6 +70,8 @@ export class EvalError extends Error {}
 export interface ActionFn {
   min: number;
   max: number;
+  /** Parse-time checks of the arguments (format() styles). */
+  check?(args: Node[]): void;
   eval(args: Typed[], ctx: EvalCtx): Typed | undefined;
 }
 export const actionFns = new Map<string, ActionFn>();
@@ -289,6 +291,7 @@ export function parseAction(text: string, category: Category, trigger: string): 
       const a = args();
       bare--;
       if (a.length < fn.min || a.length > fn.max) fail(`${t.v}() takes ${fn.min === fn.max ? fn.min : `${fn.min} to ${fn.max}`} argument${fn.max === 1 ? '' : 's'}, got ${a.length}`);
+      fn.check?.(a);
       return { k: 'fn', name: t.v, args: a };
     }
     const all = [...ACTION_FUNCTIONS, ...actionFns.keys()].map((f) => f + '()');
@@ -326,6 +329,9 @@ const str = (v: string): Typed => ({ type: 'string', v });
 function numeric(t: Typed): Typed {
   if (t.type === 'boolean') return num(t.v ? 1 : 0);
   if (t.type === 'number' || t.type === 'dimension') return t;
+  // 0.10: a string that is exactly a decimal number ("09") calculates as that number.
+  const n = numericString(t);
+  if (n) return n;
   throw new EvalError(`${serialize(t)} is not a number`);
 }
 const round6 = (v: number) => Math.round(v * 1e6) / 1e6;
