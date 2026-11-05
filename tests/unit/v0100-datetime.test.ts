@@ -5,7 +5,7 @@ import { compile, diagnostics } from '../../src/index';
 import { parseCondition, evaluate, serialize, equal, conditionCalls, type Typed, type Lookup } from '../../src/state/values';
 import { parseAction, value } from '../../src/state/actexpr';
 import { parseExpr, evaluate as initial } from '../../src/state/expr';
-import { formatDate } from '../../src/functions/intl';
+import { formatDate } from '../../src/functions/dates';
 
 const err = (fn: () => unknown) => { try { fn(); return ''; } catch (e) { return (e as Error).message; } };
 const el = { closest: () => null } as unknown as Element;

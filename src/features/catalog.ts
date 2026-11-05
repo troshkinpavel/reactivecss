@@ -106,7 +106,7 @@ export const CATALOG: CatalogFeature[] = [
     syntax: ['format(number, "decimal" | "integer" | "percent" | "currency" [, "EUR"]), in the nearest lang', 'format(datetime, "yyyy-MM-dd HH:mm"): a date pattern', 'a string that is exactly a decimal number ("09") compares and calculates as a number'] },
   { id: 'datetime', title: 'Date and time', category: 'Values & Strings', entry: 'src/features/datetime.ts',
     // format: the Intl helpers (functions/intl.ts) and the date patterns that show a datetime.
-    modules: ['functions/datetime.ts'], requires: ['core', 'format'], optional: ['events', 'conditions', 'dynamic'], status: 'experimental',
+    modules: ['functions/datetime.ts', 'functions/dates.ts'], requires: ['core', 'format'], optional: ['events', 'conditions', 'dynamic'], status: 'experimental',
     provides: ['fn:time', 'fn:timezone'],
     syntax: ['time(): the current instant, a datetime; state(time())', 'timezone(datetime, "Area/City")', 'datetime ± 30s; datetime - datetime = a duration in ms'] },
   { id: 'timers', title: 'Timers', category: 'Events & Actions', entry: 'src/features/timers.ts',

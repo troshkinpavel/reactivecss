@@ -17,7 +17,8 @@ import { valueFunction } from './calls';
 import { EvalError } from '../state/actexpr';
 import { serialize, convert, datetimeOps, ConditionError, type Typed } from '../state/values';
 import { initFns } from '../state/expr';
-import { checkZone, FormatError } from './intl';
+import { FormatError } from './intl';
+import { checkZone } from './dates';
 
 let frozen: number | undefined;
 /** The instant for this task (cleared in a microtask). */

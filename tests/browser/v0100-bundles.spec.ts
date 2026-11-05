@@ -24,13 +24,14 @@ test('strings + text, no events: value functions, in text: and from a computed c
 
 test('format + text, no strings or events: numbers format; what is left out is reported by feature', async ({ page }) => {
   await bundle(page, ['format', 'text']);
-  await open(page, { head: `<style>.f { --n: state(1234.5) } .f .a { text: format(--n, "integer") } .f .b { text: length("abc") } .f button:on(click) { --n: set(1) }</style>`,
-    body: '<div class="f" lang="en-US"><i class="a"></i><i class="b"></i><button>x</button></div>' });
+  await open(page, { head: `<style>.f { --n: state(1234.5) } .f .a { text: format(--n, "integer") } .f .b { text: length("abc") } .f .c { text: format(--n, "HH:mm") } .f button:on(click) { --n: set(1) }</style>`,
+    body: '<div class="f" lang="en-US"><i class="a"></i><i class="b"></i><i class="c"></i><button>x</button></div>' });
   await frames(page);
   expect(await text(page, '.a')).toBe('1,235');
   const d = (await diagnostics(page)).join('\n');
   expect(d).toMatch(/length\(\) is not included in this bundle \(feature "strings"\)/);
   expect(d).toMatch(/:on\(\) is not included in this bundle \(feature "events"\)/);
+  expect(d).toMatch(/"HH:mm" is not a format\(\) style .*date patterns are not included in this bundle \(feature "datetime"\)/);
 });
 
 test('a clock with no events: datetime, dynamic, derived and text', async ({ page }) => {

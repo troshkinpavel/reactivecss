@@ -1278,6 +1278,10 @@
    "template": "{0} on {1}: {2}; it keeps its last value.",
    "module": "functions/derived.ts"
   },
+  "RCSS-V049": {
+   "template": "\"{0}\" is not a format() style (\"decimal\", \"integer\", \"percent\", \"currency\"), and date patterns are not included in this bundle (feature \"datetime\")",
+   "module": "functions/format.ts"
+  },
   "RCSS-W001": {
    "template": ":changed() expects a state name like --count, got \"{0}\"",
    "module": "state/changed.ts"

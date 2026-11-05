@@ -19,7 +19,7 @@
 import { valueFunction } from './calls';
 import { EvalError, type Node, type EvalCtx } from '../state/actexpr';
 import { numericString, serialize, type Typed } from '../state/values';
-import { NUMBER_STYLES, FormatError, formatNumber, formatDate, isDatePattern, locale, type NumberStyle } from './intl';
+import { NUMBER_STYLES, FormatError, dates, formatNumber, locale, type NumberStyle } from './intl';
 
 const lit = (n: Node | undefined) => (n?.k === 'lit' && (n.t.type === 'string' || n.t.type === 'value') ? (n.t.v as string) : undefined);
 const isStyle = (s: string): s is NumberStyle => (NUMBER_STYLES as readonly string[]).includes(s);
@@ -34,13 +34,12 @@ function localeOf(el: Element): string | undefined {
 }
 
 function format(v: Typed, how: string, currency: string | undefined, ctx: EvalCtx): Typed {
-  if (!isStyle(how) && v.type !== 'datetime') throw new EvalError(`format(): a date pattern needs a date and time from time() or timezone(); ${serialize(v)} is a ${v.type}`);
-  if (isStyle(how) && v.type === 'datetime') throw new EvalError(`format(): "${how}" formats numbers; ${serialize(v)} is a date and time, format it with a pattern such as "HH:mm"`);
-  const n = v.type === 'number' || v.type === 'datetime' ? v : numericString(v);
-  if (!n) throw new EvalError(`format(): "${how}" formats numbers; ${serialize(v)} is a ${v.type}`);
   try {
-    const out = isStyle(how) ? formatNumber(n.v as number, how, currency, localeOf(ctx.el)) : formatDate(n.v as number, how, n.zone, localeOf(ctx.el));
-    return { type: 'string', v: out };
+    if (!isStyle(how)) return dates.format!(v, how, localeOf(ctx.el));
+    if (v.type === 'datetime') throw new EvalError(`format(): "${how}" formats numbers; ${serialize(v)} is a date and time, format it with a pattern such as "HH:mm"`);
+    const n = v.type === 'number' ? v : numericString(v);
+    if (!n) throw new EvalError(`format(): "${how}" formats numbers; ${serialize(v)} is a ${v.type}`);
+    return { type: 'string', v: formatNumber(n.v as number, how, currency, localeOf(ctx.el)) };
   } catch (e) {
     if (e instanceof FormatError) throw new EvalError(`format(): ${e.message}`);
     throw e;
@@ -54,8 +53,9 @@ valueFunction('format', 'format(value, "decimal" | "integer" | "percent" | "curr
     const how = lit(args[1]);
     if (how === undefined) throw new Error('the second argument of format() is a style ("decimal", "integer", "percent", "currency") or a date pattern such as "HH:mm"');
     if (!isStyle(how)) {
+      if (!dates.isPattern) throw new Error(`"${how}" is not a format() style ("decimal", "integer", "percent", "currency"), and date patterns are not included in this bundle (feature "datetime")`);
       let date;
-      try { date = isDatePattern(how); } catch (e) { throw new Error(`format(): ${(e as Error).message}`); }
+      try { date = dates.isPattern(how); } catch (e) { throw new Error(`format(): ${(e as Error).message}`); }
       if (!date) throw new Error(`"${how}" is neither a format() style ("decimal", "integer", "percent", "currency") nor a date pattern such as "HH:mm"`);
       if (args[2]) throw new Error('a date pattern takes no third argument');
       return;

@@ -20,8 +20,10 @@ describe('dependency boundaries', () => {
     for (const x of EVENT_RUNTIME) expect(m).not.toContain(x);
     expect(m).toContain('src/state/actexpr.ts');
   }, 30000);
-  it('format carries no string functions', async () => {
-    expect(await modules(['format'])).not.toContain('src/functions/strings.ts');
+  it('format carries no string functions and no date patterns', async () => {
+    const m = await modules(['format']);
+    expect(m).not.toContain('src/functions/strings.ts');
+    expect(m).not.toContain('src/functions/dates.ts');
   }, 30000);
   it('core carries none of the 0.10 modules', async () => {
     const m = await modules([]);
