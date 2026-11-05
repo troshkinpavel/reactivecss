@@ -614,10 +614,16 @@ export function compile(source: string, options: CompileOptions | string = {}): 
     const mut = { ...m, id: ++handlerCounter, rule: spec };
     use('mut:' + mut.op);
     if (/\bevent\(/i.test(text(colon + 1, end))) use('expr:event');
-    const prop = slot(`${spec.trigger.key}|${name}`);
-    spec.slots = spec.slots.filter((x) => x.prop !== prop); // the last declaration in a rule wins, as in CSS
-    spec.slots.push({ prop, m: mut });
-    edits.push({ from, to: trimEnd(from, to), text: `${prop}: ${mut.id}${imp ? ' !important' : ''}` });
+    // One slot per event the rule answers (0.10: each member of `a | b`), so the cascade picks a
+    // winner per event exactly as for single-event rules.
+    const out: string[] = [];
+    for (const key of spec.trigger.members?.map((t) => t.key) ?? [spec.trigger.key]) {
+      const prop = slot(`${key}|${name}`);
+      spec.slots = spec.slots.filter((x) => x.prop !== prop); // the last declaration in a rule wins, as in CSS
+      spec.slots.push({ prop, m: mut, key });
+      out.push(`${prop}: ${mut.id}${imp ? ' !important' : ''}`);
+    }
+    edits.push({ from, to: trimEnd(from, to), text: out.join('; ') });
   }
 
   // ---- selectors ---------------------------------------------------------------
@@ -654,7 +660,7 @@ export function compile(source: string, options: CompileOptions | string = {}): 
           try { c = runtimes.onRules.trigger(text(i + 2, end - 1)); } catch (e) {
             throw (e as Error).message === 'feature:gestures' ? new Error(missing(':on(drag)', DECLARATION_FEATURE.drag)) : e;
           }
-          use(c.trigger.phase !== undefined ? 'gesture:drag' : 'trigger:' + (c.trigger.outside ? 'outside' : c.trigger.dom));
+          for (const t of c.trigger.members ?? [c.trigger]) use(t.phase !== undefined ? 'gesture:drag' : 'trigger:' + (t.outside ? 'outside' : t.dom));
           for (const [k, v] of Object.entries(c.mods)) if (v) use('mod:' + k);
           if (pre.on && (pre.on.trigger.key !== c.trigger.key || pre.on.mods.prevent !== c.mods.prevent || pre.on.mods.stop !== c.mods.stop))
             throw new Error('every selector of an :on() rule must use the same trigger and modifiers; write one rule per trigger');

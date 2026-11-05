@@ -50,6 +50,8 @@ export interface Trigger {
   /** Drag phase, for :on(drag(...)). */
   phase?: string;
   cancelable: boolean;
+  /** 0.10: `a | b | c`, one rule for several DOM events (each has its own slots). */
+  members?: Trigger[];
 }
 /** Functional modifiers of :on(): prevent() and stop(). */
 export interface Modifiers { prevent: boolean; stop: boolean }
@@ -59,7 +61,8 @@ export interface OnRuleSpec {
   id: number;
   trigger: Trigger;
   mods: Modifiers;
-  slots: { prop: string; m: Mutation }[];
+  /** `key`: the trigger key the slot answers (a member's key for `a | b`). */
+  slots: { prop: string; m: Mutation; key: string }[];
   /** Modifier slot properties (valued with the rule id). */
   modSlots: { prevent?: string; stop?: string };
   certain: boolean;
@@ -67,12 +70,52 @@ export interface OnRuleSpec {
 
 // ---- compile time (called by the parser through runtimes.onRules) -------------------------
 
-/** `click`, `keydown(Escape)`, `outside(click)`, `drag(start)` and the modifiers prevent() / stop(), as written in :on(). */
+/** `click`, `keydown(Escape)`, `outside(click)`, `drag(start)`, `click | keydown(Enter)` and the modifiers prevent() / stop(), as written in :on(). */
 export function compileTrigger(text: string): { trigger: Trigger; mods: Modifiers } {
   const parts = splitTop(text);
   if (!parts.length || !parts[0]) throw new Error(':on() needs an event, e.g. :on(click)');
-  const m = /^([a-z-]+)(?:\(\s*(.*?)\s*\))?$/is.exec(parts[0]);
-  if (!m) throw new Error(`cannot read the trigger "${parts[0]}"`);
+  const alts = splitTop(parts[0], '|');
+  let trigger: Trigger;
+  if (alts.length > 1) {
+    if (alts.some((a) => !a)) throw new Error(`an event is missing around "|" in "${parts[0]}"`);
+    const members = alts.map(single);
+    for (const t of members) if (t.outside || t.phase !== undefined)
+      throw new Error(`${t.outside ? `outside(${t.dom})` : `drag(${t.phase})`} cannot be combined with other events in one :on(); write one rule for it`);
+    const keys = members.map((t) => t.key);
+    const dup = keys.find((k, i) => keys.indexOf(k) !== i);
+    if (dup) throw new Error(`${dup} is listed twice in :on(${parts[0]})`);
+    const cats = new Set(members.map((t) => t.category));
+    trigger = {
+      key: keys.join('|'), dom: members[0].dom, members,
+      // event() fields: those of the shared category; mixed categories give only the common ones (event(type)).
+      category: cats.size === 1 ? members[0].category : 'other',
+      cancelable: members.every((t) => t.cancelable),
+    };
+  } else trigger = single(parts[0]);
+  const mods: Modifiers = { prevent: false, stop: false };
+  for (const p of parts.slice(1)) {
+    const fn = /^(prevent|stop)\(\s*\)$/i.exec(p);
+    if (!fn) {
+      const bare = p.toLowerCase();
+      throw new Error(bare === 'prevent' || bare === 'stop' ? `write the modifier as a function: ${bare}()`
+        : /^once(\(\s*\))?$/.test(bare) ? 'once is not supported in :on(); for a one-time change, guard the rule with :when(), e.g. .b:when(not --done):on(click) { --done: set(true) }'
+        : `unknown modifier "${p}"; use prevent() or stop()`);
+    }
+    const k = fn[1].toLowerCase() as keyof Modifiers;
+    if (mods[k]) throw new Error(`${k}() is given twice`);
+    mods[k] = true;
+  }
+  if (mods.prevent && !trigger.cancelable)
+    throw new Error(trigger.outside ? 'prevent() is not allowed with outside(): it would cancel events on unrelated elements anywhere on the page'
+      : `prevent() needs a cancelable event (click, dblclick, contextmenu, mousedown, pointerdown, keydown, keyup, submit, drag); ${(trigger.members?.find((t) => !t.cancelable) ?? trigger).key} is not`);
+  if (mods.stop && (trigger.outside || trigger.phase)) throw new Error(`stop() has no meaning for ${trigger.outside ? 'outside()' : 'drag'}`);
+  return { trigger, mods };
+}
+
+/** One trigger as written in :on(): an event, keydown(Key), outside(event) or drag(phase). */
+function single(part: string): Trigger {
+  const m = /^([a-z-]+)(?:\(\s*(.*?)\s*\))?$/is.exec(part);
+  if (!m) throw new Error(`cannot read the trigger "${part}"`);
   const name = m[1].toLowerCase(), arg = m[2];
   let trigger: Trigger;
   if (name === 'drag') {
@@ -91,24 +134,7 @@ export function compileTrigger(text: string): { trigger: Trigger; mods: Modifier
     const filter = arg === undefined ? undefined : parseKey(arg);
     trigger = { key: filter ? `${name}(${arg!.toLowerCase()})` : name, dom: name, category: info[2], filter, cancelable: info[1] };
   }
-  const mods: Modifiers = { prevent: false, stop: false };
-  for (const p of parts.slice(1)) {
-    const fn = /^(prevent|stop)\(\s*\)$/i.exec(p);
-    if (!fn) {
-      const bare = p.toLowerCase();
-      throw new Error(bare === 'prevent' || bare === 'stop' ? `write the modifier as a function: ${bare}()`
-        : /^once(\(\s*\))?$/.test(bare) ? 'once is not supported in :on(); for a one-time change, guard the rule with :when(), e.g. .b:when(not --done):on(click) { --done: set(true) }'
-        : `unknown modifier "${p}"; use prevent() or stop()`);
-    }
-    const k = fn[1].toLowerCase() as keyof Modifiers;
-    if (mods[k]) throw new Error(`${k}() is given twice`);
-    mods[k] = true;
-  }
-  if (mods.prevent && !trigger.cancelable)
-    throw new Error(trigger.outside ? 'prevent() is not allowed with outside(): it would cancel events on unrelated elements anywhere on the page'
-      : `prevent() needs a cancelable event (click, dblclick, contextmenu, mousedown, pointerdown, keydown, keyup, submit, drag); ${trigger.key} is not`);
-  if (mods.stop && (trigger.outside || trigger.phase)) throw new Error(`stop() has no meaning for ${trigger.outside ? 'outside()' : 'drag'}`);
-  return { trigger, mods };
+  return trigger;
 }
 
 /** `--count: increment(1)` in a rule with `trigger`. */
@@ -131,8 +157,8 @@ export function compileMutation(name: string, text: string, trigger: Trigger): O
   } catch (e) { throw new Error(`${op}() for ${where}: ${(e as Error).message}`); }
 }
 
-/** Splits at depth-0 commas (outside quotes and parentheses); trims. */
-function splitTop(s: string): string[] {
+/** Splits at depth-0 commas, or `sep` (outside quotes and parentheses); trims. */
+function splitTop(s: string, sep = ','): string[] {
   const out: string[] = [];
   let depth = 0, q = '', cur = '';
   for (const c of s) {
@@ -140,7 +166,7 @@ function splitTop(s: string): string[] {
     if (c === '"' || c === "'") q = c;
     else if (c === '(') depth++;
     else if (c === ')') depth--;
-    else if (c === ',' && !depth) { out.push(cur.trim()); cur = ''; continue; }
+    else if (c === sep && !depth) { out.push(cur.trim()); cur = ''; continue; }
     cur += c;
   }
   if (cur.trim() || out.length) out.push(cur.trim());
@@ -174,11 +200,12 @@ export function registerRule(spec: OnRuleSpec): () => void {
   if (spec.modSlots.stop) registerProp(spec.modSlots.stop);
   const gesture = spec.trigger.phase !== undefined;
   const release = gesture ? runtimes.gestures!.register(spec.mods.prevent) : undefined;
-  if (!gesture) { listen(spec.trigger.dom, 1); if (spec.mods.prevent) cancel(spec.trigger.dom, 1); }
+  const doms = [...new Set(spec.trigger.members?.map((t) => t.dom) ?? [spec.trigger.dom])];
+  if (!gesture) for (const d of doms) { listen(d, 1); if (spec.mods.prevent) cancel(d, 1); }
   return () => {
     for (const s of spec.slots) mutations.delete(s.m.id);
     if (release) release();
-    else { if (spec.mods.prevent) cancel(spec.trigger.dom, -1); listen(spec.trigger.dom, -1); }
+    else for (const d of doms) { if (spec.mods.prevent) cancel(d, -1); listen(d, -1); }
   };
 }
 
@@ -261,15 +288,27 @@ function compute(m: Mutation, cell: Cell, ctx: EvalCtx, where: () => string): Ty
   }
 }
 
+/** The key `t` answers with when `test` accepts it (or one of its `a | b` members), else undefined. */
+const keyFor = (t: Trigger, test: (m: Trigger) => boolean) => (t.members ? t.members.find(test)?.key : test(t) ? t.key : undefined);
+
 /**
- * Runs the rules of `el` whose trigger matches: winners per slot, then modifiers. Returns true
- * when a rule with `stop` ran (the caller then skips the element's ancestors).
+ * Runs the rules of `el` whose trigger matches (`match` returns the matched key): winners per
+ * slot, then modifiers. Returns true when a rule with `stop` ran (the caller then skips the
+ * element's ancestors).
  */
-function runElement(el: Element, tx: Tx, match: (t: Trigger) => boolean): boolean {
+function runElement(el: Element, tx: Tx, match: (t: Trigger) => string | undefined): boolean {
   const all = candidates.get(el);
   if (!all) return false;
-  const cands = all.length === 1 ? (match(all[0].spec.trigger) ? all : []) : all.filter((c) => match(c.spec.trigger));
+  let keys: Map<OnRuleSpec, string> | undefined; // the member that matched, for `a | b` rules
+  const hit = (c: Candidate) => {
+    const k = match(c.spec.trigger);
+    if (k !== undefined && c.spec.trigger.members) (keys ??= new Map()).set(c.spec, k);
+    return k !== undefined;
+  };
+  const cands = all.length === 1 ? (hit(all[0]) ? all : []) : all.filter(hit);
   if (!cands.length) return false;
+  /** The candidate's slots for this event: all of them, except in an `a | b` rule (the matched member's). */
+  const slots = (c: Candidate) => (c.spec.trigger.members ? c.spec.slots.filter((s) => s.key === keys!.get(c.spec)) : c.spec.slots);
   const run = (m: Mutation | undefined) => {
     if (!m || !m.rule) return;
     const cell = resolveCell(el, m.name);
@@ -285,7 +324,7 @@ function runElement(el: Element, tx: Tx, match: (t: Trigger) => boolean): boolea
   const style = () => (cs ??= getComputedStyle(el));
   if (cands.length === 1 && applies(cands[0])) {
     // Fast path: one unconditional rule, no cascade question.
-    for (const s of cands[0].spec.slots) run(s.m);
+    for (const s of slots(cands[0])) run(s.m);
   } else {
     // Several rules: without a conditional rule or two rules for one state there is no cascade
     // question; otherwise the computed slot values pick each winner.
@@ -293,7 +332,7 @@ function runElement(el: Element, tx: Tx, match: (t: Trigger) => boolean): boolea
     let read = false;
     for (const c of cands) {
       if (!applies(c)) read = true;
-      for (const s of c.spec.slots) { if (props.has(s.prop)) read = true; props.set(s.prop, s.m); }
+      for (const s of slots(c)) { if (props.has(s.prop)) read = true; props.set(s.prop, s.m); }
     }
     for (const [prop, m] of props) {
       if (!read) { run(m); continue; }
@@ -340,14 +379,14 @@ function dispatch(e: Event, path: EventTarget[]) {
   if (type === 'click' && afterDrag.el && path.includes(afterDrag.el)) return;
   const tx: Tx = { e, writes: [] };
   const key = type === 'keydown' || type === 'keyup';
-  const match = (t: Trigger) => t.dom === type && !t.outside && t.phase === undefined && (!t.filter || keyAllowed(t.filter, e as KeyboardEvent));
+  const match = (t: Trigger) => keyFor(t, (m) => m.dom === type && !m.outside && m.phase === undefined && (!m.filter || keyAllowed(m.filter, e as KeyboardEvent)));
   const own = info?.[0] ? path : path.slice(0, 1);
   for (const node of own) if (node instanceof Element && runElement(node, tx, match)) break;
   commit(tx);
   if (outsiders.size && OUTSIDE.has(type) && !key) {
     activation.event = null; // outside() dismissals never arm focus requests
     const out: Tx = { e, writes: [], rects: tx.rects };
-    const outside = (t: Trigger) => t.outside === true && t.dom === type;
+    const outside = (t: Trigger) => (t.outside === true && t.dom === type ? t.key : undefined);
     for (const el of [...outsiders.keys()]) if (!path.includes(el)) runElement(el, out, outside);
     commit(out);
   }
@@ -362,7 +401,7 @@ function keyAllowed(spec: KeySpec, e: KeyboardEvent) {
 /** A drag phase on its element (gesture.ts). */
 export function fireDrag(el: Element, phase: string, e: Event, drag: DragInfo) {
   const tx: Tx = { e, writes: [], drag };
-  runElement(el, tx, (t) => t.phase === phase);
+  runElement(el, tx, (t) => (t.phase === phase ? t.key : undefined));
   commit(tx);
 }
 

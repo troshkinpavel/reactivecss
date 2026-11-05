@@ -438,6 +438,18 @@
    "template": "{0}({1}) has no finite value",
    "module": "state/actexpr.ts"
   },
+  "RCSS-E079": {
+   "template": "an event is missing around \"|\" in \"{0}\"",
+   "module": "state/on.ts"
+  },
+  "RCSS-E080": {
+   "template": "{0} cannot be combined with other events in one :on(); write one rule for it",
+   "module": "state/on.ts"
+  },
+  "RCSS-E081": {
+   "template": "{0} is listed twice in :on({1})",
+   "module": "state/on.ts"
+  },
   "RCSS-F001": {
    "template": "bind: {0} on {1}: a {2} control cannot hold a {3} state (use {4}). Not bound.",
    "module": "state/bind.ts"
