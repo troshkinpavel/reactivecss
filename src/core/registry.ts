@@ -199,6 +199,8 @@ export interface DeclarationRuntimes {
   gestures?: { register(prevent: boolean): () => void };
   /** persist() (persist feature): initial value from storage, then a link that writes changes. */
   persist?: { initial(spec: PersistSpec, owner: Element, fallback: Typed): Typed | undefined; link(spec: PersistSpec, cell: Cell): PersistLink };
+  /** 0.10 (functions/timers.ts): one timer per (element, trigger key) while an after() / every() rule is active. */
+  timers?: { start(el: Element, t: Trigger): void; stop(el: Element, t: Trigger): void };
 }
 export const runtimes: DeclarationRuntimes = {};
 /** Set by on.ts: the events :on() accepts (describe()). */

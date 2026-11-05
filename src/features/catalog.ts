@@ -4,7 +4,7 @@
 // in tests/unit/catalog.test.ts; dependencies are verified by building each entry alone
 // (tests/unit/catalog.test.ts). Semantics: docs/rfc-modular-runtime-0.8.md.
 
-export type FeatureId = 'core' | 'events' | 'gestures' | 'persist' | 'conditions' | 'nth-var' | 'history' | 'forms' | 'text' | 'attributes' | 'focus' | 'blur' | 'values' | 'dynamic' | 'geometry' | 'strings' | 'format' | 'datetime';
+export type FeatureId = 'core' | 'events' | 'gestures' | 'persist' | 'conditions' | 'nth-var' | 'history' | 'forms' | 'text' | 'attributes' | 'focus' | 'blur' | 'values' | 'dynamic' | 'geometry' | 'strings' | 'format' | 'datetime' | 'timers';
 export type Category = 'Core & State' | 'Events & Actions' | 'Conditions & Selectors' | 'Forms & DOM Bindings' | 'History' | 'Values & Strings' | 'Geometry & Observers' | 'Focus & Accessibility';
 
 export interface CatalogFeature {
@@ -109,6 +109,10 @@ export const CATALOG: CatalogFeature[] = [
     modules: ['functions/datetime.ts'], requires: ['core', 'events', 'strings', 'format'], optional: ['conditions'], status: 'experimental',
     provides: ['fn:time', 'fn:timezone'],
     syntax: ['time(): the current instant, a datetime; state(time())', 'timezone(datetime, "Area/City")', 'datetime ± 30s; datetime - datetime = a duration in ms'] },
+  { id: 'timers', title: 'Timers', category: 'Events & Actions', entry: 'src/features/timers.ts',
+    modules: ['functions/timers.ts'], requires: ['core', 'events'], optional: ['conditions'], status: 'experimental',
+    provides: ['trigger:after', 'trigger:every'],
+    syntax: [':on(after(3s)): once, 3s after the rule becomes active', ':on(every(1s)) / :on(every(80ms, 400ms)): while the rule is active (interval, first delay)', 'active = the element matches the full selector, :when() included'] },
 ];
 
 /** Example configurations (docs/bundle-builder-0.8.md). */

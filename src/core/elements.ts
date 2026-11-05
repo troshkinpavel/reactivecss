@@ -16,6 +16,11 @@ export interface Watcher {
    * event rules: their membership writes nothing, so it cannot feed back.
    */
   followsOwned?: boolean;
+  /**
+   * 0.10 (timers): also re-match when a runtime marker attribute changes (data-rcss-*, e.g. a
+   * :when() marker). Only for watchers whose membership writes nothing.
+   */
+  followsMarkers?: boolean;
 }
 
 interface Entry {
@@ -167,7 +172,7 @@ export function watch(w: Watcher): void {
   }
   const deps = attributesOf(w.selector);
   deps.delete('style'); // our own inline writes must never feed back into the observer
-  for (const a of deps) if (a.startsWith('data-rcss')) deps.delete(a);
+  if (!w.followsMarkers) for (const a of deps) if (a.startsWith('data-rcss')) deps.delete(a);
   const e: Entry = { w, members: new Set(), sibling: siblingSensitive(w.selector), deps };
   entries.set(w, e);
   observe();

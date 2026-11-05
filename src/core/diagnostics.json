@@ -494,6 +494,22 @@
    "template": "{0} {1} {2}: a datetime takes + or - with a time like 30s or 500ms",
    "module": "state/actexpr.ts"
   },
+  "RCSS-E093": {
+   "template": "{0} takes no modifiers (prevent(), stop(), debounce() and throttle() are for DOM events)",
+   "module": "state/on.ts"
+  },
+  "RCSS-E094": {
+   "template": "expected after(delay), e.g. after(3s)",
+   "module": "state/on.ts"
+  },
+  "RCSS-E095": {
+   "template": "expected every(interval) or every(interval, first delay), e.g. every(80ms, 400ms)",
+   "module": "state/on.ts"
+  },
+  "RCSS-E096": {
+   "template": "every({0}) is below the {1}ms minimum; using {2}ms.",
+   "module": "state/on.ts"
+  },
   "RCSS-F001": {
    "template": "bind: {0} on {1}: a {2} control cannot hold a {3} state (use {4}). Not bound.",
    "module": "state/bind.ts"
@@ -852,6 +868,18 @@
   },
   "RCSS-P080": {
    "template": ":on() is ignored in untrusted stylesheets (cross-origin, or inline <style> with trustInlineStyles: false); \"{0}\" is dropped.",
+   "module": "core/parser.ts"
+  },
+  "RCSS-P081": {
+   "template": "after() and every() rules cannot be nested inside a rule with a state condition; write the full selector",
+   "module": "core/parser.ts"
+  },
+  "RCSS-P082": {
+   "template": "after() and every() rules can depend on classes, attributes and :when() (which the runtime follows), not on :{0}; use a state, e.g. :when(--open)",
+   "module": "core/parser.ts"
+  },
+  "RCSS-P083": {
+   "template": "{0} in \"{1}\". Rule dropped.",
    "module": "core/parser.ts"
   },
   "RCSS-R001": {

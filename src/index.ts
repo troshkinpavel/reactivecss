@@ -19,5 +19,6 @@ import './features/blur';
 import './features/strings';
 import './features/format';
 import './features/datetime';
+import './features/timers';
 
 export * from './api';

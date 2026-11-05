@@ -60,6 +60,8 @@ export interface Trigger {
   cancelable: boolean;
   /** 0.10: `a | b | c`, one rule for several DOM events (each has its own slots). */
   members?: Trigger[];
+  /** 0.10: after(delay) (no `every`) or every(interval, first delay), run by functions/timers.ts. */
+  timer?: { first: number; every?: number };
 }
 /** Functional modifiers of :on(): prevent() and stop(); 0.10: debounce(t), throttle(t) in ms. */
 export interface Modifiers { prevent: boolean; stop: boolean; debounce?: number; throttle?: number }
@@ -74,7 +76,12 @@ export interface OnRuleSpec {
   /** Modifier slot properties (valued with the rule id). */
   modSlots: { prevent?: string; stop?: string };
   certain: boolean;
+  /** 0.10 timers: the rule's full selector (:when() markers included); membership = the rule is active. */
+  exact?: string;
 }
+
+/** Shortest every() interval; shorter ones are raised to it (as live() does with its minimum). */
+export const MIN_EVERY = 20;
 
 // ---- compile time (called by the parser through runtimes.onRules) -------------------------
 
@@ -87,8 +94,8 @@ export function compileTrigger(text: string): { trigger: Trigger; mods: Modifier
   if (alts.length > 1) {
     if (alts.some((a) => !a)) throw new Error(`an event is missing around "|" in "${parts[0]}"`);
     const members = alts.map(single);
-    for (const t of members) if (t.outside || t.phase !== undefined)
-      throw new Error(`${t.outside ? `outside(${t.dom})` : `drag(${t.phase})`} cannot be combined with other events in one :on(); write one rule for it`);
+    for (const t of members) if (t.outside || t.phase !== undefined || t.timer)
+      throw new Error(`${t.timer ? t.key : t.outside ? `outside(${t.dom})` : `drag(${t.phase})`} cannot be combined with other events in one :on(); write one rule for it`);
     const keys = members.map((t) => t.key);
     const dup = keys.find((k, i) => keys.indexOf(k) !== i);
     if (dup) throw new Error(`${dup} is listed twice in :on(${parts[0]})`);
@@ -101,6 +108,7 @@ export function compileTrigger(text: string): { trigger: Trigger; mods: Modifier
     };
   } else trigger = single(parts[0]);
   const mods: Modifiers = { prevent: false, stop: false };
+  if (trigger.timer && parts.length > 1) throw new Error(`${trigger.key} takes no modifiers (prevent(), stop(), debounce() and throttle() are for DOM events)`);
   for (const p of parts.slice(1)) {
     const timed = /^(debounce|throttle)\(\s*(.*?)\s*\)$/is.exec(p);
     if (timed) {
@@ -133,12 +141,27 @@ export function compileTrigger(text: string): { trigger: Trigger; mods: Modifier
   return { trigger, mods };
 }
 
-/** One trigger as written in :on(): an event, keydown(Key), outside(event) or drag(phase). */
+/** One trigger as written in :on(): an event, keydown(Key), outside(event), drag(phase), after() or every(). */
 function single(part: string): Trigger {
   const m = /^([a-z-]+)(?:\(\s*(.*?)\s*\))?$/is.exec(part);
   if (!m) throw new Error(`cannot read the trigger "${part}"`);
   const name = m[1].toLowerCase(), arg = m[2];
   let trigger: Trigger;
+  if ((name === 'after' || name === 'every') && arg !== undefined) {
+    // 0.10 timers: one run `first` after the rule becomes active, or every `every` while it is.
+    if (!runtimes.timers) throw new Error('feature:timers');
+    const a = splitTop(arg);
+    if (name === 'after') {
+      if (a.length !== 1) throw new Error('expected after(delay), e.g. after(3s)');
+      const first = ms(a[0], 'after()');
+      return { key: `after(${first}ms)`, dom: '', category: 'none', cancelable: false, timer: { first } };
+    }
+    if (a.length > 2) throw new Error('expected every(interval) or every(interval, first delay), e.g. every(80ms, 400ms)');
+    let every = ms(a[0], 'every()');
+    if (every < MIN_EVERY) { warn(`every(${a[0]}) is below the ${MIN_EVERY}ms minimum; using ${MIN_EVERY}ms.`); every = MIN_EVERY; }
+    const first = a[1] === undefined ? every : ms(a[1], 'the first delay of every()');
+    return { key: `every(${every}ms, ${first}ms)`, dom: '', category: 'none', cancelable: false, timer: { first, every } };
+  }
   if (name === 'drag') {
     const phase = (arg ?? 'move').toLowerCase();
     if (!PHASES.has(phase)) throw new Error(`drag() takes start, move, end or cancel; got "${arg}"`);
@@ -221,7 +244,7 @@ export function registerRule(spec: OnRuleSpec): () => void {
   if (spec.modSlots.stop) registerProp(spec.modSlots.stop);
   const gesture = spec.trigger.phase !== undefined;
   const release = gesture ? runtimes.gestures!.register(spec.mods.prevent) : undefined;
-  const doms = [...new Set(spec.trigger.members?.map((t) => t.dom) ?? [spec.trigger.dom])];
+  const doms = spec.trigger.timer ? [] : [...new Set(spec.trigger.members?.map((t) => t.dom) ?? [spec.trigger.dom])];
   if (!gesture) for (const d of doms) { listen(d, 1); if (spec.mods.prevent) cancel(d, 1); }
   return () => {
     for (const s of spec.slots) mutations.delete(s.m.id);
@@ -234,14 +257,19 @@ export function registerRule(spec: OnRuleSpec): () => void {
 /** Tracks the elements a rule may apply to; only these are checked on events. */
 export function ruleWatcher(match: string, spec: OnRuleSpec, sheet?: CSSStyleSheet): Watcher {
   const entry: Candidate = { spec, sheet };
+  const timer = spec.trigger.timer ? runtimes.timers : undefined;
   return {
-    selector: match,
+    // 0.10 timers: the full selector, re-matched when a :when() marker changes, so membership
+    // is "the rule is active": joining starts the timer, leaving cancels it.
+    selector: timer ? spec.exact ?? match : match,
     followsOwned: true,
+    followsMarkers: !!timer,
     add(el) {
       const list = candidates.get(el);
       if (list) list.push(entry); else candidates.set(el, [entry]);
       if (spec.trigger.outside) outsiders.set(el, (outsiders.get(el) ?? 0) + 1);
       runtimeStats.bindings++;
+      timer?.start(el, spec.trigger);
     },
     remove(el) {
       const list = candidates.get(el);
@@ -253,6 +281,7 @@ export function ruleWatcher(match: string, spec: OnRuleSpec, sheet?: CSSStyleShe
       cancelDebounced(spec, el);
       throttled.get(el)?.delete(spec);
       runtimeStats.bindings--;
+      timer?.stop(el, spec.trigger);
     },
   };
 }
@@ -278,7 +307,9 @@ export const dragTarget = Object.assign(
 
 interface Write { cell: Cell; v: Typed; where: () => string }
 interface Tx {
-  e: Event; writes: Write[]; drag?: DragInfo; rects?: Map<Element, DOMRect>;
+  /** Undefined for a timer run. */
+  e?: Event;
+  writes: Write[]; drag?: DragInfo; rects?: Map<Element, DOMRect>;
   /** 0.10: a debounced run of this rule only (its delay ended). */
   only?: OnRuleSpec;
 }
@@ -307,7 +338,7 @@ function gate(spec: OnRuleSpec, el: Element, tx: Tx, key: string): boolean {
     let m = debounced.get(spec);
     if (!m) debounced.set(spec, (m = new Map()));
     clearTimeout(m.get(el)?.timer);
-    const e = tx.e;
+    const e = tx.e!;
     m.set(el, { e, key, timer: setTimeout(() => { m!.delete(el); if (!m!.size) debounced.delete(spec); runLater(el, spec, e, key); }, debounce) });
     return false;
   }
@@ -330,6 +361,24 @@ function runLater(el: Element, spec: OnRuleSpec, e: Event, key: string) {
     const tx: Tx = { e, writes: [], only: spec };
     runElement(el, tx, (t) => (t === spec.trigger ? key : undefined));
     commit(tx);
+  });
+}
+
+/**
+ * 0.10: after() / every() timers that came due together (functions/timers.ts): one transaction
+ * per element, all in one urgent pass (one style sync, one frame of writes).
+ */
+export function fireTimers(due: [Element, string][]) {
+  flushMutations();
+  sync();
+  activation.event = null;
+  urgently(() => {
+    for (const [el, key] of due) {
+      if (!el.isConnected) continue;
+      const tx: Tx = { writes: [] };
+      runElement(el, tx, (t) => (t.key === key ? key : undefined));
+      commit(tx);
+    }
   });
 }
 
@@ -431,7 +480,7 @@ function runElement(el: Element, tx: Tx, match: (t: Trigger) => string | undefin
     const prop = c.spec.modSlots[k];
     return !!prop && (applies(c) || style().getPropertyValue(prop).trim() !== '');
   });
-  if (tx.only) return false; // a debounced run: the event is over
+  if (!tx.e || tx.only) return false; // a timer or a debounced run: no event, or it is over
   if (modifier('prevent') && tx.drag === undefined) preventEvent(el, tx.e);
   const stop = modifier('stop');
   if (stop) {
