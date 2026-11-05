@@ -90,7 +90,7 @@ declare const __RCSS_EXCLUDED__: Record<string, string> | undefined;
 export const EXCLUDED: Record<string, string> = typeof __RCSS_EXCLUDED__ !== 'undefined' ? __RCSS_EXCLUDED__ : {};
 /** Declarations the parser recognizes and the feature that provides their runtime. */
 const DECLARATION_FEATURE = { on: 'events', bind: 'forms', text: 'text', attr: 'attributes', focus: 'focus', typed: 'values', 'state-bind': 'attributes',
-  'on-rule': 'events', drag: 'gestures', timer: 'timers', persist: 'persist', 'state-form': 'forms', 'attr-ns': 'attributes', content: 'text' } as const;
+  'on-rule': 'events', drag: 'gestures', persist: 'persist', 'state-form': 'forms', 'attr-ns': 'attributes', content: 'text' } as const;
 export const missing = (what: string, feature: string) =>
   msg(`${what} is not included in this bundle (feature "${feature}"); build a bundle with it (reactive-css build --features ${feature}) or use the full bundle`);
 /** Names that may be the native CSS function of the same name: reported as a note, not a warning. */
@@ -165,7 +165,7 @@ const GROUPING = new Set(['media', 'supports', 'layer', 'container', 'scope', 's
  * so we bind a superset of elements. Binding an extra element is harmless: the
  * generated var() is only used where the real selector matches.
  */
-const STATEFUL = new Set([
+export const STATEFUL = new Set([
   'hover', 'active', 'focus', 'focus-visible', 'focus-within', 'target', 'target-within',
   'visited', 'link', 'any-link', 'checked', 'indeterminate', 'default', 'disabled', 'enabled',
   'valid', 'invalid', 'user-valid', 'user-invalid', 'in-range', 'out-of-range', 'required',
@@ -716,12 +716,10 @@ export function compile(source: string, options: CompileOptions | string = {}): 
           if (!runtimes.onRules) throw new Error(missing(':on()', DECLARATION_FEATURE['on-rule']));
           let c: { trigger: Trigger; mods: Modifiers };
           try { c = runtimes.onRules.trigger(text(i + 2, end - 1)); } catch (e) {
-            const m = (e as Error).message;
-            throw m === 'feature:gestures' ? new Error(missing(':on(drag)', DECLARATION_FEATURE.drag))
-              : m === 'feature:timers' ? new Error(missing(':on(after()) and :on(every())', DECLARATION_FEATURE.timer)) : e;
+            throw (e as Error).message === 'feature:gestures' ? new Error(missing(':on(drag)', DECLARATION_FEATURE.drag)) : e;
           }
           for (const t of c.trigger.members ?? [c.trigger])
-            use(t.timer ? 'trigger:' + (t.timer.every === undefined ? 'after' : 'every') : t.phase !== undefined ? 'gesture:drag' : 'trigger:' + (t.outside ? 'outside' : t.dom));
+            use(t.phase !== undefined ? 'gesture:drag' : 'trigger:' + (t.outside ? 'outside' : t.dom));
           for (const [k, v] of Object.entries(c.mods)) if (v) use('mod:' + k);
           if (pre.on && (pre.on.trigger.key !== c.trigger.key || pre.on.mods.prevent !== c.mods.prevent || pre.on.mods.stop !== c.mods.stop
             || pre.on.mods.debounce !== c.mods.debounce || pre.on.mods.throttle !== c.mods.throttle))
@@ -758,12 +756,8 @@ export function compile(source: string, options: CompileOptions | string = {}): 
     return resolveNesting(parent, strip(from, to));
   }
 
-  /**
-   * 0.10 timers: the rule's selector with this rule's edits applied (:when() markers, :on() as
-   * :is(*)), nested in its parent. Only conditions the element watcher can follow are allowed.
-   */
-  function timerSelector(a: number, b: number, parent: ReactiveRule | null): string {
-    if (parent && parent.certain !== true) throw new Error('after() and every() rules cannot be nested inside a rule with a state condition; write the full selector');
+  /** 0.10 timers: the rule's selector with this rule's edits applied (:when() markers, :on() as :is(*)). */
+  function editedSelector(a: number, b: number): string {
     // This prelude's edits are the last ones selector() pushed (earlier edits are before `a`).
     const own = new Map<number, (typeof edits)[number]>();
     for (let k = edits.length; k-- && edits[k].from >= a;) if (edits[k].to <= b) own.set(edits[k].from, edits[k]);
@@ -772,13 +766,7 @@ export function compile(source: string, options: CompileOptions | string = {}): 
       const ed = own.get(k);
       if (ed) { s += ed.text; k = ed.to; } else { s += tokens[k].type === 'comment' ? ' ' : raw(k); k++; }
     }
-    const t = tokenize(s);
-    t.forEach((tok, k) => {
-      const n = t[k + 1];
-      if (tok.type === ':' && t[k - 1]?.type !== ':' && n && (n.type === 'ident' || n.type === 'function') && STATEFUL.has(n.value.toLowerCase()))
-        throw new Error(`after() and every() rules can depend on classes, attributes and :when() (which the runtime follows), not on :${n.value.toLowerCase()}; use a state, e.g. :when(--open)`);
-    });
-    return resolveNesting(parent?.match ?? null, s.replace(/\s+/g, ' ').trim());
+    return s;
   }
 
   /** Token range of the compound selector containing token `at`. */
@@ -894,7 +882,7 @@ export function compile(source: string, options: CompileOptions | string = {}): 
           // 0.10 timers: the rule is active exactly while its element matches the full selector.
           let exact: string | undefined;
           if (pre.on?.trigger.timer) {
-            try { exact = timerSelector(i, b, rule); } catch (e) {
+            try { exact = runtimes.timers!.selector(editedSelector(i, b), rule ?? undefined); } catch (e) {
               warn(`${(e as Error).message} in "${snippet(i, b)}". Rule dropped.`);
               while (edits.length && edits[edits.length - 1].from >= i) edits.pop(); // its selector edits (the last ones): edits must not overlap
               edits.push({ from: i, to: close + 1, text: '' });

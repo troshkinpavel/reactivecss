@@ -13,7 +13,7 @@ beforeEach(() => { diagnostics.length = 0; });
 
 describe('compileTrigger: after() and every()', () => {
   it('times in ms and s; every() defaults its first delay to one interval', () => {
-    expect(trig('after(3s)')).toEqual({ key: 'after(3000ms)', dom: '', category: 'none', cancelable: false, timer: { first: 3000 } });
+    expect(trig('after(3s)')).toEqual({ key: 'after(3000ms)', dom: 'after', category: 'none', cancelable: false, timer: { first: 3000 } });
     expect(trig('every(1s)').timer).toEqual({ first: 1000, every: 1000 });
     expect(trig('EVERY( 80ms , .4s )')).toMatchObject({ key: 'every(80ms, 400ms)', timer: { first: 400, every: 80 } });
     expect(trig('every(80ms, 0ms)').timer).toEqual({ first: 0, every: 80 });

@@ -8,7 +8,7 @@ import type { AttrBind, BoundAttribute } from '../state/bindattr';
 import type { Trigger, Modifiers, Mutation, OnRuleSpec } from '../state/on';
 import type { PersistSpec, PersistLink, Cell } from '../state/state';
 import type { Typed } from '../state/values';
-import type { DerivedDecl } from './parser';
+import type { DerivedDecl, ReactiveRule } from './parser';
 // Registries for reactive functions and custom selectors. The parser, scheduler and
 // element manager only talk to these interfaces, so adding a function means adding
 // one definition object, nothing else.
@@ -206,7 +206,7 @@ export interface DeclarationRuntimes {
    */
   derived?: { accept(name: string, call: CallNode, important: boolean, unconditional: boolean, at: string): boolean; sheet(declared: Map<string, number>, decls: DerivedDecl[]): () => void; watchers(list: [match: string, d: DerivedDecl][]): Watcher[] };
   /** 0.10 (functions/timers.ts): one timer per (element, trigger key) while an after() / every() rule is active. */
-  timers?: { start(el: Element, t: Trigger): void; stop(el: Element, t: Trigger): void };
+  timers?: { trigger(name: string, args: string[]): Trigger; selector(edited: string, parent?: ReactiveRule): string; start(el: Element, t: Trigger): void; stop(el: Element, t: Trigger): void };
 }
 export const runtimes: DeclarationRuntimes = {};
 /** Set by on.ts: the events :on() accepts (describe()). */

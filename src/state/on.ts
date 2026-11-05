@@ -21,6 +21,7 @@ import { parseAction, evaluateAction, type Category, type Node, type DragInfo, t
 import { listen, cancel, preventEvent, editable, extensions } from './actions';
 import { activation, sync, urgently } from '../core/scheduler';
 import { flushMutations } from '../core/elements';
+import { missing } from '../core/parser';
 
 /** DOM events :on() accepts: [bubbles, cancelable, category]. Adding an event is one row. */
 export const EVENT_INFO: Record<string, [boolean, boolean, Category]> = {
@@ -40,7 +41,7 @@ export const EVENT_INFO: Record<string, [boolean, boolean, Category]> = {
 const OUTSIDE = new Set(['click', 'pointerdown', 'focusin']);
 const TIME = /^(\d*\.?\d+)(ms|s)$/i;
 /** Milliseconds of a CSS time literal; `what` names the place for the message. */
-function ms(text: string, what: string): number {
+export function ms(text: string, what: string): number {
   const m = TIME.exec(text);
   if (!m) throw new Error(`${what} takes a time like 300ms or 2s, got "${text}"`);
   return +m[1] * (m[2].toLowerCase() === 's' ? 1000 : 1);
@@ -79,9 +80,6 @@ export interface OnRuleSpec {
   /** 0.10 timers: the rule's full selector (:when() markers included); membership = the rule is active. */
   exact?: string;
 }
-
-/** Shortest every() interval; shorter ones are raised to it (as live() does with its minimum). */
-export const MIN_EVERY = 20;
 
 // ---- compile time (called by the parser through runtimes.onRules) -------------------------
 
@@ -148,19 +146,8 @@ function single(part: string): Trigger {
   const name = m[1].toLowerCase(), arg = m[2];
   let trigger: Trigger;
   if ((name === 'after' || name === 'every') && arg !== undefined) {
-    // 0.10 timers: one run `first` after the rule becomes active, or every `every` while it is.
-    if (!runtimes.timers) throw new Error('feature:timers');
-    const a = splitTop(arg);
-    if (name === 'after') {
-      if (a.length !== 1) throw new Error('expected after(delay), e.g. after(3s)');
-      const first = ms(a[0], 'after()');
-      return { key: `after(${first}ms)`, dom: '', category: 'none', cancelable: false, timer: { first } };
-    }
-    if (a.length > 2) throw new Error('expected every(interval) or every(interval, first delay), e.g. every(80ms, 400ms)');
-    let every = ms(a[0], 'every()');
-    if (every < MIN_EVERY) { warn(`every(${a[0]}) is below the ${MIN_EVERY}ms minimum; using ${MIN_EVERY}ms.`); every = MIN_EVERY; }
-    const first = a[1] === undefined ? every : ms(a[1], 'the first delay of every()');
-    return { key: `every(${every}ms, ${first}ms)`, dom: '', category: 'none', cancelable: false, timer: { first, every } };
+    if (!runtimes.timers) throw new Error(missing(':on(after()) and :on(every())', 'timers'));
+    return runtimes.timers.trigger(name, splitTop(arg));
   }
   if (name === 'drag') {
     const phase = (arg ?? 'move').toLowerCase();
@@ -306,7 +293,7 @@ export const dragTarget = Object.assign(
 );
 
 interface Write { cell: Cell; v: Typed; where: () => string }
-interface Tx {
+export interface Tx {
   /** Undefined for a timer run. */
   e?: Event;
   writes: Write[]; drag?: DragInfo; rects?: Map<Element, DOMRect>;
@@ -364,25 +351,6 @@ function runLater(el: Element, spec: OnRuleSpec, e: Event, key: string) {
   });
 }
 
-/**
- * 0.10: after() / every() timers that came due together (functions/timers.ts): one transaction
- * per element, all in one urgent pass (one style sync, one frame of writes).
- */
-export function fireTimers(due: [Element, string][]) {
-  flushMutations();
-  sync();
-  activation.event = null;
-  urgently(() => {
-    for (const [el, key] of due) {
-      if (!el.isConnected) continue;
-      const tx: Tx = { writes: [] };
-      runElement(el, tx, (t) => (t.key === key ? key : undefined));
-      commit(tx);
-    }
-  });
-}
-
-
 /** A value `v` stored in a cell holding `cur` (0.9 adds a unitless 0 for dimensions, 0 / 1 for booleans). */
 function fit(cur: Typed, v: Typed): Typed | undefined {
   if (cur.type === 'dimension' && v.type === 'number' && v.v === 0) return { ...cur, v: 0 };
@@ -423,7 +391,7 @@ const keyFor = (t: Trigger, test: (m: Trigger) => boolean) => (t.members ? t.mem
  * slot, then modifiers. Returns true when a rule with `stop` ran (the caller then skips the
  * element's ancestors).
  */
-function runElement(el: Element, tx: Tx, match: (t: Trigger) => string | undefined): boolean {
+export function runElement(el: Element, tx: Tx, match: (t: Trigger) => string | undefined): boolean {
   const all = candidates.get(el);
   if (!all) return false;
   let keys: Map<OnRuleSpec, string> | undefined; // the member that matched, for `a | b` rules
@@ -494,7 +462,7 @@ function runElement(el: Element, tx: Tx, match: (t: Trigger) => string | undefin
 }
 
 /** Applies the writes in order; when one cell is written twice, only the last write (the outer element) applies. */
-function commit(tx: Tx) {
+export function commit(tx: Tx) {
   const w0 = tx.writes;
   const list = w0.length < 2 ? w0 : w0.filter((w, i) => !w0.some((x, j) => j > i && x.cell === w.cell));
   for (const w of list) {

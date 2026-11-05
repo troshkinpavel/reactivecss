@@ -20,8 +20,31 @@
 //   writes; @media around the rule is checked by the cascade when it fires. event() is not
 //   available (a compile-time error).
 
-import { fireTimers, type Trigger } from '../state/on';
+import { ms, runElement, commit, type Trigger, type Tx } from '../state/on';
 import { runtimes, runtimeStats } from '../core/registry';
+import { STATEFUL, resolveNesting } from '../core/parser';
+import { tokenize } from '../core/tokenizer';
+import { warn } from '../core/log';
+import { activation, sync, urgently } from '../core/scheduler';
+import { flushMutations } from '../core/elements';
+
+/** Shortest every() interval; shorter ones are raised to it (as live() does with its minimum). */
+const MIN_EVERY = 20;
+
+/** One transaction per element, all in one urgent pass (one style sync, one frame of writes). */
+function fireTimers(due: [Element, string][]) {
+  flushMutations();
+  sync();
+  activation.event = null;
+  urgently(() => {
+    for (const [el, key] of due) {
+      if (!el.isConnected) continue;
+      const tx: Tx = { writes: [] };
+      runElement(el, tx, (t) => (t.key === key ? key : undefined));
+      commit(tx);
+    }
+  });
+}
 
 interface Timer { el: Element; t: Trigger; refs: number; due: number; bucket?: number; paused?: boolean }
 
@@ -87,6 +110,30 @@ function onVisibility() {
 }
 
 runtimes.timers = {
+  // One run `first` after the rule becomes active, or every `every` while it is.
+  trigger(name, a) {
+    if (name === 'after') {
+      if (a.length !== 1) throw new Error('expected after(delay), e.g. after(3s)');
+      const first = ms(a[0], 'after()');
+      return { key: `after(${first}ms)`, dom: name, category: 'none', cancelable: false, timer: { first } };
+    }
+    if (a.length > 2) throw new Error('expected every(interval) or every(interval, first delay), e.g. every(80ms, 400ms)');
+    let every = ms(a[0], 'every()');
+    if (every < MIN_EVERY) { warn(`every(${a[0]}) is below the ${MIN_EVERY}ms minimum; using ${MIN_EVERY}ms.`); every = MIN_EVERY; }
+    const first = a[1] === undefined ? every : ms(a[1], 'the first delay of every()');
+    return { key: `every(${every}ms, ${first}ms)`, dom: name, category: 'none', cancelable: false, timer: { first, every } };
+  },
+  // The rule is active exactly while its element matches this. Only what the watcher can follow.
+  selector(edited, parent) {
+    if (parent && parent.certain !== true) throw new Error('after() and every() rules cannot be nested inside a rule with a state condition; write the full selector');
+    const t = tokenize(edited);
+    t.forEach((tok, k) => {
+      const n = t[k + 1];
+      if (tok.type === ':' && t[k - 1]?.type !== ':' && n && (n.type === 'ident' || n.type === 'function') && STATEFUL.has(n.value.toLowerCase()))
+        throw new Error(`after() and every() rules can depend on classes, attributes and :when() (which the runtime follows), not on :${n.value.toLowerCase()}; use a state, e.g. :when(--open)`);
+    });
+    return resolveNesting(parent?.match ?? null, edited.replace(/\s+/g, ' ').trim());
+  },
   start(el, t) {
     let m = timers.get(el);
     if (!m) timers.set(el, (m = new Map()));
