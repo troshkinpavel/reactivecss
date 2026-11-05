@@ -13,7 +13,7 @@ import { fmt } from '../core/format';
 import { EXCLUDED, missing } from '../core/parser';
 import { sensitive } from './expr';
 import { resolveCell, type Cell } from './state';
-import { parseTyped, convert, serialize, numericString, type Typed } from './values';
+import { parseTyped, convert, serialize, numericString, datetimeOps, type Typed } from './values';
 
 /** What kind of event a trigger delivers: decides which event() fields exist. */
 export type Category = 'pointer' | 'mouse' | 'keyboard' | 'form' | 'focus' | 'scroll' | 'drag' | 'other'
@@ -359,7 +359,7 @@ function common(list: Typed[]): [Typed, number[]] {
 }
 
 function arith(op: string, x: Typed, y: Typed): Typed {
-  if (x.type === 'datetime' || y.type === 'datetime') return dateArith(op, x, y);
+  if (x.type === 'datetime' || y.type === 'datetime') return datetimeOps.arith!(op, x, y);
   const a = numeric(x), b = numeric(y);
   if (op === '+' || op === '-') {
     const [u, [av, bv]] = common([a, b]);
@@ -374,22 +374,6 @@ function arith(op: string, x: Typed, y: Typed): Typed {
   if (a.type === 'number') throw new EvalError(`cannot divide ${serialize(a)} by ${serialize(b)}`);
   const [, [av, bv]] = common([a, b]);
   return num(round6(av / bv));
-}
-
-/**
- * 0.10: datetime ± duration = datetime (same zone); datetime - datetime = duration in ms.
- * A plain number is never taken as a time.
- */
-function dateArith(op: string, x: Typed, y: Typed): Typed {
-  if (x.type === 'datetime' && y.type === 'datetime') {
-    if (op !== '-') throw new EvalError(`only subtraction works on two datetimes (it gives the duration between them), not ${op}`);
-    return { type: 'dimension', v: (x.v as number) - (y.v as number), unit: 'ms' };
-  }
-  const [d, other] = x.type === 'datetime' ? [x, y] : [y, x];
-  const delta = other.type === 'dimension' ? convert({ type: 'dimension', v: 0, unit: 'ms' }, other) : undefined;
-  if ((op !== '+' && op !== '-') || delta === undefined || (op === '-' && d === y))
-    throw new EvalError(`${serialize(x)} ${op} ${serialize(y)}: a datetime takes + or - with a time like 30s or 500ms`);
-  return { ...d, v: (d.v as number) + (op === '+' ? delta : -delta) };
 }
 
 function rect(ctx: EvalCtx): DOMRect {

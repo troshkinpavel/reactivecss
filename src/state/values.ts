@@ -40,7 +40,6 @@ export function parseTyped(text: string): Typed {
 export function serialize(t: Typed): string {
   if (t.type === 'boolean') return t.v ? '1' : '0';
   if (t.type === 'value') return t.v as string;
-  if (t.type === 'datetime') return fmt(t.v as number); // epoch ms: usable in calc() and counters
   // One CSS string token whatever the text (attribute values are untrusted): quotes and
   // backslashes escaped, every control character as a hex escape (a raw newline ends a string).
   if (t.type === 'string') return '"' + (t.v as string).replace(/[\\"]/g, '\\$&').replace(/[\0-\x1f\x7f]/g, (c) => '\\' + c.charCodeAt(0).toString(16) + ' ') + '"';
@@ -108,6 +107,13 @@ export const conditionCalls: {
   parse?(text: string): { node: unknown; names: string[] };
   /** Undefined = unknown; throws ConditionError for a type error. */
   evaluate?(node: unknown, el: Element): Typed | undefined;
+} = {};
+
+/** 0.10: installed by functions/datetime.ts; a datetime value exists only with that feature. */
+export const datetimeOps: {
+  /** Both as numbers of epoch milliseconds; throws ConditionError for anything else. */
+  compare?(a: Typed, b: Typed): [Typed, Typed];
+  arith?(op: string, x: Typed, y: Typed): Typed;
 } = {};
 
 export interface Condition {
@@ -259,13 +265,7 @@ function compare(op: string, a: Typed, b: Typed): boolean {
   const ordered = op !== '==' && op !== '!=';
   // 0.10: a numeric string compares with a number ("09" >= 9); two strings still compare as text.
   if ((a.type === 'string') !== (b.type === 'string')) { a = numericString(a) ?? a; b = numericString(b) ?? b; }
-  // 0.10: a datetime compares with a datetime or with a number of epoch milliseconds, by instant.
-  if (a.type === 'datetime' || b.type === 'datetime') {
-    const ms = (t: Typed) => (t.type === 'datetime' || t.type === 'number' ? (t.v as number) : undefined);
-    const x = ms(a), y = ms(b);
-    if (x === undefined || y === undefined) throw new ConditionError(`cannot compare ${serialize(a)} (${a.type}) with ${serialize(b)} (${b.type})`);
-    a = { type: 'number', v: x, unit: '' }; b = { type: 'number', v: y, unit: '' };
-  }
+  if (a.type === 'datetime' || b.type === 'datetime') [a, b] = datetimeOps.compare!(a, b);
   if (a.type === 'boolean' || b.type === 'boolean' || a.type === 'value' || b.type === 'value' || a.type === 'string' || b.type === 'string') {
     if (a.type !== b.type) throw new ConditionError(`cannot compare ${serialize(a)} (${a.type}) with ${serialize(b)} (${b.type})`);
     if (ordered) throw new ConditionError(`${op} needs numbers, got ${a.type} values`);

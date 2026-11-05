@@ -15,7 +15,7 @@
 
 import { valueFunction } from './calls';
 import { EvalError } from '../state/actexpr';
-import { serialize, type Typed } from '../state/values';
+import { serialize, convert, datetimeOps, ConditionError, type Typed } from '../state/values';
 import { initFns } from '../state/expr';
 import { checkZone, FormatError } from './intl';
 
@@ -31,7 +31,32 @@ function now(): Typed {
 
 valueFunction('time', 'time()', { min: 0, max: 0, eval: now });
 // --until: state(time()): a datetime state (a later set(time() + 30s) keeps the type).
-initFns.set('time', now);
+const INIT = 'time';
+initFns.set(INIT, (args) => {
+  if (args.some((a) => a.trim())) throw new Error(`${INIT}() takes no arguments here`);
+  return { k: 'fn', get: now };
+});
+
+// A datetime compares with a datetime or with a number of epoch milliseconds, by instant.
+datetimeOps.compare = (a, b) => {
+  const ms = (t: Typed) => (t.type === 'datetime' || t.type === 'number' ? (t.v as number) : undefined);
+  const x = ms(a), y = ms(b);
+  if (x === undefined || y === undefined) throw new ConditionError(`cannot compare ${serialize(a)} (${a.type}) with ${serialize(b)} (${b.type})`);
+  return [{ type: 'number', v: x, unit: '' }, { type: 'number', v: y, unit: '' }];
+};
+
+// datetime ± duration = datetime (same zone); datetime - datetime = duration in ms. A plain number is never a time.
+datetimeOps.arith = (op, x, y) => {
+  if (x.type === 'datetime' && y.type === 'datetime') {
+    if (op !== '-') throw new EvalError(`only subtraction works on two datetimes (it gives the duration between them), not ${op}`);
+    return { type: 'dimension', v: (x.v as number) - (y.v as number), unit: 'ms' };
+  }
+  const [d, other] = x.type === 'datetime' ? [x, y] : [y, x];
+  const delta = other.type === 'dimension' ? convert({ type: 'dimension', v: 0, unit: 'ms' }, other) : undefined;
+  if ((op !== '+' && op !== '-') || delta === undefined || (op === '-' && d === y))
+    throw new EvalError(`${serialize(x)} ${op} ${serialize(y)}: a datetime takes + or - with a time like 30s or 500ms`);
+  return { ...d, v: (d.v as number) + (op === '+' ? delta : -delta) };
+};
 
 valueFunction('timezone', 'timezone(datetime, "Area/City")', {
   min: 2, max: 2,
