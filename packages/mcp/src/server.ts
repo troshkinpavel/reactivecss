@@ -155,7 +155,7 @@ export function createServer(): McpServer {
       async (u) => ({ contents: [{ uri: u.href, mimeType: 'application/json', text: JSON.stringify(data(), null, 1) }] }));
   json('reactivecss://version', 'Version and status', 'The Reactive CSS version this server describes, its status, and the server version.', () => ({
     server: { name: k.name, version: k.version, builtAt: k.builtAt }, reactivecss: k.reactivecss,
-    supports: '0.9.x', legacySyntax: '0.8 on:, text:, attr: and bind: keep working in 0.9 and are labelled legacy.',
+    supports: k.reactivecss.supports, legacySyntax: '0.8 on:, text:, attr: and bind: keep working and are labelled legacy.',
   }));
   json('reactivecss://api', 'API catalog', 'Every Reactive CSS API entry: kind, status, since, syntax; legacy entries name their 0.9 replacement.', () => ({ reactivecssVersion: v, entries: apiList() }));
   json('reactivecss://features', 'Feature catalog', 'Bundle features: what each provides, its syntax, status and dependencies, and the profiles.', () => ({ reactivecssVersion: v, features: k.catalog.features, profiles: k.catalog.profiles }));
@@ -181,7 +181,7 @@ export function createServer(): McpServer {
   }, ({ description }) => say(`Build this component with HTML and Reactive CSS ${v}: ${description}
 
 1. Decide what native CSS and HTML already do (:hover, :checked, :has(), <details>, popover, <dialog>, transitions) and use them.
-2. Call get_example with the closest topic and get_api_reference for each Reactive CSS API you use. Use the 0.9 syntax only: state(), :on() rules with mutations, --attr-*, content, focus: when().
+2. Call get_example with the closest topic and get_api_reference for each Reactive CSS API you use. Use the current syntax only: state(), :on() rules with mutations, --attr-*, content, focus: when().
 3. Declare each state on the element that owns it or on a container of all its users. Match types to values (state(0px) for event(client-x)).
 4. Call validate_css on the final CSS and fix every error and warning.
 5. Call suggest_bundle with the CSS and report the features it needs.

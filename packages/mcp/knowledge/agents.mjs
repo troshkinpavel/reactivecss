@@ -10,7 +10,7 @@ function core(k) {
   return {
     v,
     syntax: [
-      '| Need | 0.9 syntax |',
+      '| Need | Syntax |',
       '|---|---|',
       '| State (owned by each matching element) | `--open: state(false);` `--count: state(0);` `--x: state(0px);` `--mode: state(light);` `--q: state("");` |',
       '| Event rule | `.menu > button:on(click) { --open: toggle(); }` |',
@@ -25,6 +25,10 @@ function core(k) {
       '| DOM text | `.value { content: var(--count); }` (on elements, not `::before`) |',
       '| Focus | `.dialog input { focus: when(--open); }` and `input:blur { … }` |',
       '| History | `previous(--n)`, `direction(--n)`, `:changed(--n)` |',
+      '| Several events, timing | `:on(click \\| keydown(Enter))`, `:on(input, debounce(300ms))`, `:on(pointermove, throttle(16ms))` |',
+      '| Timers | `.toast:when(--visible):on(after(3s)) { --visible: set(false); }`, `:on(every(1s))`, `:on(every(80ms, 400ms))` |',
+      '| Value functions | `length(--q)`, `includes(--a, --b)`, `lower(--q)`, `trim(--q)`, `format(--n, "currency", "EUR")`, `format(--t, "HH:mm")`, `time()`, `timezone(--t, "Asia/Tokyo")` |',
+      '| Computed values (read-only states) | `.form { --value: state(""); --clean: trim(--value); --chars: length(--clean); }`, `--now: live(time(), 1s);` |',
     ].join('\n'),
     rules: [
       'Check native CSS and HTML first: `:hover`, `:checked`, `:has()`, `<details>`, the Popover API, `<dialog>`, transitions, native `random()`. Use Reactive CSS for values CSS cannot hold.',
@@ -34,6 +38,9 @@ function core(k) {
       '`:on()` goes on the subject (last) compound, once per selector, never inside `:not()`/`:is()`/`:where()`/`:has()`, and every item of a selector list must use it.',
       '`event(field)` exists only inside mutations, and the field must match the trigger (`key` needs `keydown`/`keyup`, `value` needs `input`/`change`, `x`/`y` need drag).',
       'Modifiers are functions: `prevent()` (cancelable events only) and `stop()`. There is no `once`: guard with `:when(not --done)`.',
+      'A computed value needs an unconditional rule, must be the only declaration of its name, and reads only states. It is written inline on each owner: not a general CSS cascade.',
+      'To show a value function, write `text: format(--n, "integer")` or read a computed value with `content: var(--name)`. `content: format(--n, "integer")` renders nothing.',
+      '`time()` is a value, not a timer: use `:on(every())` or `live()` to follow the clock. A timer rule cannot depend on `:hover`, `:focus` or `:checked`: use a state.',
       'Focus requests are the `focus: when(…)` declaration. `:focus(when())` and `:blur(when())` do not exist.',
       '`:on(drag)` is pointer dragging of one element, not HTML drag and drop. Pair it with keyboard rules.',
       '`content` becomes DOM text only on elements, when it reads state, without images or `attr()`. It never replaces child elements.',

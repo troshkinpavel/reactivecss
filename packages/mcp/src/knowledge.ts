@@ -20,7 +20,7 @@ export interface SearchDoc { id: string; type: string; title: string; snippet: s
 
 export interface Knowledge {
   name: string; version: string; builtAt: string;
-  reactivecss: { version: string; package: string; status: string; homepage: string; published: boolean };
+  reactivecss: { version: string; package: string; status: string; homepage: string; published: boolean; supports: string };
   registry: { version: string; features: RegistryEntry[]; keepNative: string[]; onEvents: string[]; outsideEvents: string[]; events: string[] };
   catalog: { version: string; features: CatalogFeature[]; profiles: Record<string, string[]> };
   diagnosticCodes: Record<string, { template: string; module: string }>;

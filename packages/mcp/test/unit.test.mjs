@@ -434,3 +434,17 @@ async function connect() {
   await client.connect(b);
   return [client, async () => { await client.close(); await server.close(); }];
 }
+
+test('value functions as DOM text: text: is not flagged, content: is, and migrate_css leaves text: alone', async () => {
+  const diag = async (css) => (await S.validate(css)).diagnostics.map((d) => d.code);
+  assert.ok(!(await diag('.f { --v: state(""); } .f b { text: length(--v); }')).includes('MCP-legacy-text'));
+  assert.ok(!(await diag('.f { --n: state(1); } .f b { text: format(--n, "integer"); }')).includes('MCP-legacy-text'));
+  assert.ok((await diag('.f { --v: state(""); } .f b { content: length(--v); }')).includes('MCP-content-value-function'));
+  assert.ok((await diag('.f { --n: state(1); } .f b { content: format(--n, "integer"); }')).includes('MCP-content-value-function'));
+  // The forms that work are not flagged.
+  assert.ok(!(await diag('.f { --v: state(""); --c: trim(--v); } .f b { content: var(--c); }')).includes('MCP-content-value-function'));
+  assert.ok(!(await diag('.f { --v: state(""); } .f b::after { content: length(--v); }')).includes('MCP-content-value-function'));
+  assert.ok((await diag('.f { --n: state(1); } .f b { text: var(--n); }')).includes('MCP-legacy-text'));
+  const css = '.f { --v: state(""); } .f b { text: length(--v); }';
+  assert.ok((await S.migrate(css)).css.includes('text: length(--v)'));
+});

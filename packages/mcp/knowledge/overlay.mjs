@@ -1,4 +1,4 @@
-// Curated agent knowledge for Reactive CSS 0.9.1, layered on the library's own data.
+// Curated agent knowledge for Reactive CSS 0.10.0, layered on the library's own data.
 //
 // The API registry (src/core/features.ts via describe()) and the feature catalog
 // (src/features/catalog.ts) are the source of truth: they come into dist/knowledge.json at build
@@ -16,7 +16,7 @@ export const DOC_PAGES = {
   'getting-started': 'Getting Started', 'core-concepts': 'Core Concepts', state: 'State', events: 'Events',
   'event-data': 'Event Data', drag: 'Drag Gestures', persistence: 'Persistence', binding: 'DOM Integration',
   conditions: 'Conditions', history: 'State History', focus: 'Focus & Blur', selectors: 'Dynamic Selectors',
-  'reactive-values': 'Reactive Values', geometry: 'Geometry & Animation', 'custom-bundles': 'Custom Bundles',
+  'reactive-values': 'Reactive Values', 'value-functions': 'Strings, Numbers and Dates', computed: 'Computed Values', geometry: 'Geometry & Animation', 'custom-bundles': 'Custom Bundles',
   migration: 'Migrating from 0.8', compat: 'Browser Compatibility', limitations: 'Limitations',
   troubleshooting: 'Troubleshooting', installation: 'Installation', 'simplify-css': 'Simplify CSS', reference: 'API Reference',
 };
@@ -27,6 +27,23 @@ export const DOC_PAGES = {
  * registry line predates a 0.9 extension.
  */
 export const OVERLAY = {
+  'function:length': { doc: 'value-functions', related: ['function:trim', 'function:includes', 'function:format'], constraints: ['Takes a string or keyword; a number, boolean or datetime is an error.', 'In its arguments, --name reads a state.'] },
+  'function:includes': { doc: 'value-functions', related: ['function:lower', 'function:trim', 'selector:when'], constraints: ['Case-sensitive: combine with lower().', 'attr() in a condition is read when the condition\'s states change, not when only the attribute changes.'] },
+  'function:lower': { doc: 'value-functions', related: ['function:includes', 'function:trim'] },
+  'function:trim': { doc: 'value-functions', related: ['function:length', 'function:lower'] },
+  'function:format': { doc: 'value-functions', related: ['function:time', 'function:timezone', 'function:length'], constraints: ['The second argument is a quoted style or date pattern, checked when the stylesheet is compiled.', 'A number is never a timestamp: a date pattern needs a datetime from time() or timezone().', 'No locale argument: the language is the nearest lang attribute.'], mistakes: ['format-date-from-number'] },
+  'function:time': { doc: 'value-functions', related: ['function:timezone', 'function:format', 'rule:every', 'function:live'], constraints: ['A value, not a timer: a declaration or condition with time() is evaluated when its states change, not as time passes. Use :on(every()) or live() to follow the clock.', 'A datetime takes + or - with a time like 30s; a plain number is an error.'], mistakes: ['computed-time-without-live'] },
+  'function:timezone': { doc: 'value-functions', related: ['function:time', 'function:format'], constraints: ['The zone is a quoted IANA name, such as "Asia/Tokyo".'] },
+  'rule:after': { doc: 'events', related: ['rule:every', 'rule:on', 'selector:when'], constraints: ['Active means the element matches the full selector, :when() included.', 'No modifiers and no event().', 'Rules cannot depend on :hover, :focus, :checked or other states the runtime cannot follow: use a state.', 'Cannot be nested in a rule with a state condition, or combined in a | b.'], mistakes: ['timer-on-hover'] },
+  'rule:every': { doc: 'events', related: ['rule:after', 'function:time', 'rule:on'], constraints: ['Minimum 20 ms. Paused while the page is hidden.', 'Ticks are not a clock: use time() for elapsed time.', 'No modifiers and no event().', 'Rules cannot depend on :hover, :focus, :checked or other states the runtime cannot follow: use a state.'], mistakes: ['timer-on-hover'] },
+  'declaration:computed': { doc: 'computed', related: ['function:state', 'function:live', 'function:length', 'function:format'], constraints: [
+    'Only in an unconditional rule, as the whole value, without !important. Elsewhere it stays a CSS-only value that :when(), text: and actions cannot read.',
+    'It must be the only declaration of its name in the processed stylesheets, state() and @property included.',
+    'Read-only: mutations, on: actions and bind: input change nothing.',
+    'It reads only states and literals: not attr(), event(), element(), random(), or time() outside live().',
+    'Not a general CSS cascade: the value is written inline on each owner. A declaration of the name in a stylesheet without reactive syntax is reported only by development builds; cross-origin stylesheets cannot be checked.',
+    'For lists of thousands of elements, the inline expression costs less.',
+  ], mistakes: ['computed-in-conditional-rule', 'computed-time-without-live'] },
   'function:state': {
     doc: 'state', related: ['rule:on', 'declaration:persist', 'declaration:bind()', 'function:when', 'selector:when'],
     syntax09: '--name: state(initial [, bind(value | checked | <attribute>)] [, persist("key" [, local | session])])',
@@ -103,6 +120,7 @@ export const OVERLAY = {
     constraints: [
       'DOM text only when all hold: the rule targets elements (no ::before / ::after), the value reads state (var(), when(), previous(), direction()), and it has no image or attr().',
       'Everything else stays native content: content: "Hello" on an element renders nothing as text; ::before { content: var(--n) } stays native.',
+      'A value function alone does not count: content: length(--q) renders nothing. Write text: length(--q), or a computed value and content: var(--name).',
       'It writes one text node into an element that is empty or holds only text; elements with child elements are never emptied.',
     ],
     mistakes: ['legacy-text', 'content-pseudo-element'],
@@ -162,7 +180,7 @@ export const OVERLAY = {
   },
   'declaration:text': {
     doc: 'migration', legacy: true, replacement: 'declaration:content',
-    notes: ['Legacy 0.8 syntax. Write content: var(--x) on the element instead. text: also accepted literal strings; content: "x" stays native CSS.'],
+    notes: ['Legacy 0.8 syntax. Write content: var(--x) on the element instead. text: also accepted literal strings; content: "x" stays native CSS.', 'To show a value function directly, text: is still the form that works: text: format(--n, "integer"). content: format(--n, "integer") renders nothing.'],
     mistakes: ['legacy-text'],
   },
   'declaration:attr': {
@@ -251,6 +269,20 @@ export const MODIFIERS = {
     related: ['rule:on', 'modifier:stop'], doc: 'events', legacyForm: 'action:prevent',
     mistakes: ['bare-modifier', 'empty-rule-minifier'],
   },
+  'modifier:debounce': {
+    name: 'debounce()', kind: 'modifier', status: 'experimental', since: '0.10.0', syntax: ':on(event, debounce(time))',
+    description: 'Runs the rule once the events stop for that time, with the last event\'s values, if the rule still applies then.',
+    constraints: ['Needs a time: debounce(300ms).', 'Use debounce() or throttle(), not both.', 'Not with outside() or drag.', 'In a custom bundle it comes from the feature event-timing.'],
+    examples: [ex('.s { --q: state(""); }\n.s input:on(input, debounce(300ms)) { --q: set(event(value)); }')],
+    related: ['rule:on', 'modifier:throttle'], doc: 'events',
+  },
+  'modifier:throttle': {
+    name: 'throttle()', kind: 'modifier', status: 'experimental', since: '0.10.0', syntax: ':on(event, throttle(time))',
+    description: 'Runs the first event, and drops the next ones within the time.',
+    constraints: ['Needs a time: throttle(16ms).', 'Use debounce() or throttle(), not both.', 'Not with outside() or drag.', 'In a custom bundle it comes from the feature event-timing.'],
+    examples: [ex('.p { --x: state(0px); }\n.p:on(pointermove, throttle(16ms)) { --x: set(event(client-x)); }')],
+    related: ['rule:on', 'modifier:debounce'], doc: 'events',
+  },
   'modifier:stop': {
     name: 'stop()', kind: 'modifier', status: 'experimental', since: '0.9.0', syntax: ':on(event, stop())',
     description: 'Ancestors\' :on() rules do not run for this event, and native propagation stops when the event reaches the element (stopPropagation(), never stopImmediatePropagation()).',
@@ -275,6 +307,8 @@ export const ALIASES = {
   content: 'declaration:content', text: 'declaration:content', 'dom-text': 'declaration:content',
   focus: 'declaration:focus', 'focus-request': 'declaration:focus', blur: 'selector:blur',
   state: 'function:state', when: 'function:when', 'when-selector': 'selector:when', previous: 'function:previous', direction: 'function:direction',
+  debounce: 'modifier:debounce', throttle: 'modifier:throttle', after: 'rule:after', every: 'rule:every', timer: 'rule:every', timers: 'rule:every', timeout: 'rule:after', interval: 'rule:every',
+  computed: 'declaration:computed', derived: 'declaration:computed', 'computed-custom-property': 'declaration:computed', length: 'function:length', includes: 'function:includes', lower: 'function:lower', trim: 'function:trim', format: 'function:format', time: 'function:time', now: 'function:time', timezone: 'function:timezone',
   changed: 'selector:changed', 'nth-var': 'selector:nth-var', random: 'function:random', element: 'function:element',
 };
 
@@ -283,6 +317,22 @@ export const ALIASES = {
  * reports for `wrong` (tested); `right` validates without errors or warnings (tested).
  */
 export const MISTAKES = [
+  { id: 'computed-in-conditional-rule', title: 'A computed value in a conditional rule', entries: ['declaration:computed'],
+    wrong: '.f { --v: state(""); --on: state(true); }\n.f:when(--on) { --c: trim(--v); }',
+    right: '.f { --v: state(""); --c: trim(--v); }',
+    explanation: 'Computed values need an unconditional rule; here --c stays a CSS-only value that :when(), text: and actions cannot read.', codes: ['RCSS-P086'] },
+  { id: 'computed-time-without-live', title: 'time() as a computed value without live()', entries: ['declaration:computed', 'function:time'],
+    wrong: '.c { --now: time(); }',
+    right: '.c { --now: live(time(), 1s); }',
+    explanation: 'time() outside live() gives one instant. live(time(), 1s) follows the clock.', codes: ['RCSS-P087'] },
+  { id: 'timer-on-hover', title: 'A timer rule that depends on :hover', entries: ['rule:after', 'rule:every'],
+    wrong: '.a { --n: state(0); }\n.a:hover:on(after(1s)) { --n: increment(1); }',
+    right: '.a { --n: state(0); --over: state(false); }\n.a:on(pointerenter) { --over: set(true); }\n.a:on(pointerleave) { --over: set(false); }\n.a:when(--over):on(after(1s)) { --n: increment(1); }',
+    explanation: 'The runtime follows classes, attributes and :when() for timers, not :hover, :focus or :checked. Use a state.', codes: ['RCSS-P082'] },
+  { id: 'format-date-from-number', title: 'A date pattern on a number', entries: ['function:format'],
+    wrong: '.a { --t: state(1700000000000); }\n.a:on(click) { --s: set(format(--t, "HH:mm")); }',
+    right: '.a { --t: state(time()); --s: state(""); }\n.a:on(click) { --s: set(format(--t, "HH:mm")); }',
+    explanation: 'A number is never a timestamp. Use time() or a datetime state.', codes: [] },
   { id: 'focus-when-selector', title: ':focus(when()) instead of focus: when()', entries: ['declaration:focus'],
     wrong: '.dialog { --open: state(false); }\n.dialog input:focus(when(--open)) {}',
     right: '.dialog { --open: state(false); }\n.dialog input { focus: when(--open); }',
@@ -386,7 +436,7 @@ export const NATIVE_FIRST = [
   { need: 'Drag and drop between containers, sortable lists', native: 'HTML drag and drop with JavaScript', note: ':on(drag) moves one element with the pointer; it has no drop targets.' },
 ];
 
-/** Compatibility facts for 0.9.1 (README, docs/compatibility.md). */
+/** Compatibility facts for 0.10.0 (README, docs/compatibility.md). */
 export const COMPATIBILITY = {
   buildTarget: 'Chrome and Edge 111+, Firefox 128+, Safari 16.4+',
   tested: 'Automated tests in Chromium, WebKit and Firefox (Playwright engine builds; Firefox in CI), not Chrome, Safari or Firefox releases.',
