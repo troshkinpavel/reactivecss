@@ -133,12 +133,13 @@ for (const [file, label] of [['dist/reactive-css.min.js', 'full'], ['dist/reacti
 // Publication is a verified fact recorded in site/config/distribution.json, never assumed.
 const published = JSON.parse(read('site/config/distribution.json')).core.npmVersions.includes(libPkg.version);
 const migrationGuide = read('docs/migration-0.9.md');
+const mcpPkg = JSON.parse(readFileSync(join(PKG, 'package.json'), 'utf8'));
 const knowledge = {
   name: '@reactivecss/mcp',
-  version: JSON.parse(readFileSync(join(PKG, 'package.json'), 'utf8')).version,
+  version: mcpPkg.version,
   reactivecss: {
     version: libPkg.version, package: libPkg.name, status: published ? `experimental, published on npm (@reactivecss/core ${libPkg.version})` : `experimental, ${libPkg.version} not on npm yet`,
-    homepage: libPkg.homepage, published,
+    homepage: libPkg.homepage, published, supports: mcpPkg.reactivecss.supports,
   },
   builtAt: new Date().toISOString(),
   registry, catalog: cat, diagnosticCodes,

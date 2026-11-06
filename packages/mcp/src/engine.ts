@@ -330,7 +330,12 @@ export async function validate(src: string, opts: { features?: string[]; profile
       if (name === 'on' && uses.has('decl:on'))
         out.push({ severity: 'warning', code: 'MCP-legacy-on', feature: 'events', range: R2(d), tags: ['deprecated'],
           message: `on: is the legacy 0.8 event syntax (still supported in ${k.reactivecss.version}). Write :on() rules: ${rule.prelude}:on(click) { --state: toggle(); }.`, fix: { description: 'Run migrate_css on this stylesheet.' } });
-      if (name === 'text' && uses.has('decl:text'))
+      // text: is still the way to show a value function directly: content: would render nothing.
+      const valueFn = VALUE_FN.test(d.value) && !STATE_FN.test(d.value);
+      if (name === 'content' && valueFn && !rule.pseudoElement)
+        out.push({ severity: 'warning', code: 'MCP-content-value-function', feature: 'text', range: R2(d),
+          message: `content: ${clip(d.value)} renders nothing: content becomes DOM text only when its value contains var(), when(), previous() or direction(). Write text: ${clip(d.value)}, or a computed value and content: var(--name).` });
+      if (name === 'text' && uses.has('decl:text') && !valueFn)
         out.push({ severity: 'warning', code: 'MCP-legacy-text', feature: 'text', range: R2(d), tags: ['deprecated'],
           message: `text: is legacy 0.8 syntax. Write content: ${clip(d.value)} on the element (it must read state to become DOM text).`, fix: { description: 'Run migrate_css on this stylesheet.' } });
       if (name === 'attr' && uses.has('decl:attr'))
@@ -480,6 +485,7 @@ interface Manual { line: number; kind: string; reason: string; original: string;
 
 const CANCELABLE = new Set(['click', 'dblclick', 'contextmenu', 'mousedown', 'pointerdown', 'keydown', 'keyup', 'submit']);
 const STATE_FN = /\b(var|when|previous|direction)\(/i;
+const VALUE_FN = /\b(length|includes|lower|trim|format|time|timezone)\(/i;
 
 /** Depth-0 comma split of a token range, as source text. */
 function splitTokens(src: string, tokens: Token[], a: number, b: number): { text: string; t0: number; t1: number }[] {

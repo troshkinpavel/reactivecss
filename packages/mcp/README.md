@@ -1,10 +1,10 @@
 # @reactivecss/mcp
 
-The official [Model Context Protocol](https://modelcontextprotocol.io) server for [Reactive CSS](https://reactivecss.com). It gives AI coding agents accurate, offline knowledge of the Reactive CSS **0.9** API, real examples, and tools that validate, analyze and migrate Reactive CSS with the library's own compiler.
+The official [Model Context Protocol](https://modelcontextprotocol.io) server for [Reactive CSS](https://reactivecss.com). It gives AI coding agents accurate, offline knowledge of the Reactive CSS **0.10** API, real examples, and tools that validate, analyze and migrate Reactive CSS with the library's own compiler.
 
-- **npm:** [`@reactivecss/mcp`](https://www.npmjs.com/package/@reactivecss/mcp), for [`@reactivecss/core`](https://www.npmjs.com/package/@reactivecss/core) 0.9.x. Reactive CSS is experimental. Documentation links in answers point to [reactivecss.com](https://reactivecss.com).
+- **npm:** [`@reactivecss/mcp`](https://www.npmjs.com/package/@reactivecss/mcp), for [`@reactivecss/core`](https://www.npmjs.com/package/@reactivecss/core) 0.10.x. Reactive CSS is experimental. Documentation links in answers point to [reactivecss.com](https://reactivecss.com).
 
-- **Supported Reactive CSS version:** 0.9.x. The npm release 0.1.1 has knowledge of 0.9.1 (0.1.0 had 0.9.0). 0.9.1 changed no syntax or API. The server version is independent: `reactivecss.supports` in `package.json` says which library versions it describes.
+- **Supported Reactive CSS version:** 0.10.x. The npm release 0.1.2 has knowledge of 0.10.0 (0.1.1 had 0.9.1, 0.1.0 had 0.9.0). The server version is independent: `reactivecss.supports` in `package.json` says which library versions it describes.
 - **Transport:** stdio only. Read-only: no file writes, no network, no shell, no JavaScript execution.
 - **Runtime:** Node.js 22 or later. Dependencies: `@modelcontextprotocol/server` (the official TypeScript SDK, v2) and `zod`.
 
@@ -90,7 +90,8 @@ All tools are read-only (`readOnlyHint`), return JSON in `structuredContent` (an
 | `MCP-mutation-outside-on` | warning | `--x: toggle()` outside an `:on()` rule does nothing |
 | `MCP-event-outside-mutation` | warning | `event()` outside a mutation is never computed |
 | `MCP-no-state-owner` | warning | A mutated state that no rule in the CSS declares |
-| `MCP-legacy-on`, `MCP-legacy-text`, `MCP-legacy-attr` | warning | Legacy 0.8 syntax (still works) |
+| `MCP-content-value-function` | warning | `content: length(--q)` on an element renders nothing: write `text:` or read a computed value |
+| `MCP-legacy-on`, `MCP-legacy-text`, `MCP-legacy-attr` | warning | Legacy 0.8 syntax (still works). `text:` with a value function is not flagged: it is the form that works |
 | `MCP-legacy-bind`, `MCP-content-pseudo-element`, `MCP-empty-rule-minifier`, `MCP-import-not-followed` | info | 0.9 form available; `content` in a pseudo-element stays native; minifiers delete modifier-only rules; `@import` is not followed |
 
 **Scope.** `validate_css` checks the CSS it gets. It does not see the HTML, other stylesheets, or the browser: element focusability, the DOM structure that decides ownership, and values known only at the event are not checked. Ordinary CSS gives no diagnostics.
@@ -150,7 +151,7 @@ A validation request and its answer (abridged):
 
 ## Limitations
 
-- Knowledge is a snapshot of the Reactive CSS version it was built from (0.9.1 for the npm release 0.1.1). Older versions are supported by availability filtering (`version`), not by their own descriptions.
+- Knowledge is a snapshot of the Reactive CSS version it was built from (0.10.0 for the npm release 0.1.2). Older versions are supported by availability filtering (`version`), not by their own descriptions.
 - `validate_css` cannot see the DOM (see Scope). Native `random()` calls are reported as using the `values` feature, because native support is decided in the browser.
 - `migrate_css` rewrites only the cases that have a safe 0.9 form; it lists the others for manual review.
 - Sizes are given only for feature sets measured at build time (each profile and each feature alone); others are not estimated.

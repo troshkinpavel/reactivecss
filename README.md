@@ -47,7 +47,7 @@ One small runtime reads your stylesheets and wires them up.
 
 The button owns the state, each click increments it, and the span shows it as text. No application JavaScript is involved, but the Reactive CSS runtime has to be loaded.
 
-> **Note: 0.10.0 is experimental.** [`@reactivecss/core`](https://www.npmjs.com/package/@reactivecss/core) 0.10.0 and the MCP server [`@reactivecss/mcp`](https://www.npmjs.com/package/@reactivecss/mcp) 0.1.1 are on npm. The website is [reactivecss.com](https://reactivecss.com). See [Installation](#installation).
+> **Note: 0.10.0 is experimental.** [`@reactivecss/core`](https://www.npmjs.com/package/@reactivecss/core) 0.10.0 and the MCP server [`@reactivecss/mcp`](https://www.npmjs.com/package/@reactivecss/mcp) 0.1.2 are on npm. The website is [reactivecss.com](https://reactivecss.com). See [Installation](#installation).
 
 ## Why Reactive CSS?
 
@@ -82,6 +82,24 @@ It is not a new browser standard and not another UI framework. A JavaScript runt
 
 form { --sent: state(false); }
 form:on(submit, prevent()) { --sent: set(true); }
+```
+
+**Several events, debounce and throttle.** One rule for several events, and limits for busy ones.
+
+```css
+.field { --dirty: state(false); --q: state(""); --x: state(0px); }
+.field input:on(input | change) { --dirty: set(true); }
+.field input:on(input, debounce(300ms)) { --q: set(event(value)); }
+.field:on(pointermove, throttle(50ms)) { --x: set(event(client-x)); }
+```
+
+**Timers.** A timer runs while its element matches the rule's selector, `:when()` included.
+
+```css
+.toast { --visible: state(true); }
+.toast:when(--visible):on(after(3s)) { --visible: set(false); }
+.clock { --ticks: state(0); }
+.clock:on(every(1s)) { --ticks: increment(1); }
 ```
 
 **Conditions.** As a selector with `:when()`, or as a value with `when()`.
@@ -129,9 +147,29 @@ form:on(submit, prevent()) { --sent: set(true); }
 .counter:changed(--count) .value { animation: flash 300ms; }
 ```
 
+**Value functions.** Text, numbers and dates, in actions, conditions and declarations. Use `text:` to show one directly.
+
+```css
+.order { --name: state(" Ada "); --total: state(1234.5); --at: state(time()); }
+.order:when(length(trim(--name)) > 2) .ok { color: #15803d; }
+.order .total { text: format(--total, "currency", "EUR"); }
+.order .local { text: format(timezone(--at, "Asia/Tokyo"), "HH:mm"); }
+```
+
+**Computed values.** A read-only state that follows the states it reads, and is also the CSS custom property.
+
+```css
+.form { --value: state(""); --clean: trim(--value); --chars: length(--clean); }
+.form textarea:on(input) { --value: set(event(value)); }
+.form .count { content: var(--chars); }
+.form:when(--chars > 140) .count { color: red; }
+```
+
+It is written inline on each owner, so it is not a general CSS cascade. The [limits](https://reactivecss.com/docs/computed/) are documented.
+
 **Native CSS, first.** Transitions, animations, `@media`, layers and custom properties work unchanged. Where native CSS such as `if()` does the same job, the runtime uses it.
 
-Several of these APIs are experimental, among them `:on()`, drag, `persist()`, `bind()`, `--attr-*`, `content` and `focus:`. The status of every feature is in the [language reference](docs/library-reference.md) and in `ReactiveCSS.describe()`.
+Several of these APIs are experimental, among them `:on()`, drag, `persist()`, `bind()`, `--attr-*`, `content`, `focus:`, timers, `debounce()`, `throttle()`, value functions and computed values. The status of every feature is in the [language reference](docs/library-reference.md) and in `ReactiveCSS.describe()`.
 
 ## Installation
 
@@ -211,7 +249,7 @@ Experiments show what Reactive CSS can do beyond menus and counters: light, dept
 
 ## AI agents · Official MCP server
 
-[`@reactivecss/mcp`](packages/mcp/README.md) is a Model Context Protocol server. It gives coding agents current knowledge of Reactive CSS 0.9, so the CSS they write uses the syntax that actually runs. It works offline and read-only, over stdio.
+[`@reactivecss/mcp`](packages/mcp/README.md) is a Model Context Protocol server. It gives coding agents current knowledge of Reactive CSS 0.10, so the CSS they write uses the syntax that actually runs. It works offline and read-only, over stdio.
 
 - **API reference:** syntax, status, parameters and common mistakes for every API.
 - **Documentation search** across the reference, the examples and the migration guide.

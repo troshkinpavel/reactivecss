@@ -1,11 +1,11 @@
 ---
 name: reactive-css
-description: Write, review, validate and migrate Reactive CSS 0.9.1 (state(), :on() event rules, mutations, --attr-*, content, focus: when(), drag, persist()). Use when a project loads Reactive CSS or @reactivecss/core, or when the user asks for interactive UI in plain CSS without JavaScript.
+description: Write, review, validate and migrate Reactive CSS 0.10.0 (state(), :on() event rules, mutations, --attr-*, content, focus: when(), drag, persist()). Use when a project loads Reactive CSS or @reactivecss/core, or when the user asks for interactive UI in plain CSS without JavaScript.
 ---
 
-# Reactive CSS 0.9.1
+# Reactive CSS 0.10.0
 
-Reactive CSS adds state, event rules and DOM bindings to plain CSS. One script runs it; there is no JavaScript to write. Status: experimental, published on npm (@reactivecss/core 0.9.1).
+Reactive CSS adds state, event rules and DOM bindings to plain CSS. One script runs it; there is no JavaScript to write. Status: experimental, published on npm (@reactivecss/core 0.10.0).
 
 ## Workflow
 
@@ -18,7 +18,7 @@ Reactive CSS adds state, event rules and DOM bindings to plain CSS. One script r
 
 ## Syntax
 
-| Need | 0.9 syntax |
+| Need | Syntax |
 |---|---|
 | State (owned by each matching element) | `--open: state(false);` `--count: state(0);` `--x: state(0px);` `--mode: state(light);` `--q: state("");` |
 | Event rule | `.menu > button:on(click) { --open: toggle(); }` |
@@ -33,6 +33,10 @@ Reactive CSS adds state, event rules and DOM bindings to plain CSS. One script r
 | DOM text | `.value { content: var(--count); }` (on elements, not `::before`) |
 | Focus | `.dialog input { focus: when(--open); }` and `input:blur { … }` |
 | History | `previous(--n)`, `direction(--n)`, `:changed(--n)` |
+| Several events, timing | `:on(click \| keydown(Enter))`, `:on(input, debounce(300ms))`, `:on(pointermove, throttle(16ms))` |
+| Timers | `.toast:when(--visible):on(after(3s)) { --visible: set(false); }`, `:on(every(1s))`, `:on(every(80ms, 400ms))` |
+| Value functions | `length(--q)`, `includes(--a, --b)`, `lower(--q)`, `trim(--q)`, `format(--n, "currency", "EUR")`, `format(--t, "HH:mm")`, `time()`, `timezone(--t, "Asia/Tokyo")` |
+| Computed values (read-only states) | `.form { --value: state(""); --clean: trim(--value); --chars: length(--clean); }`, `--now: live(time(), 1s);` |
 
 ```css
 .counter { --count: state(0); }                  /* each .counter owns a number */
@@ -52,16 +56,23 @@ Reactive CSS adds state, event rules and DOM bindings to plain CSS. One script r
 - `:on()` goes on the subject (last) compound, once per selector, never inside `:not()`/`:is()`/`:where()`/`:has()`, and every item of a selector list must use it.
 - `event(field)` exists only inside mutations, and the field must match the trigger (`key` needs `keydown`/`keyup`, `value` needs `input`/`change`, `x`/`y` need drag).
 - Modifiers are functions: `prevent()` (cancelable events only) and `stop()`. There is no `once`: guard with `:when(not --done)`.
+- A computed value needs an unconditional rule, must be the only declaration of its name, and reads only states. It is written inline on each owner: not a general CSS cascade.
+- To show a value function, write `text: format(--n, "integer")` or read a computed value with `content: var(--name)`. `content: format(--n, "integer")` renders nothing.
+- `time()` is a value, not a timer: use `:on(every())` or `live()` to follow the clock. A timer rule cannot depend on `:hover`, `:focus` or `:checked`: use a state.
 - Focus requests are the `focus: when(…)` declaration. `:focus(when())` and `:blur(when())` do not exist.
 - `:on(drag)` is pointer dragging of one element, not HTML drag and drop. Pair it with keyboard rules.
 - `content` becomes DOM text only on elements, when it reads state, without images or `attr()`. It never replaces child elements.
 - Modifier-only rules such as `form:on(submit, prevent()) {}` are empty rules: minify Reactive stylesheets for whitespace only.
-- Legacy 0.8 syntax (`on:`, `text:`, `attr:`) still runs in 0.9.1 but is not the default. Write `:on()`, `content` and `--attr-*`. `bind: --state` stays for controls that write an ancestor's state.
+- Legacy 0.8 syntax (`on:`, `text:`, `attr:`) still runs in 0.10.0 but is not the default. Write `:on()`, `content` and `--attr-*`. `bind: --state` stays for controls that write an ancestor's state.
 
 ## Mistakes to avoid
 
 | Mistake | Wrong | Right |
 |---|---|---|
+| A computed value in a conditional rule | `.f { --v: state(""); --on: state(true); } .f:when(--on) { --c: trim(--v); }` | `.f { --v: state(""); --c: trim(--v); }` |
+| time() as a computed value without live() | `.c { --now: time(); }` | `.c { --now: live(time(), 1s); }` |
+| A timer rule that depends on :hover | `.a { --n: state(0); } .a:hover:on(after(1s)) { --n: increment(1); }` | `.a { --n: state(0); --over: state(false); } .a:on(pointerenter) { --over: set(true); } .a:on(pointerleave) { --over: set(false); } .a:when(--over):on(after(1s)) { --n: increment(1); }` |
+| A date pattern on a number | `.a { --t: state(1700000000000); } .a:on(click) { --s: set(format(--t, "HH:mm")); }` | `.a { --t: state(time()); --s: state(""); } .a:on(click) { --s: set(format(--t, "HH:mm")); }` |
 | :focus(when()) instead of focus: when() | `.dialog { --open: state(false); } .dialog input:focus(when(--open)) {}` | `.dialog { --open: state(false); } .dialog input { focus: when(--open); }` |
 | Bare prevent / stop in :on() | `.menu { --open: state(false); } .menu a:on(click, prevent) { --open: toggle(); }` | `.menu { --open: state(false); } .menu a:on(click, prevent()) { --open: toggle(); }` |
 | once() in :on() | `.b { --done: state(false); } .b:on(click, once()) { --done: set(true); }` | `.b { --done: state(false); } .b:when(not --done):on(click) { --done: set(true); }` |
