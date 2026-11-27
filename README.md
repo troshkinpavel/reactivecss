@@ -19,6 +19,7 @@ One small runtime reads your stylesheets and wires them up.
 <p align="center">
   <a href="https://reactivecss.com/docs/">Documentation</a> ·
   <a href="https://reactivecss.com/examples/">Examples</a> ·
+  <a href="https://codepen.io/collection/kkrpGq">CodePen</a> ·
   <a href="https://reactivecss.com/playground/">Playground</a> ·
   <a href="https://reactivecss.com/experiments/">Experiments</a> ·
   <a href="packages/mcp/README.md">MCP server</a>
@@ -289,6 +290,7 @@ CSS minifiers delete empty rules, so a modifier-only rule such as `a:on(click, p
 | [Language reference](docs/library-reference.md) | Every function, selector and declaration, with its status |
 | [Migration from 0.8](docs/migration-0.9.md) | The 0.9 form of every 0.8 declaration |
 | [Examples](site/src/catalog/) | One-feature API examples and complete interfaces, in 0.9 syntax |
+| [CodePen collection](https://codepen.io/collection/kkrpGq) | Live demos to open, fork and edit on CodePen |
 | [Experiments](site/experiments/) | Perihelion, and more when they are finished |
 | [MCP server](packages/mcp/README.md) | [`@reactivecss/mcp`](https://www.npmjs.com/package/@reactivecss/mcp), for coding agents |
 | [Changelog](CHANGELOG.md) | Every release, with its reports |
